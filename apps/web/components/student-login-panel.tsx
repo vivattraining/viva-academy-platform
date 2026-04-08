@@ -1,0 +1,60 @@
+"use client";
+
+import { useState } from "react";
+
+import { apiRequest, DEFAULT_TENANT } from "../lib/api";
+import { writeSession, type AcademySession } from "../lib/auth";
+
+export function StudentLoginPanel() {
+  const [email, setEmail] = useState("student@viva.demo");
+  const [password, setPassword] = useState("VIVAstudent123");
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function login() {
+    setBusy(true);
+    setMessage("Opening learner workspace...");
+    try {
+      const data = await apiRequest<{ session: AcademySession }>("/api/v1/academy/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          tenant_name: DEFAULT_TENANT,
+          email,
+          password,
+        }),
+      });
+      writeSession(data.session);
+      window.location.href = "/student";
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to sign in as student.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="card">
+      <div className="eyebrow">Student access</div>
+      <h2 style={{ marginTop: 12, fontSize: 28, fontWeight: 900, letterSpacing: "-0.05em" }}>Open the learner dashboard directly.</h2>
+      <p className="muted" style={{ marginTop: 12 }}>
+        This is the clean learner path for tomorrow&apos;s demo. Use the seeded student account to show schedule, attendance, and class access without admin clutter.
+      </p>
+      <div className="grid grid-2" style={{ marginTop: 18 }}>
+        <label className="stack">
+          <span className="eyebrow">Student email</span>
+          <input value={email} onChange={(event) => setEmail(event.target.value)} className="pill" style={{ borderRadius: 20, textTransform: "none", letterSpacing: "normal", fontWeight: 600 }} />
+        </label>
+        <label className="stack">
+          <span className="eyebrow">Password</span>
+          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="pill" style={{ borderRadius: 20, textTransform: "none", letterSpacing: "normal", fontWeight: 600 }} />
+        </label>
+      </div>
+      <div className="button-row">
+        <button className="button-primary" onClick={() => void login()} disabled={busy}>
+          {busy ? "Opening..." : "Enter learner workspace"}
+        </button>
+      </div>
+      {message ? <div className="panel" style={{ marginTop: 16, background: "#EFF6FF" }}>{message}</div> : null}
+    </section>
+  );
+}
