@@ -15,8 +15,8 @@ export function OperatorGate({
   children: React.ReactNode;
 }) {
   const [session, setSession] = useState<AcademySession | null>(null);
-  const [email, setEmail] = useState("admin@viva.demo");
-  const [password, setPassword] = useState("VIVAadmin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -70,7 +70,7 @@ export function OperatorGate({
       <div className="eyebrow">Operator access</div>
       <h2 style={{ marginTop: 12, fontSize: 28, fontWeight: 900, letterSpacing: "-0.05em" }}>{title}</h2>
       <p className="muted" style={{ marginTop: 12 }}>
-        Use an operator account to open the secure VIVA academy surfaces. Demo credentials are pre-seeded in the standalone API.
+        Use an operator account to open the secure VIVA academy surfaces.
       </p>
       <div className="grid grid-2" style={{ marginTop: 18 }}>
         <label className="stack">

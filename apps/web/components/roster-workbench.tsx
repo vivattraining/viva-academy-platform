@@ -66,7 +66,7 @@ export function RosterWorkbench() {
           <div className="metric" style={{ marginTop: 12 }}>{item.attendance_completed}/{item.attendance_total}</div>
           <div className="button-row">
             <button className="button-primary" onClick={() => void issueCertificate(item)}>Issue certificate</button>
-            {item.certificate_url ? <a className="button-secondary" href={item.certificate_url} target="_blank">View certificate</a> : null}
+            {item.certificate_url ? <a className="button-secondary" href={item.certificate_url} target="_blank" rel="noopener noreferrer">View certificate</a> : null}
           </div>
         </article>
       ))}

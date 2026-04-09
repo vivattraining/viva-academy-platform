@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from datetime import datetime, timezone
+import secrets
 from typing import Optional
 from uuid import uuid4
 
@@ -236,6 +237,7 @@ def create_application(db: Session, tenant_name: str, payload: dict) -> dict:
         "payment_order_id": None,
         "payment_url": None,
         "payment_reference": None,
+        "public_receipt_token": secrets.token_urlsafe(18),
         "certificate_url": None,
         "attendance_completed": 0,
         "attendance_total": 12,

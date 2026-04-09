@@ -151,7 +151,7 @@ export default function HomePage() {
         </div>
         <div className="editorial-button-row">
           <a href="/apply" className="editorial-primary">Join Next Batch</a>
-          <a href="/contact" className="editorial-secondary inverse">Download Brochure</a>
+          <a href="/brochure" className="editorial-secondary inverse">Download Brochure</a>
         </div>
       </section>
     </MarketingShell>

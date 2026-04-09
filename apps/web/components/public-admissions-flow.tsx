@@ -14,6 +14,7 @@ export function PublicAdmissionsFlow() {
   const [applicationId, setApplicationId] = useState("");
   const [paymentUrl, setPaymentUrl] = useState("");
   const [paymentReference, setPaymentReference] = useState("");
+  const [receiptToken, setReceiptToken] = useState("");
   const [message, setMessage] = useState("");
 
   async function submit() {
@@ -32,6 +33,7 @@ export function PublicAdmissionsFlow() {
         })
       });
       setApplicationId(data.item.id);
+      setReceiptToken((data.item as { public_receipt_token?: string }).public_receipt_token || "");
       setMessage("Application received. You can now continue to payment.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to submit application.");
@@ -100,11 +102,11 @@ export function PublicAdmissionsFlow() {
           Pay Registration Fee
         </button>
         {applicationId ? <button className="editorial-form-secondary" onClick={() => void continueToPayment()}>Generate Payment Link</button> : null}
-        {paymentUrl ? <a className="editorial-form-secondary" href={paymentUrl} target="_blank">Open Checkout</a> : null}
+        {paymentUrl ? <a className="editorial-form-secondary" href={paymentUrl} target="_blank" rel="noopener noreferrer">Open Checkout</a> : null}
         {applicationId && paymentReference ? (
           <Link
             className="editorial-form-secondary"
-            href={`/payment/success?tenant=${encodeURIComponent(DEFAULT_TENANT)}&applicationId=${encodeURIComponent(applicationId)}&reference=${encodeURIComponent(paymentReference)}`}
+            href={`/payment/success?tenant=${encodeURIComponent(DEFAULT_TENANT)}&applicationId=${encodeURIComponent(applicationId)}${receiptToken ? `&token=${encodeURIComponent(receiptToken)}` : ""}`}
           >
             Simulate Success
           </Link>
@@ -112,7 +114,7 @@ export function PublicAdmissionsFlow() {
         {applicationId ? (
           <Link
             className="editorial-form-secondary"
-            href={`/payment/failed?tenant=${encodeURIComponent(DEFAULT_TENANT)}&applicationId=${encodeURIComponent(applicationId)}`}
+            href={`/payment/failed?tenant=${encodeURIComponent(DEFAULT_TENANT)}&applicationId=${encodeURIComponent(applicationId)}${receiptToken ? `&token=${encodeURIComponent(receiptToken)}` : ""}`}
           >
             Payment Issue?
           </Link>

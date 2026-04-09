@@ -87,7 +87,7 @@ export function AdmissionsWorkbench() {
             <div className="button-row">
               <button className="button-secondary" onClick={() => void issuePaymentLink(item.id)}>Issue payment link</button>
               <button className="button-primary" onClick={() => void markEnrolled(item.id)}>Mark enrolled</button>
-              {item.payment_url ? <a className="button-secondary" href={item.payment_url} target="_blank">Open checkout</a> : null}
+              {item.payment_url ? <a className="button-secondary" href={item.payment_url} target="_blank" rel="noopener noreferrer">Open checkout</a> : null}
             </div>
           </article>
         ))}

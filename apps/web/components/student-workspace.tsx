@@ -172,7 +172,7 @@ export function StudentWorkspace() {
               <p>{nextSession ? `${nextSession.session_date}, ${nextSession.start_time}` : "Tomorrow, 10:00 AM IST"}</p>
               <p>{nextSession?.trainer_name || payload.batch?.trainer_name || "Faculty Lead"}</p>
             </div>
-            {nextSession?.zoom_join_url ? <a href={nextSession.zoom_join_url} target="_blank" className="dashboard-live-button">Join Session</a> : <button className="dashboard-live-button">Join Session</button>}
+            {nextSession?.zoom_join_url ? <a href={nextSession.zoom_join_url} target="_blank" rel="noopener noreferrer" className="dashboard-live-button">Join Session</a> : <button className="dashboard-live-button">Join Session</button>}
           </div>
 
           <div className="dashboard-panel">

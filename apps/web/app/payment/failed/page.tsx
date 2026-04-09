@@ -4,7 +4,7 @@ import { SiteShell } from "../../../components/site-shell";
 export default async function PaymentFailedPage({
   searchParams,
 }: {
-  searchParams: Promise<{ applicationId?: string }>;
+  searchParams: Promise<{ tenant?: string; applicationId?: string; token?: string }>;
 }) {
   const params = await searchParams;
 
@@ -15,7 +15,7 @@ export default async function PaymentFailedPage({
       title="When payment fails, the application should remain recoverable and visible."
       description="This recovery surface prevents applicants from falling out of the funnel and gives operators a clear handoff back into admissions."
     >
-      <PaymentFailedPanel applicationId={params.applicationId || ""} />
+      <PaymentFailedPanel applicationId={params.applicationId || ""} tenant={params.tenant || "VIVA Training Institute"} token={params.token || ""} />
     </SiteShell>
   );
 }

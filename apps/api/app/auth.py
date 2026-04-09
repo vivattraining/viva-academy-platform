@@ -8,6 +8,7 @@ from typing import Optional, Set
 from fastapi import Header, HTTPException
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.models import AcademyAuthSession, AcademyUserCredential
 
 
@@ -97,7 +98,8 @@ def create_session(db: Session, tenant_name: str, credential: AcademyUserCredent
 
 
 def login_user(db: Session, tenant_name: str, email: str, password: str) -> dict:
-    ensure_default_users(db, tenant_name)
+    if settings.allow_demo_auth:
+        ensure_default_users(db, tenant_name)
     credential = (
         db.query(AcademyUserCredential)
         .filter(AcademyUserCredential.tenant_name == tenant_name, AcademyUserCredential.email == email.strip().lower())

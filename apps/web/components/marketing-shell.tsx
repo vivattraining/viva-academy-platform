@@ -102,11 +102,11 @@ export function MarketingShell({
             </p>
           </div>
           <div className="editorial-footer-links">
-            <a href="/contact">Privacy Policy</a>
-            <a href="/contact">Terms of Service</a>
-            <a href="/contact">Institutional Disclosures</a>
-            <a href="/contact">Compliance</a>
-            <a href="/contact">Accessibility</a>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/terms">Terms of Service</a>
+            <a href="/disclosures">Institutional Disclosures</a>
+            <a href="/compliance">Compliance</a>
+            <a href="/accessibility">Accessibility</a>
           </div>
           <div className="editorial-footer-meta">
             <div>{PUBLIC_CONTACT.email}</div>

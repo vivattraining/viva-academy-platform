@@ -119,8 +119,7 @@ def save_branding_secure(
 
 @router.get("/applications")
 def read_applications(tenant_name: str, db: Session = Depends(get_db)):
-    # dashboard data should be staff-only
-    return {"items": list_applications(db, tenant_name)}
+    raise HTTPException(status_code=400, detail="Secure endpoint required")
 
 
 @router.get("/applications/secure")
@@ -134,10 +133,19 @@ def read_applications_secure(
 
 
 @router.get("/applications/{application_id}")
-def read_application(application_id: str, tenant_name: str, db: Session = Depends(get_db)):
+def read_application(
+    application_id: str,
+    tenant_name: str,
+    token: Optional[str] = None,
+    x_academy_session: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
     item = get_application(db, tenant_name, application_id)
     if item is None:
         raise HTTPException(status_code=404, detail="Application not found")
+    if token and token == item.get("public_receipt_token"):
+        return {"item": item}
+    auth_dependency(db, tenant_name, x_academy_session, READ_ROLES | {"student"})
     return {"item": item}
 
 
@@ -224,21 +232,7 @@ def create_application_payment_link(application_id: str, payload: PaymentLinkUpd
 
 @router.post("/payments/webhook/razorpay/{reference}")
 def capture_payment(reference: str, db: Session = Depends(get_db)):
-    application = find_application_by_reference(db, reference)
-    if application is None:
-        raise HTTPException(status_code=404, detail="Application not found")
-    item = update_application(
-        db,
-        application["tenant_name"],
-        application["id"],
-        {
-            "application_stage": "enrolled",
-            "payment_stage": "paid",
-            "enrollment_stage": "active",
-        },
-    )
-    item = assign_first_batch_if_needed(db, application["tenant_name"], application["id"]) or item
-    return {"ok": True, "item": item}
+    raise HTTPException(status_code=403, detail="Gateway webhook verification required")
 
 
 @router.get("/students/me")

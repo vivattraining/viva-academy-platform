@@ -18,7 +18,7 @@ export default function CoursesPage() {
           </p>
           <div className="editorial-button-row">
             <a href="/apply" className="editorial-primary">Apply Now</a>
-            <a href="/contact" className="editorial-secondary">Download Brochure</a>
+            <a href="/brochure" className="editorial-secondary">Download Brochure</a>
           </div>
         </div>
         <div className="editorial-page-hero-visual">

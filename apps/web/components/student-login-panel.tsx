@@ -6,8 +6,8 @@ import { apiRequest, DEFAULT_TENANT } from "../lib/api";
 import { writeSession, type AcademySession } from "../lib/auth";
 
 export function StudentLoginPanel() {
-  const [email, setEmail] = useState("student@viva.demo");
-  const [password, setPassword] = useState("VIVAstudent123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -37,7 +37,7 @@ export function StudentLoginPanel() {
       <div className="eyebrow">Student access</div>
       <h2 style={{ marginTop: 12, fontSize: 28, fontWeight: 900, letterSpacing: "-0.05em" }}>Open the learner dashboard directly.</h2>
       <p className="muted" style={{ marginTop: 12 }}>
-        This is the clean learner path for tomorrow&apos;s demo. Use the seeded student account to show schedule, attendance, and class access without admin clutter.
+        Use your student credentials to access schedule, attendance, and classroom visibility without admin clutter.
       </p>
       <div className="grid grid-2" style={{ marginTop: 18 }}>
         <label className="stack">

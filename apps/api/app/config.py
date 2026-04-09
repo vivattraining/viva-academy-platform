@@ -1,10 +1,14 @@
 from dataclasses import dataclass
 import os
 
+def env_flag(name: str, default: str = "false") -> bool:
+    return os.getenv(name, default).strip().lower() in {"1", "true", "yes", "on"}
+
 
 @dataclass(frozen=True)
 class Settings:
     app_env: str = os.getenv("APP_ENV", "development")
+    allow_demo_auth: bool = env_flag("ALLOW_DEMO_AUTH", "false")
     api_port: int = int(os.getenv("API_PORT", "8000"))
     database_url: str = os.getenv("DATABASE_URL", "sqlite:///./academy_os.db")
     redis_url: str = os.getenv("REDIS_URL", "redis://localhost:6379")
@@ -26,4 +30,3 @@ class Settings:
 
 
 settings = Settings()
-

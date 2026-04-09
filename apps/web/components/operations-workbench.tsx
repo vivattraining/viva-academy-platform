@@ -119,8 +119,8 @@ export function OperationsWorkbench() {
           {selectedSession ? (
             <div className="button-row">
               <button className="button-primary" onClick={() => void provisionZoom()}>Provision Zoom</button>
-              {selectedSession.zoom_join_url ? <a className="button-secondary" href={selectedSession.zoom_join_url} target="_blank">Student join</a> : null}
-              {selectedSession.zoom_start_url ? <a className="button-secondary" href={selectedSession.zoom_start_url} target="_blank">Trainer start</a> : null}
+              {selectedSession.zoom_join_url ? <a className="button-secondary" href={selectedSession.zoom_join_url} target="_blank" rel="noopener noreferrer">Student join</a> : null}
+              {selectedSession.zoom_start_url ? <a className="button-secondary" href={selectedSession.zoom_start_url} target="_blank" rel="noopener noreferrer">Trainer start</a> : null}
             </div>
           ) : null}
           {message ? <div className="panel" style={{ marginTop: 16 }}>{message}</div> : null}

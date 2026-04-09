@@ -27,8 +27,9 @@ export function PaymentReceipt({ applicationId, tenantName }: { applicationId: s
   useEffect(() => {
     async function load() {
       try {
+        const token = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("token") : null;
         const data = await apiRequest<{ item: ReceiptItem }>(
-          `/api/v1/academy/applications/${encodeURIComponent(applicationId)}?tenant_name=${encodeURIComponent(tenantName || DEFAULT_TENANT)}`
+          `/api/v1/academy/applications/${encodeURIComponent(applicationId)}?tenant_name=${encodeURIComponent(tenantName || DEFAULT_TENANT)}${token ? `&token=${encodeURIComponent(token)}` : ""}`
         );
         setItem(data.item);
       } catch (loadError) {
