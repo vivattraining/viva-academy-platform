@@ -1,7 +1,6 @@
 import { SiteShell } from "../../components/site-shell";
 import { AdmissionsWorkbench } from "../../components/admissions-workbench";
 import { OperatorGate } from "../../components/operator-gate";
-import { PublicAdmissionsFlow } from "../../components/public-admissions-flow";
 
 const admissionsCards = [
   {
@@ -23,10 +22,10 @@ const admissionsCards = [
 ];
 
 const credibilitySignals = [
-  "12-week job-ready travel certification with live faculty and applied labs",
-  "Travel, tourism, hospitality, and services aligned curriculum",
-  "Zoom-enabled live classes, attendance tracking, and certificates",
-  "Admissions, payments, classroom ops, and learner progression in one system"
+  "Qualified applications move from enquiry to payment and enrollment in one pipeline",
+  "Razorpay-linked application fee flow reduces manual follow-up gaps",
+  "Batching, Zoom setup, and learner activation can happen from the same operating surface",
+  "Admissions teams can track who has applied, paid, converted, and joined the cohort"
 ];
 
 const launchTestimonials = [
@@ -44,31 +43,29 @@ export default function AdmissionsPage() {
   return (
     <SiteShell
       activeHref="/admissions"
-      eyebrow="Admissions operations"
-      title="Manage applicant flow from first submission to payment and enrollment."
-      description="This is the admissions operating surface for VIVA. Applications, payment-link issuance, and enrollment progression should move through one tenant-scoped workflow."
+      eyebrow="Internal admissions operations"
+      title="Run applicant screening, payment links, and enrollment conversion from one internal workbench."
+      description="This route is reserved for the VIVA team. The public student application journey now belongs on /apply, while this surface handles internal admissions operations."
       primaryCta={{ label: "Open admin CMS", href: "/admin" }}
-      secondaryCta={{ label: "Open student view", href: "/student" }}
+      secondaryCta={{ label: "Open public apply page", href: "/apply" }}
     >
-      <PublicAdmissionsFlow />
-
       <section className="split">
         <article className="hero hero-contrast">
-          <div className="eyebrow" style={{ color: "#F4D77B" }}>Public application journey</div>
+          <div className="eyebrow" style={{ color: "#F4D77B" }}>Internal only</div>
           <h2 style={{ marginTop: 14, fontSize: 36, lineHeight: 1.08, letterSpacing: "-0.05em" }}>
-            The student journey should feel guided, premium, and immediate from the first click.
+            This page is for counselors and operators, not students.
           </h2>
           <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7 }}>
-            A future applicant should understand the program, submit their details, receive confirmation fast, and move to payment without falling into a dead end.
+            Students should see the VIVA marketing website and apply journey. Once their application enters the system, your team manages payment, screening, and enrollment here.
           </p>
           <div className="button-row">
-            <a href="#ops" className="button-ghost">Open operator workbench</a>
+            <a href="/apply" className="button-ghost">Review public apply page</a>
           </div>
         </article>
         <article className="card">
           <div className="section-head">
             <div className="eyebrow">Operator outcome</div>
-            <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: "-0.05em" }}>One admissions surface should own the handoff from enquiry to paid enrollment.</div>
+            <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: "-0.05em" }}>One admissions surface should own the handoff from application to active batch.</div>
           </div>
           <div className="badge-row">
             <div className="badge">Apply</div>
@@ -82,7 +79,7 @@ export default function AdmissionsPage() {
 
       <section className="grid grid-2">
         <article className="card">
-          <div className="eyebrow">Why this converts</div>
+          <div className="eyebrow">Why this matters</div>
           <div className="stack" style={{ marginTop: 18 }}>
             {credibilitySignals.map((item) => (
               <div key={item} className="panel" style={{ background: "#F8FAFC" }}>{item}</div>
@@ -90,15 +87,15 @@ export default function AdmissionsPage() {
           </div>
         </article>
         <article className="hero hero-contrast">
-          <div className="eyebrow" style={{ color: "#F4D77B" }}>Launch framing</div>
-          <h2 style={{ marginTop: 14, fontSize: 34, lineHeight: 1.06, letterSpacing: "-0.05em" }}>Tomorrow&apos;s demo should feel like a premium institute, not a software prototype.</h2>
+          <div className="eyebrow" style={{ color: "#F4D77B" }}>Public vs internal split</div>
+          <h2 style={{ marginTop: 14, fontSize: 34, lineHeight: 1.06, letterSpacing: "-0.05em" }}>The public VIVA website sells the program. This page runs the operation.</h2>
           <div className="badge-row" style={{ marginTop: 18 }}>
-            <div className="badge">Seats: 20 only</div>
-            <div className="badge">Live cohort</div>
-            <div className="badge">Career-ready</div>
+            <div className="badge">Internal users only</div>
+            <div className="badge">Admissions control</div>
+            <div className="badge">Enrollment pipeline</div>
           </div>
           <p style={{ marginTop: 16, color: "#D7E4F6", lineHeight: 1.7 }}>
-            The strongest story is simple: enquiry, guided payment, enrollment, classroom, attendance, and certificate all connect cleanly under VIVA&apos;s own brand.
+            Keeping this route operational lets you reuse the backend and workbench capabilities later without confusing students or parents with internal controls.
           </p>
         </article>
       </section>

@@ -1,5 +1,4 @@
 export const ACADEMY_NAV = [
-  { label: "Overview", href: "/" },
   { label: "Admissions", href: "/admissions" },
   { label: "Messages", href: "/messages" },
   { label: "Operations", href: "/operations" },
