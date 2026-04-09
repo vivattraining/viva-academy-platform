@@ -2,7 +2,9 @@ import { MarketingShell } from "../components/marketing-shell";
 import {
   PUBLIC_APPLICANTS,
   PUBLIC_AUTHORITY,
+  PUBLIC_COURSE_HIGHLIGHTS,
   PUBLIC_COURSE_SNAPSHOT,
+  PUBLIC_FINAL_POSITIONING,
   PUBLIC_HERO_HIGHLIGHTS,
   PUBLIC_HOW_IT_WORKS,
   PUBLIC_INDUSTRY_EDGE,
@@ -11,6 +13,7 @@ import {
   PUBLIC_SOLUTION_POINTS,
   PUBLIC_SPECIALIZATIONS,
   PUBLIC_TESTIMONIALS,
+  PUBLIC_TRAVEL_REASONS,
 } from "../lib/public-site-content";
 
 export default function HomePage() {
@@ -29,12 +32,24 @@ export default function HomePage() {
             <div key={item} className="badge">{item}</div>
           ))}
         </div>
-        <p style={{ marginTop: 16, color: "#D7E4F6", lineHeight: 1.7 }}>{PUBLIC_AUTHORITY.trust}</p>
+        <p style={{ marginTop: 16, color: "#D7E4F6", lineHeight: 1.7 }}>
+          Industry-led training. Real business exposure. Career-ready outcomes.
+        </p>
+        <p style={{ marginTop: 10, color: "#F4D77B", lineHeight: 1.7, fontWeight: 800 }}>{PUBLIC_AUTHORITY.trust}</p>
       </section>
 
       <section className="card">
         <div className="eyebrow">Authority</div>
         <div style={{ marginTop: 12, fontSize: 30, fontWeight: 900, letterSpacing: "-0.05em" }}>{PUBLIC_AUTHORITY.line}</div>
+      </section>
+
+      <section className="card">
+        <div className="eyebrow">Why travel industry</div>
+        <div className="grid grid-2" style={{ marginTop: 18 }}>
+          {PUBLIC_TRAVEL_REASONS.map((item) => (
+            <div key={item} className="panel" style={{ background: "#F8FAFC" }}>{item}</div>
+          ))}
+        </div>
       </section>
 
       <section className="grid grid-2">
@@ -52,6 +67,9 @@ export default function HomePage() {
           <div style={{ marginTop: 12, fontSize: 30, fontWeight: 900, letterSpacing: "-0.05em" }}>
             A 90-day structured program designed to make you job-ready from Day 1.
           </div>
+          <p className="muted" style={{ marginTop: 14 }}>
+            We do not just teach. We prepare students for the real world of travel, tourism, hospitality, and services.
+          </p>
           <div className="stack" style={{ marginTop: 18 }}>
             {PUBLIC_SOLUTION_POINTS.map((item) => (
               <div key={item} className="panel" style={{ background: "#F8FAFC" }}>{item}</div>
@@ -69,6 +87,15 @@ export default function HomePage() {
             ))}
           </div>
         </article>
+      </section>
+
+      <section className="card">
+        <div className="eyebrow">Course highlights</div>
+        <div className="grid grid-3" style={{ marginTop: 18 }}>
+          {PUBLIC_COURSE_HIGHLIGHTS.map((item) => (
+            <div key={item} className="panel" style={{ background: "#F8FAFC" }}>{item}</div>
+          ))}
+        </div>
       </section>
 
       <section className="card">
@@ -139,7 +166,7 @@ export default function HomePage() {
       <section className="hero hero-contrast">
         <div className="eyebrow" style={{ color: "#F4D77B" }}>Urgency</div>
         <h2 style={{ marginTop: 14, fontSize: 38, lineHeight: 1.06, letterSpacing: "-0.05em" }}>Only 20 Seats Per Batch</h2>
-        <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7 }}>Admissions closing soon. This is not just a course, it is your entry into the travel industry.</p>
+        <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7 }}>Admissions closing soon. Next batch starting soon. This is not just a course, it is your entry into the travel industry.</p>
         <div className="button-row">
           <a href="/apply" className="button-primary">Apply Now</a>
           <a href="/contact" className="button-ghost">Talk to Advisor</a>
@@ -153,6 +180,16 @@ export default function HomePage() {
             <p style={{ marginTop: 12, fontSize: 22, lineHeight: 1.5, letterSpacing: "-0.03em" }}>&ldquo;{item}&rdquo;</p>
           </article>
         ))}
+      </section>
+
+      <section className="hero hero-contrast">
+        <div className="eyebrow" style={{ color: "#F4D77B" }}>Final call</div>
+        <h2 style={{ marginTop: 14, fontSize: 38, lineHeight: 1.06, letterSpacing: "-0.05em" }}>Start Your Travel Career Today</h2>
+        <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7 }}>{PUBLIC_FINAL_POSITIONING}</p>
+        <div className="button-row">
+          <a href="/apply" className="button-primary">Apply Now</a>
+          <a href="/contact" className="button-ghost">Talk to Advisor</a>
+        </div>
       </section>
     </MarketingShell>
   );

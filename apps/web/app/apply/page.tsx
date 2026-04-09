@@ -27,6 +27,9 @@ export default function ApplyPage() {
           <p className="muted" style={{ marginTop: 12 }}>
             Fresh graduates, travel students, career switchers, and job seekers who want disciplined, industry-led learning and a premium institute experience.
           </p>
+          <p className="muted" style={{ marginTop: 12 }}>
+            Limited seats. Selection on a first-come basis. Confirmation after payment.
+          </p>
         </article>
       </section>
     </MarketingShell>

@@ -27,7 +27,7 @@ export default function FacultyPage() {
           Live sessions, case discussions, practical assignments, and guided readiness.
         </h2>
         <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7 }}>
-          The goal is not just to explain travel concepts. The goal is to prepare students to think, communicate, and perform like professionals.
+          Gain insights that books cannot teach. The goal is not just to explain travel concepts. The goal is to prepare students to think, communicate, and perform like professionals.
         </p>
       </section>
     </MarketingShell>

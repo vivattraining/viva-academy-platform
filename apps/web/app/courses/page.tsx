@@ -1,5 +1,8 @@
 import { MarketingShell } from "../../components/marketing-shell";
-import { PUBLIC_SPECIALIZATIONS } from "../../lib/public-site-content";
+import {
+  PUBLIC_PROGRAM_OUTCOMES,
+  PUBLIC_SPECIALIZATIONS,
+} from "../../lib/public-site-content";
 
 export default function CoursesPage() {
   return (
@@ -34,6 +37,11 @@ export default function CoursesPage() {
           <p className="muted" style={{ marginTop: 12 }}>
             Learn directly from travel companies through booking procedures, SOPs, and company workflows so you are interview-ready from day one.
           </p>
+          <div className="stack" style={{ marginTop: 18 }}>
+            {PUBLIC_PROGRAM_OUTCOMES.map((item) => (
+              <div key={item} className="panel" style={{ background: "#F8FAFC" }}>{item}</div>
+            ))}
+          </div>
         </article>
       </section>
 
@@ -44,6 +52,7 @@ export default function CoursesPage() {
             <div key={item} className="badge">{item}</div>
           ))}
         </div>
+        <p className="muted" style={{ marginTop: 18 }}>Available only after successful completion of the flagship certification program.</p>
       </section>
     </MarketingShell>
   );

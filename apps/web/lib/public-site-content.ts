@@ -14,6 +14,13 @@ export const PUBLIC_AUTHORITY = {
   trust: "Powered by Viva Voyages",
 };
 
+export const PUBLIC_TRAVEL_REASONS = [
+  "One of the fastest-growing global industries",
+  "Massive outbound growth from India",
+  "Opportunities in leisure, MICE, luxury, and cruise segments",
+  "Global career possibilities",
+];
+
 export const PUBLIC_PROBLEMS = [
   "Only theoretical knowledge",
   "No real industry exposure",
@@ -26,6 +33,14 @@ export const PUBLIC_SOLUTION_POINTS = [
   "Real case studies",
   "Live weekend training",
   "Career-focused learning",
+];
+
+export const PUBLIC_COURSE_HIGHLIGHTS = [
+  "12-Week Certification Program",
+  "Live Weekend Classes",
+  "Real Industry Case Studies",
+  "Strict Progression System",
+  "Certification on Completion",
 ];
 
 export const PUBLIC_COURSE_SNAPSHOT = [
@@ -79,6 +94,8 @@ export const PUBLIC_TESTIMONIALS = [
   "This is not just a course. It feels like a serious career opportunity.",
   "The structure, live classes, and discipline make it feel like real industry preparation.",
 ];
+
+export const PUBLIC_FINAL_POSITIONING = "Not just a course - a career launchpad for the travel industry.";
 
 export const PUBLIC_FACULTY = [
   {

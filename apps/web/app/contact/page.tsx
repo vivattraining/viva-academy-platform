@@ -32,7 +32,7 @@ export default function ContactPage() {
           Speak to an advisor before you apply if you need clarity.
         </h2>
         <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7 }}>
-          We can guide you on who this program is for, how the cohort works, and what to expect from the 12-week journey.
+          We can guide you on who this program is for, how the cohort works, what the batch timing looks like, and what to expect from the 12-week journey.
         </p>
       </section>
     </MarketingShell>
