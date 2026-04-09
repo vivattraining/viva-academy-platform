@@ -5,35 +5,32 @@ export default function ContactPage() {
   return (
     <MarketingShell
       activeHref="/contact"
-      eyebrow="Contact"
-      title="Talk to the VIVA admissions team."
-      description="If you want to understand the program, batch timing, admissions process, or application fee, reach out and we will guide you."
-      primaryCta={{ label: "Apply Now", href: "/apply" }}
-      secondaryCta={{ label: "View Courses", href: "/courses" }}
     >
-      <section className="grid grid-3">
-        <article className="card">
-          <div className="eyebrow">Email</div>
-          <div style={{ marginTop: 12, fontSize: 24, fontWeight: 900, letterSpacing: "-0.05em" }}>{PUBLIC_CONTACT.email}</div>
-        </article>
-        <article className="card">
-          <div className="eyebrow">Phone</div>
-          <div style={{ marginTop: 12, fontSize: 24, fontWeight: 900, letterSpacing: "-0.05em" }}>{PUBLIC_CONTACT.phone}</div>
-        </article>
-        <article className="card">
-          <div className="eyebrow">Presence</div>
-          <div style={{ marginTop: 12, fontSize: 24, fontWeight: 900, letterSpacing: "-0.05em" }}>{PUBLIC_CONTACT.offices}</div>
-        </article>
+      <section className="editorial-page-hero compact">
+        <div className="editorial-page-hero-copy">
+          <span className="editorial-kicker">Contact Admissions</span>
+          <h1 className="editorial-page-title">Talk to the VIVA admissions team.</h1>
+          <p className="editorial-section-copy">
+            Speak to an advisor if you want clarity on the batch, fees, curriculum, or the admissions process before you apply.
+          </p>
+        </div>
       </section>
 
-      <section className="hero hero-contrast">
-        <div className="eyebrow" style={{ color: "#F4D77B" }}>Admissions support</div>
-        <h2 style={{ marginTop: 14, fontSize: 36, lineHeight: 1.06, letterSpacing: "-0.05em" }}>
-          Speak to an advisor before you apply if you need clarity.
-        </h2>
-        <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7 }}>
-          We can guide you on who this program is for, how the cohort works, what the batch timing looks like, and what to expect from the 12-week journey.
-        </p>
+      <section className="editorial-grid editorial-grid-3">
+        <article className="editorial-card"><h3>Email</h3><p>{PUBLIC_CONTACT.email}</p></article>
+        <article className="editorial-card"><h3>Phone</h3><p>{PUBLIC_CONTACT.phone}</p></article>
+        <article className="editorial-card"><h3>Office</h3><p>{PUBLIC_CONTACT.offices}</p></article>
+      </section>
+
+      <section className="editorial-cta-band">
+        <div>
+          <h2>Need help before you apply?</h2>
+          <p>We can guide you on who this program is for, how the cohort works, and what to expect from the 12-week journey.</p>
+        </div>
+        <div className="editorial-button-row">
+          <a href="/apply" className="editorial-primary">Apply Now</a>
+          <a href={`mailto:${PUBLIC_CONTACT.email}`} className="editorial-secondary inverse">Email Admissions</a>
+        </div>
       </section>
     </MarketingShell>
   );

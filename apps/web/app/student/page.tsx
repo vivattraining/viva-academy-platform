@@ -7,10 +7,10 @@ export default function StudentPage() {
     <SiteShell
       activeHref="/student"
       eyebrow="Student dashboard"
-      title="A real learner workspace with live schedule, attendance, and batch-aware delivery."
-      description="This view now reads from the academy backend so the student experience reflects actual enrollment state, upcoming classes, and attendance progression."
+      title="Track progress, live classes, deadlines, and certification readiness."
+      description="The learner experience now reflects batch state, attendance progression, and upcoming live interaction in a more polished dashboard view."
       primaryCta={{ label: "Open simulation lab", href: "/simulation" }}
-      secondaryCta={{ label: "View admissions flow", href: "/admissions" }}
+      secondaryCta={{ label: "View roster", href: "/roster" }}
     >
       <OperatorGate title="Student sign-in" allowedRoles={["student"]}>
         <StudentWorkspace />

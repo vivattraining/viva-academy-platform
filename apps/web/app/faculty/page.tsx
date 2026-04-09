@@ -5,30 +5,44 @@ export default function FacultyPage() {
   return (
     <MarketingShell
       activeHref="/faculty"
-      eyebrow="Faculty"
-      title="Learn from industry practitioners, not just academic trainers."
-      description="VIVA brings together experienced travel professionals, operations leaders, and guest experts so students understand how the industry actually works."
-      primaryCta={{ label: "Apply Now", href: "/apply" }}
-      secondaryCta={{ label: "Contact Admissions", href: "/contact" }}
     >
-      <section className="grid grid-3">
-        {PUBLIC_FACULTY.map((item) => (
-          <article key={item.name} className="card">
-            <div className="eyebrow">{item.role}</div>
-            <div style={{ marginTop: 12, fontSize: 28, fontWeight: 900, letterSpacing: "-0.05em" }}>{item.name}</div>
-            <p className="muted" style={{ marginTop: 14 }}>{item.bio}</p>
-          </article>
-        ))}
+      <section className="editorial-page-hero faculty">
+        <div className="editorial-page-hero-copy">
+          <h1 className="editorial-page-title">Architects of Academic Excellence</h1>
+          <p className="editorial-section-copy">
+            Our faculty comprises distinguished industry mentors, guest experts, and execution-focused trainers dedicated to bridging theory with practice.
+          </p>
+        </div>
+        <div className="editorial-image-card large" style={{ backgroundImage: "linear-gradient(180deg, rgba(0,6,102,0.12), rgba(0,6,102,0.24)), url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80')" }} />
       </section>
 
-      <section className="hero hero-contrast">
-        <div className="eyebrow" style={{ color: "#F4D77B" }}>Teaching approach</div>
-        <h2 style={{ marginTop: 14, fontSize: 36, lineHeight: 1.06, letterSpacing: "-0.05em" }}>
-          Live sessions, case discussions, practical assignments, and guided readiness.
-        </h2>
-        <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7 }}>
-          Gain insights that books cannot teach. The goal is not just to explain travel concepts. The goal is to prepare students to think, communicate, and perform like professionals.
-        </p>
+      <section className="editorial-section">
+        <div className="editorial-section-head">
+          <h2 className="editorial-section-title">Trainer Profiles</h2>
+        </div>
+        <div className="editorial-grid editorial-grid-3">
+          {PUBLIC_FACULTY.map((item) => (
+            <article key={item.name} className="faculty-card">
+              <div className="faculty-photo" />
+              <span className="faculty-role">{item.role}</span>
+              <h3>{item.name}</h3>
+              <p>{item.bio}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="editorial-section editorial-tonal">
+        <div className="editorial-grid editorial-grid-2">
+          <article className="editorial-card">
+            <h3>Industry Experts</h3>
+            <p>Where academic structure meets the pulse of the market. Our experts bring live business context into the classroom.</p>
+          </article>
+          <article className="editorial-card">
+            <h3>Guest Lecturers</h3>
+            <p>Gain insights that books cannot teach through live sessions, case reviews, practical assignments, and professional coaching.</p>
+          </article>
+        </div>
       </section>
     </MarketingShell>
   );

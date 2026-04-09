@@ -5,32 +5,44 @@ export default function ApplyPage() {
   return (
     <MarketingShell
       activeHref="/apply"
-      eyebrow="Apply"
-      title="Start your VIVA application now."
-      description="If you are serious about building a career in travel, tourism, hospitality, or services, submit your details and move into the admissions process."
-      primaryCta={{ label: "Talk to Advisor", href: "/contact" }}
-      secondaryCta={{ label: "View Curriculum", href: "/curriculum" }}
     >
-      <PublicAdmissionsFlow />
+      <section className="apply-layout">
+        <div className="apply-copy">
+          <span className="editorial-kicker">Admissions Open 2026</span>
+          <h1 className="apply-title">
+            Shape Your <span>Professional</span> Future.
+          </h1>
+          <p className="editorial-section-copy">
+            Join an elite community of learners and industry leaders. Our registration process is designed for clarity and rigor, ensuring you are set for success from day one.
+          </p>
 
-      <section className="grid grid-2">
-        <article className="card">
-          <div className="eyebrow">What happens next</div>
-          <div className="stack" style={{ marginTop: 18 }}>
-            {["Submit your details", "Receive application confirmation", "Pay the application fee", "Get guided into the next batch"].map((item) => (
-              <div key={item} className="panel" style={{ background: "#F8FAFC" }}>{item}</div>
-            ))}
+          <div className="editorial-grid editorial-grid-2">
+            <article className="editorial-flag-card left">
+              <h3>Global Accreditation</h3>
+              <p>Recognized by international educational standards and professional bodies.</p>
+            </article>
+            <article className="editorial-flag-card right">
+              <h3>Swift Evaluation</h3>
+              <p>Receive feedback on your application within the admissions workflow.</p>
+            </article>
           </div>
-        </article>
-        <article className="card">
-          <div className="eyebrow">Who should apply</div>
-          <p className="muted" style={{ marginTop: 12 }}>
-            Fresh graduates, travel students, career switchers, and job seekers who want disciplined, industry-led learning and a premium institute experience.
-          </p>
-          <p className="muted" style={{ marginTop: 12 }}>
-            Limited seats. Selection on a first-come basis. Confirmation after payment.
-          </p>
-        </article>
+
+          <div className="apply-image-card">
+            <div>
+              <span>Institutional Excellence</span>
+              <strong>Research-First Pedagogy</strong>
+            </div>
+          </div>
+        </div>
+
+        <div className="apply-form-side">
+          <PublicAdmissionsFlow />
+          <div className="apply-trust-row">
+            <span>256-Bit SSL Security</span>
+            <span>GDPR Compliant</span>
+            <span>24/7 Support</span>
+          </div>
+        </div>
       </section>
     </MarketingShell>
   );

@@ -9,6 +9,8 @@ export function PublicAdmissionsFlow() {
   const [studentName, setStudentName] = useState("");
   const [studentEmail, setStudentEmail] = useState("");
   const [studentPhone, setStudentPhone] = useState("");
+  const [education, setEducation] = useState("");
+  const [interest, setInterest] = useState("");
   const [applicationId, setApplicationId] = useState("");
   const [paymentUrl, setPaymentUrl] = useState("");
   const [paymentReference, setPaymentReference] = useState("");
@@ -53,39 +55,71 @@ export function PublicAdmissionsFlow() {
   }
 
   return (
-    <section className="hero hero-contrast">
-      <div className="eyebrow" style={{ color: "#F4D77B" }}>Apply now</div>
-      <h2 style={{ marginTop: 14, fontSize: 38, lineHeight: 1.06, letterSpacing: "-0.05em" }}>Start your VIVA application in one clean flow.</h2>
-      <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7, maxWidth: 760 }}>
-        Submit your details, receive your application confirmation, and move to the application fee without waiting for a manual callback.
-      </p>
-      <div className="grid grid-3" style={{ marginTop: 20 }}>
-        <input placeholder="Your full name" value={studentName} onChange={(event) => setStudentName(event.target.value)} className="pill" style={{ borderRadius: 20, textTransform: "none", letterSpacing: "normal", fontWeight: 600, background: "rgba(255,255,255,0.94)" }} />
-        <input placeholder="Your email" value={studentEmail} onChange={(event) => setStudentEmail(event.target.value)} className="pill" style={{ borderRadius: 20, textTransform: "none", letterSpacing: "normal", fontWeight: 600, background: "rgba(255,255,255,0.94)" }} />
-        <input placeholder="Your phone" value={studentPhone} onChange={(event) => setStudentPhone(event.target.value)} className="pill" style={{ borderRadius: 20, textTransform: "none", letterSpacing: "normal", fontWeight: 600, background: "rgba(255,255,255,0.94)" }} />
+    <section className="editorial-form-shell">
+      <div className="editorial-form-header">
+        <h2>Registration Form</h2>
+        <p>Please fill in your details accurately to initiate your enrollment.</p>
       </div>
-      <div className="button-row">
-        <button className="button-primary" onClick={() => void submit()}>Submit application</button>
-        {applicationId ? <button className="button-ghost" onClick={() => void continueToPayment()}>Continue to payment</button> : null}
-        {paymentUrl ? <a className="button-ghost" href={paymentUrl} target="_blank">Open checkout</a> : null}
+
+      <div className="editorial-form-grid">
+        <label className="editorial-field">
+          <span>Full Name</span>
+          <input placeholder="As per official documents" value={studentName} onChange={(event) => setStudentName(event.target.value)} />
+        </label>
+        <label className="editorial-field">
+          <span>Email Address</span>
+          <input placeholder="email@institution.com" value={studentEmail} onChange={(event) => setStudentEmail(event.target.value)} />
+        </label>
+        <label className="editorial-field">
+          <span>Phone Number</span>
+          <input placeholder="+91 98765 43210" value={studentPhone} onChange={(event) => setStudentPhone(event.target.value)} />
+        </label>
+        <label className="editorial-field">
+          <span>Highest Education</span>
+          <select value={education} onChange={(event) => setEducation(event.target.value)}>
+            <option value="">Select qualification</option>
+            <option value="undergraduate">Graduate</option>
+            <option value="postgraduate">Post Graduate</option>
+            <option value="diploma">Diploma</option>
+          </select>
+        </label>
+        <label className="editorial-field editorial-field-full">
+          <span>Interest Area</span>
+          <select value={interest} onChange={(event) => setInterest(event.target.value)}>
+            <option value="">Select program of interest</option>
+            <option value="flagship">Travel Professional Certification</option>
+            <option value="mice">MICE Specialist</option>
+            <option value="luxury">Luxury Travel Expert</option>
+            <option value="ticketing">Ticketing Professional</option>
+          </select>
+        </label>
+      </div>
+
+      <div className="editorial-form-actions">
+        <button className="editorial-form-submit" onClick={() => void submit()}>
+          Pay Registration Fee
+        </button>
+        {applicationId ? <button className="editorial-form-secondary" onClick={() => void continueToPayment()}>Generate Payment Link</button> : null}
+        {paymentUrl ? <a className="editorial-form-secondary" href={paymentUrl} target="_blank">Open Checkout</a> : null}
         {applicationId && paymentReference ? (
           <Link
-            className="button-ghost"
+            className="editorial-form-secondary"
             href={`/payment/success?tenant=${encodeURIComponent(DEFAULT_TENANT)}&applicationId=${encodeURIComponent(applicationId)}&reference=${encodeURIComponent(paymentReference)}`}
           >
-            Simulate success
+            Simulate Success
           </Link>
         ) : null}
         {applicationId ? (
           <Link
-            className="button-ghost"
+            className="editorial-form-secondary"
             href={`/payment/failed?tenant=${encodeURIComponent(DEFAULT_TENANT)}&applicationId=${encodeURIComponent(applicationId)}`}
           >
-            Payment issue?
+            Payment Issue?
           </Link>
         ) : null}
       </div>
-      {message ? <div className="panel" style={{ marginTop: 18, background: "rgba(255,255,255,0.12)", color: "white" }}>{message}</div> : null}
+      <p className="editorial-form-note">Secured by institutional payment gateway • non-refundable processing fee</p>
+      {message ? <div className="editorial-form-message">{message}</div> : null}
     </section>
   );
 }

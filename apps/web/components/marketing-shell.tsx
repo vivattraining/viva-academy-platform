@@ -22,23 +22,18 @@ const DEFAULT_BRANDING: BrandingState = {
   brand_name: ACADEMY_THEME.name,
   academy_name: "VIVA Career Academy",
   custom_domain: ACADEMY_THEME.domain,
-  primary_color: ACADEMY_THEME.primary,
-  accent_color: ACADEMY_THEME.secondary,
+  primary_color: "#000666",
+  accent_color: "#B51A1E",
 };
 
 export function MarketingShell({
   activeHref,
-  eyebrow,
-  title,
-  description,
   children,
-  primaryCta,
-  secondaryCta,
 }: {
   activeHref: string;
-  eyebrow: string;
-  title: string;
-  description: string;
+  eyebrow?: string;
+  title?: string;
+  description?: string;
   children: ReactNode;
   primaryCta?: { label: string; href: string };
   secondaryCta?: { label: string; href: string };
@@ -69,81 +64,57 @@ export function MarketingShell({
   }, []);
 
   return (
-    <main>
-      <div className="shell">
-        <header className="hero" style={{ padding: 24, marginBottom: 24 }}>
-          <div className="nav" style={{ marginBottom: 20 }}>
-            <Link href="/" style={{ display: "flex", gap: 16, alignItems: "center" }}>
-              <div
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 18,
-                  display: "grid",
-                  placeItems: "center",
-                  fontWeight: 900,
-                  color: "white",
-                  background: `linear-gradient(135deg, ${branding.primary_color} 0%, #1A3457 100%)`,
-                }}
+    <main className="editorial-shell">
+      <header className="editorial-nav">
+        <div className="editorial-nav-inner">
+          <Link href="/" className="editorial-brand">
+            <span className="editorial-brand-text">{branding.brand_name}</span>
+          </Link>
+
+          <nav className="editorial-nav-links">
+            {PUBLIC_NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`editorial-nav-link${item.href === activeHref ? " active" : ""}`}
               >
-                VIVA
-              </div>
-              <div>
-                <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-0.04em" }}>{branding.brand_name}</div>
-                <div className="eyebrow">Powered by Viva Voyages</div>
-              </div>
-            </Link>
-            <div className="nav-links">
-              {PUBLIC_NAV.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="pill"
-                  style={{
-                    background: item.href === activeHref ? branding.primary_color : "rgba(255,255,255,0.78)",
-                    color: item.href === activeHref ? "white" : ACADEMY_THEME.ink,
-                  }}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <Link href="/login" className="pill">Login</Link>
-            </div>
+                {item.label === "Home" ? "Programs" : item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="editorial-nav-actions">
+            <span className="editorial-nav-icon" aria-hidden="true">🏛</span>
+            <span className="editorial-nav-icon" aria-hidden="true">🌐</span>
+            <Link href="/apply" className="editorial-enroll">Enroll Now</Link>
           </div>
+        </div>
+      </header>
 
-          <div className="eyebrow">{eyebrow}</div>
-          <h1 style={{ fontSize: 52, lineHeight: 1.04, letterSpacing: "-0.06em", margin: "14px 0 12px", maxWidth: 920 }}>{title}</h1>
-          <p className="muted" style={{ maxWidth: 860, fontSize: 16 }}>{description}</p>
-          {(primaryCta || secondaryCta) ? (
-            <div className="button-row">
-              {primaryCta ? <Link href={primaryCta.href} className="button-primary">{primaryCta.label}</Link> : null}
-              {secondaryCta ? <Link href={secondaryCta.href} className="button-secondary">{secondaryCta.label}</Link> : null}
-            </div>
-          ) : null}
-        </header>
+      <div className="editorial-main">{children}</div>
 
-        <div className="stack">{children}</div>
-
-        <footer className="card" style={{ marginTop: 24 }}>
-          <div className="split">
-            <div className="stack" style={{ gap: 10 }}>
-              <div className="eyebrow">Viva Training Institute</div>
-              <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: "-0.05em" }}>
-                Built to launch serious travel careers.
-              </div>
-              <p className="muted" style={{ margin: 0 }}>
-                Industry-led training, live faculty interaction, disciplined progression, and a premium institute experience under the VIVA brand.
-              </p>
-            </div>
-            <div className="stack" style={{ gap: 10 }}>
-              <div className="eyebrow">Contact</div>
-              <div className="muted">{PUBLIC_CONTACT.email}</div>
-              <div className="muted">{PUBLIC_CONTACT.phone}</div>
-              <div className="muted">{PUBLIC_CONTACT.offices}</div>
-            </div>
+      <footer className="editorial-footer">
+        <div className="editorial-footer-inner">
+          <div className="editorial-footer-brand">
+            <div className="editorial-footer-title">{branding.brand_name}</div>
+            <p>
+              Empowering the next generation of travel leaders through rigorous academic training and research-led instruction.
+            </p>
           </div>
-        </footer>
-      </div>
+          <div className="editorial-footer-links">
+            <a href="/contact">Privacy Policy</a>
+            <a href="/contact">Terms of Service</a>
+            <a href="/contact">Institutional Disclosures</a>
+            <a href="/contact">Compliance</a>
+            <a href="/contact">Accessibility</a>
+          </div>
+          <div className="editorial-footer-meta">
+            <div>{PUBLIC_CONTACT.email}</div>
+            <div>{PUBLIC_CONTACT.phone}</div>
+            <div>© 2026 Viva Training Institute. All rights reserved.</div>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }

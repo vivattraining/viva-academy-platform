@@ -84,89 +84,118 @@ export function StudentWorkspace() {
 
   const attendancePercent = Math.round((payload.application.attendance_completed / Math.max(payload.application.attendance_total, 1)) * 100);
   const nextSession = payload.sessions[0];
+  const chapterRows = [
+    {
+      id: "01",
+      title: payload.application.course_name,
+      meta: "Core lecture",
+      status: "Evaluated - Pass",
+      tone: "success",
+    },
+    {
+      id: "02",
+      title: nextSession?.title || "Live session review",
+      meta: nextSession ? `${nextSession.start_time} • Workshop` : "Scheduled module",
+      status: payload.attendance[0]?.status === "present" ? "Submitted" : "In review",
+      tone: "info",
+    },
+    {
+      id: "03",
+      title: "Final Assessment: Compliance Audit",
+      meta: nextSession ? `Due after ${nextSession.session_date}` : "Pending unlock",
+      status: "Not Started",
+      tone: "muted",
+    },
+  ];
 
   return (
-    <>
-      <section className="grid grid-2">
-        <article className="card">
-          <div className="eyebrow">Learner profile</div>
-          <div style={{ marginTop: 12, fontSize: 30, fontWeight: 900, letterSpacing: "-0.05em" }}>{payload.student.name}</div>
-          <p className="muted" style={{ marginTop: 10 }}>{payload.student.email}</p>
-          <div className="badge-row" style={{ marginTop: 18 }}>
-            <div className="badge">{payload.application.course_name}</div>
-            <div className="badge">{payload.application.enrollment_stage}</div>
-            <div className="badge">{payload.application.payment_stage}</div>
-          </div>
-        </article>
-        <article className="card">
-          <div className="eyebrow">Live progression</div>
-          <div className="metric" style={{ marginTop: 12 }}>{attendancePercent}%</div>
-          <p className="muted" style={{ marginTop: 8 }}>
-            Attendance recorded: {payload.application.attendance_completed}/{payload.application.attendance_total} sessions.
-          </p>
-          <div style={{ marginTop: 24, height: 12, borderRadius: 999, background: "#E5E7EB", overflow: "hidden" }}>
-            <div style={{ width: `${attendancePercent}%`, height: "100%", background: "#0B1F3A" }} />
-          </div>
-          {payload.batch ? <p className="muted" style={{ marginTop: 14 }}>Active batch: {payload.batch.name} with {payload.batch.trainer_name}</p> : null}
-        </article>
-      </section>
-
-      <section className="split" style={{ marginTop: 24 }}>
-        <article className="hero hero-contrast">
-          <div className="eyebrow" style={{ color: "#F4D77B" }}>Next live class</div>
-          <h2 style={{ marginTop: 14, fontSize: 34, lineHeight: 1.06, letterSpacing: "-0.05em" }}>
-            {nextSession ? nextSession.title : "No session scheduled yet"}
-          </h2>
-          <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7 }}>
-            {nextSession
-              ? `${nextSession.session_date} · ${nextSession.start_time} to ${nextSession.end_time} with ${nextSession.trainer_name}.`
-              : "Your operations team has not published the next session yet."}
-          </p>
-          <div className="button-row">
-            {nextSession?.zoom_join_url ? <a className="button-primary" href={nextSession.zoom_join_url} target="_blank">Join Zoom class</a> : null}
-            {nextSession?.classroom_link ? <a className="button-secondary" href={nextSession.classroom_link} target="_blank">Open classroom</a> : null}
-          </div>
-        </article>
-        <article className="card">
-          <div className="section-head">
-            <div className="eyebrow">What is unlocked</div>
-            <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: "-0.05em" }}>The learner workspace now reflects real enrollment, schedule, and attendance state.</div>
-          </div>
-          <div className="badge-row">
-            <div className="badge">Live roster linked</div>
-            <div className="badge">Attendance auto-counted</div>
-            <div className="badge">Zoom join surfaced</div>
-          </div>
-        </article>
-      </section>
-
-      <section className="card" style={{ marginTop: 24 }}>
-        <div className="eyebrow">Upcoming sessions</div>
-        <div className="grid grid-2" style={{ marginTop: 18 }}>
-          {payload.sessions.map((session) => (
-            <div key={session.id} className="panel" style={{ background: "#F2F4F6" }}>
-              <div className="eyebrow">{session.attendance_mode}</div>
-              <div style={{ marginTop: 10, fontSize: 24, fontWeight: 900, letterSpacing: "-0.05em" }}>{session.title}</div>
-              <p className="muted" style={{ marginTop: 8 }}>{session.session_date} · {session.start_time} to {session.end_time}</p>
-              <p className="muted" style={{ marginTop: 8 }}>Trainer: {session.trainer_name}</p>
-            </div>
-          ))}
+    <section className="dashboard-shell">
+      <div className="dashboard-alert">
+        <div>
+          <strong>You missed deadline</strong>
+          <p>Pay ₹2000 to unlock for 2 days and continue your assessment.</p>
         </div>
-      </section>
+        <button>Unlock Access</button>
+      </div>
 
-      <section className="card" style={{ marginTop: 24 }}>
-        <div className="eyebrow">Attendance trail</div>
-        <div className="grid grid-2" style={{ marginTop: 18 }}>
-          {payload.attendance.map((entry) => (
-            <div key={entry.session_id} className="panel" style={{ background: "#F8FAFC" }}>
-              <div className="eyebrow">{entry.status}</div>
-              <div style={{ marginTop: 10, fontSize: 22, fontWeight: 900, letterSpacing: "-0.04em" }}>{entry.session_id}</div>
-              <p className="muted" style={{ marginTop: 8 }}>Source: {entry.join_source}</p>
-              <p className="muted" style={{ marginTop: 8 }}>{entry.note}</p>
+      <div className="dashboard-grid">
+        <div className="dashboard-main">
+          <div className="dashboard-panel">
+            <div className="dashboard-panel-top">
+              <div>
+                <h1>Student Dashboard</h1>
+                <p>{payload.batch?.course_name || "Strategic Operations & Global Compliance Track"}</p>
+              </div>
+              <div className="dashboard-percent">
+                <span>{attendancePercent}%</span>
+                <small>Overall Progress</small>
+              </div>
             </div>
-          ))}
+            <div className="dashboard-progress-rail">
+              <div style={{ width: `${attendancePercent}%` }} />
+            </div>
+            <div className="dashboard-progress-meta">
+              <span>MODULE 01 COMPLETED</span>
+              <span>CERTIFICATION AT 100%</span>
+            </div>
+          </div>
+
+          <div className="dashboard-panel dashboard-module-panel">
+            <div className="dashboard-module-head">
+              <h2>Current Module: Week 04</h2>
+              <span>IN PROGRESS</span>
+            </div>
+            <div className="dashboard-module-list">
+              {chapterRows.map((row) => (
+                <div key={row.id} className={`dashboard-module-row ${row.tone}`}>
+                  <div className="dashboard-module-left">
+                    <span className="dashboard-index">{row.id}</span>
+                    <div>
+                      <h3>{row.title}</h3>
+                      <p>{row.meta}</p>
+                    </div>
+                  </div>
+                  <div className="dashboard-module-right">
+                    <span className={`dashboard-status ${row.tone}`}>{row.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </section>
-    </>
+
+        <aside className="dashboard-side">
+          <div className="dashboard-live-card">
+            <p className="kicker">Live Interaction</p>
+            <h2>{nextSession ? nextSession.title : "Advanced Ethics & Compliance Seminar"}</h2>
+            <div className="dashboard-live-meta">
+              <p>{nextSession ? `${nextSession.session_date}, ${nextSession.start_time}` : "Tomorrow, 10:00 AM IST"}</p>
+              <p>{nextSession?.trainer_name || payload.batch?.trainer_name || "Faculty Lead"}</p>
+            </div>
+            {nextSession?.zoom_join_url ? <a href={nextSession.zoom_join_url} target="_blank" className="dashboard-live-button">Join Session</a> : <button className="dashboard-live-button">Join Session</button>}
+          </div>
+
+          <div className="dashboard-panel">
+            <h3 className="dashboard-side-title">Recent Updates</h3>
+            <div className="dashboard-notes">
+              <div>
+                <strong>Missed Assessment Deadline</strong>
+                <p>Penalty imposed. Pay to regain access to the next chapter.</p>
+              </div>
+              <div>
+                <strong>Module Feedback Published</strong>
+                <p>Your recent work has been evaluated and recorded in the learner system.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="dashboard-certificate">
+            <h3>Certification</h3>
+            <p>Your professional certification will be available once all modules are completed and evaluated as pass.</p>
+            <button disabled>Download Certificate</button>
+          </div>
+        </aside>
+      </div>
+    </section>
   );
 }

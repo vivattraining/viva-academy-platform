@@ -20,175 +20,138 @@ export default function HomePage() {
   return (
     <MarketingShell
       activeHref="/"
-      eyebrow="Viva Training Institute"
-      title="Become a Job-Ready Travel Professional in 90 Days"
-      description="Learn directly from industry experts. Get trained, certified, and ready to work in the global travel industry."
-      primaryCta={{ label: "Apply Now", href: "/apply" }}
-      secondaryCta={{ label: "View Curriculum", href: "/curriculum" }}
     >
-      <section className="hero hero-contrast">
-        <div className="badge-row">
-          {PUBLIC_HERO_HIGHLIGHTS.map((item) => (
-            <div key={item} className="badge">{item}</div>
-          ))}
-        </div>
-        <p style={{ marginTop: 16, color: "#D7E4F6", lineHeight: 1.7 }}>
-          Industry-led training. Real business exposure. Career-ready outcomes.
-        </p>
-        <p style={{ marginTop: 10, color: "#F4D77B", lineHeight: 1.7, fontWeight: 800 }}>{PUBLIC_AUTHORITY.trust}</p>
-      </section>
-
-      <section className="card">
-        <div className="eyebrow">Authority</div>
-        <div style={{ marginTop: 12, fontSize: 30, fontWeight: 900, letterSpacing: "-0.05em" }}>{PUBLIC_AUTHORITY.line}</div>
-      </section>
-
-      <section className="card">
-        <div className="eyebrow">Why travel industry</div>
-        <div className="grid grid-2" style={{ marginTop: 18 }}>
-          {PUBLIC_TRAVEL_REASONS.map((item) => (
-            <div key={item} className="panel" style={{ background: "#F8FAFC" }}>{item}</div>
-          ))}
-        </div>
-      </section>
-
-      <section className="grid grid-2">
-        {PUBLIC_PROBLEMS.map((item) => (
-          <article key={item} className="card">
-            <div className="eyebrow">Why most students fail</div>
-            <p className="muted" style={{ marginTop: 12 }}>{item}</p>
-          </article>
-        ))}
-      </section>
-
-      <section className="split">
-        <article className="card">
-          <div className="eyebrow">Introducing Viva Training Institute</div>
-          <div style={{ marginTop: 12, fontSize: 30, fontWeight: 900, letterSpacing: "-0.05em" }}>
-            A 90-day structured program designed to make you job-ready from Day 1.
-          </div>
-          <p className="muted" style={{ marginTop: 14 }}>
-            We do not just teach. We prepare students for the real world of travel, tourism, hospitality, and services.
+      <section className="editorial-hero" style={{ backgroundImage: "linear-gradient(90deg, rgba(0,6,102,0.92) 0%, rgba(0,6,102,0.68) 45%, rgba(0,6,102,0.12) 100%), url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1600&q=80')" }}>
+        <div className="editorial-hero-content">
+          <span className="editorial-kicker">New Batch Starts Soon</span>
+          <h1 className="editorial-display">
+            Become a Certified Travel Professional in 90 Days
+          </h1>
+          <p className="editorial-subtitle">
+            Join the industry leaders and master the art of global travel management with our structured certification program.
           </p>
-          <div className="stack" style={{ marginTop: 18 }}>
-            {PUBLIC_SOLUTION_POINTS.map((item) => (
-              <div key={item} className="panel" style={{ background: "#F8FAFC" }}>{item}</div>
-            ))}
+          <div className="editorial-button-row">
+            <a href="/apply" className="editorial-primary">Apply Now</a>
+            <a href="/courses" className="editorial-secondary">Explore Programs</a>
           </div>
-        </article>
-        <article className="card">
-          <div className="eyebrow">Course snapshot</div>
-          <div className="grid grid-3" style={{ marginTop: 18 }}>
-            {PUBLIC_COURSE_SNAPSHOT.map((item) => (
-              <div key={item.label} className="panel" style={{ background: "#F8FAFC" }}>
-                <div className="eyebrow">{item.label}</div>
-                <div style={{ marginTop: 10, fontSize: 24, fontWeight: 900 }}>{item.value}</div>
-              </div>
-            ))}
-          </div>
-        </article>
-      </section>
-
-      <section className="card">
-        <div className="eyebrow">Course highlights</div>
-        <div className="grid grid-3" style={{ marginTop: 18 }}>
-          {PUBLIC_COURSE_HIGHLIGHTS.map((item) => (
-            <div key={item} className="panel" style={{ background: "#F8FAFC" }}>{item}</div>
-          ))}
         </div>
       </section>
 
-      <section className="card">
-        <div className="eyebrow">How it works</div>
-        <div className="grid grid-3" style={{ marginTop: 18 }}>
-          {PUBLIC_HOW_IT_WORKS.map((item, index) => (
-            <div key={item} className="panel" style={{ background: "#F8FAFC" }}>
-              <div className="eyebrow">Step {index + 1}</div>
-              <div style={{ marginTop: 10, fontSize: 22, fontWeight: 900 }}>{item}</div>
-            </div>
-          ))}
-        </div>
-        <p style={{ marginTop: 18, color: "#A61B1B", fontWeight: 800 }}>Miss deadline -&gt; Rs 2000 penalty + 2-day extension</p>
-      </section>
-
-      <section className="grid grid-3">
-        {PUBLIC_MONTHS.map((month) => (
-          <article key={month.label} className="card">
-            <div className="eyebrow">{month.label}</div>
-            <div className="stack" style={{ marginTop: 18 }}>
-              {month.items.map((item) => (
-                <div key={item} className="panel" style={{ background: "#F8FAFC" }}>{item}</div>
+      <section className="editorial-section">
+        <div className="editorial-grid editorial-grid-hero-info">
+          <div className="editorial-text-column">
+            <h2 className="editorial-section-title">The Future of Global Mobility</h2>
+            <p className="editorial-section-copy">
+              The travel industry is growing fast, and employers increasingly need professionals who understand systems, service, operations, and real execution.
+            </p>
+            <div className="editorial-stack">
+              {PUBLIC_TRAVEL_REASONS.slice(0, 2).map((item) => (
+                <div key={item} className="editorial-icon-row">
+                  <div className="editorial-icon-box">↗</div>
+                  <div>
+                    <h4>{item}</h4>
+                    <p>Travel and tourism continues to create domestic and global career pathways.</p>
+                  </div>
+                </div>
               ))}
             </div>
-          </article>
-        ))}
-      </section>
-
-      <section className="split">
-        <article className="hero hero-contrast">
-          <div className="eyebrow" style={{ color: "#F4D77B" }}>Live class experience</div>
-          <h2 style={{ marginTop: 14, fontSize: 34, lineHeight: 1.06, letterSpacing: "-0.05em" }}>
-            Weekend live classes, doubt clearing, and guided industry learning.
-          </h2>
-          <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7 }}>
-            Students learn through live weekend sessions and structured online progression instead of passive video consumption.
-          </p>
-        </article>
-        <article className="card">
-          <div className="eyebrow">Industry edge</div>
-          <div className="grid grid-2" style={{ marginTop: 18 }}>
-            {PUBLIC_INDUSTRY_EDGE.map((item) => (
-              <div key={item} className="panel" style={{ background: "#F8FAFC" }}>{item}</div>
-            ))}
           </div>
-        </article>
-      </section>
-
-      <section className="split">
-        <article className="card">
-          <div className="eyebrow">Who should apply</div>
-          <div className="badge-row" style={{ marginTop: 18 }}>
-            {PUBLIC_APPLICANTS.map((item) => (
-              <div key={item} className="badge">{item}</div>
-            ))}
+          <div className="editorial-mosaic">
+            <div className="editorial-image-card tall" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=1000&q=80')" }} />
+            <div className="editorial-stat-card primary">
+              <span>15.5T</span>
+              <small>Global industry worth</small>
+            </div>
+            <div className="editorial-stat-card light">
+              <span>100M+</span>
+              <small>Projected jobs</small>
+            </div>
+            <div className="editorial-image-card" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1529074963764-98f45c47344b?auto=format&fit=crop&w=1000&q=80')" }} />
           </div>
-        </article>
-        <article className="card">
-          <div className="eyebrow">Specializations</div>
-          <div className="badge-row" style={{ marginTop: 18 }}>
-            {PUBLIC_SPECIALIZATIONS.map((item) => (
-              <div key={item} className="badge">{item}</div>
-            ))}
-          </div>
-        </article>
-      </section>
-
-      <section className="hero hero-contrast">
-        <div className="eyebrow" style={{ color: "#F4D77B" }}>Urgency</div>
-        <h2 style={{ marginTop: 14, fontSize: 38, lineHeight: 1.06, letterSpacing: "-0.05em" }}>Only 20 Seats Per Batch</h2>
-        <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7 }}>Admissions closing soon. Next batch starting soon. This is not just a course, it is your entry into the travel industry.</p>
-        <div className="button-row">
-          <a href="/apply" className="button-primary">Apply Now</a>
-          <a href="/contact" className="button-ghost">Talk to Advisor</a>
         </div>
       </section>
 
-      <section className="grid grid-2">
-        {PUBLIC_TESTIMONIALS.map((item) => (
-          <article key={item} className="card">
-            <div className="eyebrow">Future-ready testimonial</div>
-            <p style={{ marginTop: 12, fontSize: 22, lineHeight: 1.5, letterSpacing: "-0.03em" }}>&ldquo;{item}&rdquo;</p>
+      <section className="editorial-section editorial-tonal">
+        <div className="editorial-section-head center">
+          <h2 className="editorial-section-title">Why Viva Training Institute</h2>
+          <p className="editorial-section-copy">Setting the standard through industry integration, rigor, and premium learning structure.</p>
+        </div>
+        <div className="editorial-grid editorial-grid-why">
+          <article className="editorial-card">
+            <div className="editorial-card-icon">✦</div>
+            <h3>Legacy of Experience</h3>
+            <p>{PUBLIC_AUTHORITY.line}</p>
           </article>
-        ))}
+          <article className="editorial-card primary-feature">
+            <div className="editorial-card-icon">◆</div>
+            <h3>Powered by Viva Voyages</h3>
+            <p>Learn from professionals, not just trainers. Industry-integrated curriculum with real business exposure.</p>
+          </article>
+          <article className="editorial-card">
+            <div className="editorial-card-icon">✦</div>
+            <h3>Job-Ready Outcomes</h3>
+            <p>We do not just teach. We prepare students for the real world of travel, tourism, hospitality, and services.</p>
+          </article>
+        </div>
       </section>
 
-      <section className="hero hero-contrast">
-        <div className="eyebrow" style={{ color: "#F4D77B" }}>Final call</div>
-        <h2 style={{ marginTop: 14, fontSize: 38, lineHeight: 1.06, letterSpacing: "-0.05em" }}>Start Your Travel Career Today</h2>
-        <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7 }}>{PUBLIC_FINAL_POSITIONING}</p>
-        <div className="button-row">
-          <a href="/apply" className="button-primary">Apply Now</a>
-          <a href="/contact" className="button-ghost">Talk to Advisor</a>
+      <section className="editorial-section">
+        <div className="editorial-program-strip">
+          <div>
+            <h2 className="editorial-section-title">Advanced Travel & Tourism Diploma</h2>
+            <p className="editorial-section-copy">A structured 12-week pathway with live classes, real case studies, and disciplined progression.</p>
+          </div>
+          <div className="editorial-chip-row">
+            {PUBLIC_HERO_HIGHLIGHTS.map((item) => (
+              <span key={item} className="editorial-chip">{item}</span>
+            ))}
+          </div>
+        </div>
+
+        <div className="editorial-grid editorial-grid-4">
+          {PUBLIC_COURSE_HIGHLIGHTS.slice(0, 4).map((item) => (
+            <article key={item} className="editorial-metric-card">
+              <h3>{item}</h3>
+              <p>Built for serious learners who want career-ready outcomes, not theory alone.</p>
+            </article>
+          ))}
+        </div>
+
+        <div className="editorial-logos">
+          {["Amadeus", "IATA", "GTA", "Lufthansa", "Marriott", "Sabre"].map((item) => (
+            <span key={item}>{item}</span>
+          ))}
+        </div>
+      </section>
+
+      <section className="editorial-section editorial-testimonials">
+        <div className="editorial-section-head">
+          <h2 className="editorial-section-title">Future-Ready Success Stories</h2>
+        </div>
+        <div className="editorial-grid editorial-grid-2">
+          {PUBLIC_TESTIMONIALS.map((item, index) => (
+            <article key={item} className="editorial-quote-card">
+              <p>&ldquo;{item}&rdquo;</p>
+              <div className="editorial-quote-meta">
+                <span className="editorial-avatar">{index + 1}</span>
+                <div>
+                  <strong>VIVA Student</strong>
+                  <small>Career-ready cohort</small>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="editorial-cta-band">
+        <div>
+          <h2>Your Journey into the Travel Industry Starts Here.</h2>
+          <p>Limited seats per batch. Structured progression. Live faculty. Industry-backed outcomes.</p>
+        </div>
+        <div className="editorial-button-row">
+          <a href="/apply" className="editorial-primary">Join Next Batch</a>
+          <a href="/contact" className="editorial-secondary inverse">Download Brochure</a>
         </div>
       </section>
     </MarketingShell>

@@ -8,51 +8,83 @@ export default function CoursesPage() {
   return (
     <MarketingShell
       activeHref="/courses"
-      eyebrow="Courses"
-      title="A 3-month certification program built to make travel professionals job-ready."
-      description="Weekend live classes, online learning, real case studies, and a disciplined progression system designed for serious outcomes."
-      primaryCta={{ label: "Apply Now", href: "/apply" }}
-      secondaryCta={{ label: "View Curriculum", href: "/curriculum" }}
     >
-      <section className="card">
-        <div className="eyebrow">3-Month Certification Program</div>
-        <div className="grid grid-3" style={{ marginTop: 18 }}>
-          <div className="panel" style={{ background: "#F8FAFC" }}><strong>Duration</strong><p className="muted">12 Weeks</p></div>
-          <div className="panel" style={{ background: "#F8FAFC" }}><strong>Format</strong><p className="muted">Weekend Live Classes + Online Learning</p></div>
-          <div className="panel" style={{ background: "#F8FAFC" }}><strong>Batch Size</strong><p className="muted">20 Students</p></div>
-        </div>
-      </section>
-
-      <section className="grid grid-2">
-        <article className="card">
-          <div className="eyebrow">What you will learn</div>
-          <div className="stack" style={{ marginTop: 18 }}>
-            {["Travel Industry Fundamentals", "Itinerary Planning", "Ticketing & Pricing", "Visa & Documentation", "MICE & Corporate Travel", "Luxury Travel"].map((item) => (
-              <div key={item} className="panel" style={{ background: "#F8FAFC" }}>{item}</div>
-            ))}
-          </div>
-        </article>
-        <article className="card">
-          <div className="eyebrow">Industry induction</div>
-          <p className="muted" style={{ marginTop: 12 }}>
-            Learn directly from travel companies through booking procedures, SOPs, and company workflows so you are interview-ready from day one.
+      <section className="editorial-page-hero">
+        <div className="editorial-page-hero-copy">
+          <span className="editorial-kicker">Certification Program</span>
+          <h1 className="editorial-page-title">3-Month Certification Program</h1>
+          <p className="editorial-section-copy">
+            Elevate your career with our intensive certification track, designed for students seeking job-ready technical mastery and industry discipline.
           </p>
-          <div className="stack" style={{ marginTop: 18 }}>
-            {PUBLIC_PROGRAM_OUTCOMES.map((item) => (
-              <div key={item} className="panel" style={{ background: "#F8FAFC" }}>{item}</div>
-            ))}
+          <div className="editorial-button-row">
+            <a href="/apply" className="editorial-primary">Apply Now</a>
+            <a href="/contact" className="editorial-secondary">Download Brochure</a>
           </div>
-        </article>
+        </div>
+        <div className="editorial-page-hero-visual">
+          <div className="editorial-image-card large" style={{ backgroundImage: "linear-gradient(180deg, rgba(0,6,102,0.18), rgba(0,6,102,0.5)), url('https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1200&q=80')" }} />
+          <div className="editorial-floating-note">
+            <strong>Starting Soon</strong>
+            <p>Limited seats available for the upcoming cohort.</p>
+          </div>
+        </div>
       </section>
 
-      <section className="card">
-        <div className="eyebrow">Specialization programs</div>
-        <div className="badge-row" style={{ marginTop: 18 }}>
-          {PUBLIC_SPECIALIZATIONS.map((item) => (
-            <div key={item} className="badge">{item}</div>
-          ))}
+      <section className="editorial-metrics-row">
+        <article><span>Duration</span><strong>90 Days</strong><small>12-week structured progression</small></article>
+        <article><span>Format</span><strong>Weekend Live</strong><small>Weekend live classes + online learning</small></article>
+        <article><span>Batch Size</span><strong>Max 20</strong><small>Small cohorts for mentorship</small></article>
+      </section>
+
+      <section className="editorial-section">
+        <div className="editorial-section-head">
+          <h2 className="editorial-section-title">Modules Overview</h2>
         </div>
-        <p className="muted" style={{ marginTop: 18 }}>Available only after successful completion of the flagship certification program.</p>
+        <div className="editorial-stack">
+          {[
+            { index: "01", title: "Travel Industry Fundamentals", items: ["Geography", "Industry overview", "Core ecosystem", "Destination logic"] },
+            { index: "02", title: "Operations and Customer Handling", items: ["Itinerary planning", "Pricing", "Visa processes", "Customer handling"] },
+            { index: "03", title: "Specialization and Industry Readiness", items: ["MICE", "Luxury", "Sales", "Crisis handling"] },
+          ].map((item) => (
+            <article key={item.index} className="editorial-accordion-card">
+              <div className="editorial-accordion-head">
+                <div>
+                  <span className="editorial-index">{item.index}</span>
+                  <h3>{item.title}</h3>
+                </div>
+              </div>
+              <div className="editorial-accordion-body">
+                {item.items.map((row) => (
+                  <span key={row}>{row}</span>
+                ))}
+              </div>
+            </article>
+          ))}
+          <div className="editorial-accordion-note">Total 12 intensive modules included in the curriculum.</div>
+        </div>
+      </section>
+
+      <section className="editorial-section editorial-tonal">
+        <div className="editorial-grid editorial-grid-2">
+          <article className="editorial-card">
+            <h3>Industry Induction Program</h3>
+            <p>Learn directly from travel companies through booking procedures, SOPs, and company workflows so you are interview-ready from Day 1.</p>
+            <div className="editorial-chip-row">
+              {PUBLIC_PROGRAM_OUTCOMES.map((item) => (
+                <span key={item} className="editorial-chip light">{item}</span>
+              ))}
+            </div>
+          </article>
+          <article className="editorial-card">
+            <h3>Specialization Programs</h3>
+            <div className="editorial-chip-row">
+              {PUBLIC_SPECIALIZATIONS.map((item) => (
+                <span key={item} className="editorial-chip">{item}</span>
+              ))}
+            </div>
+            <p>Available only after successful completion of the flagship certification program.</p>
+          </article>
+        </div>
       </section>
     </MarketingShell>
   );
