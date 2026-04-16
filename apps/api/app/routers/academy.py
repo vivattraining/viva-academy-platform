@@ -1,9 +1,16 @@
+import hashlib
+import hmac
+import json
+import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from sqlalchemy.orm import Session
 
+logger = logging.getLogger(__name__)
+
 from app.auth import auth_dependency, login_user
+from app.config import settings
 from app.db import get_db
 from app.integrations import create_payment_link, provision_zoom_meeting
 from app.schemas import (
@@ -231,8 +238,82 @@ def create_application_payment_link(application_id: str, payload: PaymentLinkUpd
 
 
 @router.post("/payments/webhook/razorpay/{reference}")
-def capture_payment(reference: str, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=403, detail="Gateway webhook verification required")
+async def capture_payment(
+    reference: str,
+    request: Request,
+    x_razorpay_signature: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    # 1. Read the raw request body for signature verification
+    body_bytes = await request.body()
+
+    # 2. Verify HMAC-SHA256 signature from Razorpay
+    webhook_secret = settings.razorpay_webhook_secret
+    if not webhook_secret:
+        logger.warning("RAZORPAY_WEBHOOK_SECRET is not configured — rejecting webhook")
+        raise HTTPException(status_code=500, detail="Webhook secret not configured")
+
+    if not x_razorpay_signature:
+        raise HTTPException(status_code=400, detail="Missing X-Razorpay-Signature header")
+
+    expected_signature = hmac.new(
+        webhook_secret.encode("utf-8"),
+        body_bytes,
+        hashlib.sha256,
+    ).hexdigest()
+
+    if not hmac.compare_digest(expected_signature, x_razorpay_signature):
+        logger.warning("Razorpay webhook signature mismatch for reference=%s", reference)
+        raise HTTPException(status_code=403, detail="Signature verification failed")
+
+    # 3. Parse the event payload
+    try:
+        event = json.loads(body_bytes)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    event_type = event.get("event")
+
+    # 4. Only act on payment.captured events
+    if event_type != "payment.captured":
+        return {"ok": True, "ignored": True, "event": event_type}
+
+    # 5. Resolve the application by payment_reference (or fallback id)
+    application = find_application_by_reference(db, reference)
+    if application is None:
+        logger.error("Razorpay webhook: no application found for reference=%s", reference)
+        raise HTTPException(status_code=404, detail="Application not found for this reference")
+
+    tenant_name = application.get("tenant_name", "")
+
+    # 6. Idempotency check — skip if already paid / enrolled
+    if application.get("payment_stage") == "paid":
+        logger.info(
+            "Razorpay webhook: application %s already marked as paid — skipping",
+            application["id"],
+        )
+        return {"ok": True, "idempotent": True, "application_id": application["id"]}
+
+    # 7. Mark payment as captured and enroll the student
+    patch = {
+        "payment_stage": "paid",
+        "application_stage": "enrolled",
+        "enrollment_stage": "active",
+    }
+    updated = update_application(db, tenant_name, application["id"], patch)
+    if updated is None:
+        raise HTTPException(status_code=500, detail="Failed to update application")
+
+    # 8. Assign to first available batch if not already assigned
+    if not updated.get("batch_id"):
+        updated = assign_first_batch_if_needed(db, tenant_name, application["id"]) or updated
+
+    logger.info(
+        "Razorpay webhook: payment.captured processed — application=%s tenant=%s",
+        application["id"],
+        tenant_name,
+    )
+    return {"ok": True, "application_id": updated["id"], "payment_stage": updated.get("payment_stage")}
 
 
 @router.get("/students/me")

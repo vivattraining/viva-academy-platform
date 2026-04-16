@@ -14,3 +14,10 @@ __pycache__
 coverage
 
 .vercel
+
+# SQLite database files
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+academy_os.db
