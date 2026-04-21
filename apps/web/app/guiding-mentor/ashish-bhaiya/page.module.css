@@ -103,8 +103,8 @@
 
 .image {
   object-fit: cover;
-  object-position: center 10%;
-  transform: scale(1.06);
+  object-position: center 7%;
+  transform: scale(1.14);
 }
 
 .story {
