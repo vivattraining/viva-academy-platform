@@ -179,6 +179,7 @@ const faculty = [
   {
     code: "F · 01",
     name: "Ayesha Rao",
+    initials: "AR",
     role: "Dean · Hospitality Studies",
     description:
       "Twenty-two years with Taj & Oberoi. Former General Manager, Taj Falaknuma Palace. Leads the institute's flagship Hospitality Management programme.",
@@ -187,6 +188,7 @@ const faculty = [
   {
     code: "F · 02",
     name: "Captain Nikhil Sharma",
+    initials: "NS",
     role: "Chair · Aviation & Cruise",
     description:
       "Former cabin services director at a major Gulf carrier. Certified IATA/ICAO instructor and senior officer with two global cruise lines.",
@@ -195,6 +197,7 @@ const faculty = [
   {
     code: "F · 03",
     name: "Chef Marco Tessier",
+    initials: "MT",
     role: "Director · Culinary Arts",
     description:
       "Former Executive Sous Chef at two Michelin-starred kitchens in Lyon. Founding chair of the VIVA culinary track and curator of the institute's visiting-chef series.",
@@ -203,6 +206,7 @@ const faculty = [
   {
     code: "F · 04",
     name: "Priya Menon",
+    initials: "PM",
     role: "Lead · Travel & Operations",
     description:
       "Fifteen years in tour operations across Kerala, Sri Lanka and the Maldives. Designs the institute's GDS and destination studies modules.",
@@ -211,6 +215,7 @@ const faculty = [
   {
     code: "F · 05",
     name: "Daniyal Kapoor",
+    initials: "DK",
     role: "Lead · Events & MICE",
     description:
       "Produced over 400 luxury destination weddings and corporate summits. Leads the institute's event-production studio and industry showcases.",
@@ -219,6 +224,7 @@ const faculty = [
   {
     code: "F · 06",
     name: "Dr. Lakshmi Iyer",
+    initials: "LI",
     role: "Lead · Research & Ethics",
     description:
       "PhD, Tourism Policy, University of Surrey. Former advisor to the Ministry of Tourism. Chairs the institute's ethics & sustainability curriculum.",
@@ -334,7 +340,9 @@ export function ClaudeHome() {
 
             <div className={styles.heroMedia}>
               <div className={styles.heroFrame}>
-                <div className={styles.placeholder}>Photography · Students on concierge rotation</div>
+                <div className={styles.heroImageOverlay}>
+                  <div className={styles.heroImageBadge}>Live cohort immersion</div>
+                </div>
                 <div className={styles.heroFrameCaption}>
                   <span className={styles.frameNum}>No. 01 / 04</span>
                   <span className={styles.frameTitle}>Front Office rotation — The Leela, Udaipur</span>
@@ -619,7 +627,11 @@ export function ClaudeHome() {
             {faculty.map((member) => (
               <article className={styles.facultyCard} key={member.code}>
                 <div className={styles.facultyImg}>
-                  <div className={styles.placeholder}>Portrait · Faculty lead</div>
+                  <div className={styles.portraitCard}>
+                    <div className={styles.portraitAura} />
+                    <div className={styles.portraitInitials}>{member.initials}</div>
+                    <div className={styles.portraitLabel}>Faculty Lead</div>
+                  </div>
                   <div className={styles.facultyNumber}>{member.code}</div>
                 </div>
                 <h4>{member.name}</h4>
@@ -639,7 +651,11 @@ export function ClaudeHome() {
       <section className={styles.testimonial}>
         <div className={`${styles.wrap} ${styles.testimonialBody}`}>
           <div className={styles.testimonialImg}>
-            <div className={styles.placeholderLight}>Portrait · Alumna on location</div>
+            <div className={styles.alumniCard}>
+              <div className={styles.alumniGlow} />
+              <div className={styles.alumniStamp}>Alumni Story</div>
+              <div className={styles.alumniLocation}>Muscat · Guest Relations Track</div>
+            </div>
           </div>
           <div>
             <div className={styles.eyebrow}>§ 06 — Voices from the field</div>

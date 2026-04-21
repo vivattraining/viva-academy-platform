@@ -299,6 +299,11 @@
 
 .heroFrame {
   aspect-ratio: 4 / 5;
+  background:
+    linear-gradient(180deg, rgba(8, 18, 34, 0.12), rgba(8, 18, 34, 0.82)),
+    linear-gradient(135deg, rgba(184, 137, 90, 0.28), rgba(18, 39, 64, 0.1)),
+    url("https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80")
+      center / cover;
 }
 
 .placeholder,
@@ -328,6 +333,26 @@
     repeating-linear-gradient(135deg, rgba(14, 27, 44, 0.06) 0 1px, transparent 1px 14px),
     linear-gradient(180deg, rgba(184, 137, 90, 0.08), rgba(14, 27, 44, 0.02));
   color: var(--muted);
+}
+
+.heroImageOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 18px;
+}
+
+.heroImageBadge {
+  padding: 8px 12px;
+  border: 1px solid rgba(245, 239, 228, 0.24);
+  background: rgba(14, 27, 44, 0.48);
+  color: var(--cream);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .heroFrameCaption {
@@ -777,6 +802,48 @@
   margin-bottom: 14px;
 }
 
+.portraitCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(184, 137, 90, 0.42), transparent 22%),
+    radial-gradient(circle at 72% 30%, rgba(245, 239, 228, 0.12), transparent 18%),
+    linear-gradient(160deg, #16263c 0%, #0e1b2c 48%, #1d3150 100%);
+}
+
+.portraitAura {
+  position: absolute;
+  inset: 16px;
+  border: 1px solid rgba(245, 239, 228, 0.1);
+}
+
+.portraitInitials {
+  position: relative;
+  z-index: 1;
+  color: var(--cream);
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: 68px;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.portraitLabel {
+  position: relative;
+  z-index: 1;
+  color: rgba(245, 239, 228, 0.7);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+
 .facultyNumber {
   position: absolute;
   left: 14px;
@@ -816,6 +883,51 @@
 
 .testimonialImg {
   aspect-ratio: 4 / 4.6;
+  background: linear-gradient(145deg, #e8dcc7 0%, #f6f0e6 45%, #d5c2a3 100%);
+}
+
+.alumniCard {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 25% 25%, rgba(14, 27, 44, 0.08), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(14, 27, 44, 0.08));
+}
+
+.alumniGlow {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(184, 137, 90, 0.35), rgba(184, 137, 90, 0));
+}
+
+.alumniStamp,
+.alumniLocation {
+  position: relative;
+  z-index: 1;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.alumniStamp {
+  padding: 8px 10px;
+  border: 1px solid rgba(14, 27, 44, 0.18);
+  background: rgba(255, 255, 255, 0.62);
+  color: var(--navy);
+}
+
+.alumniLocation {
+  color: rgba(10, 20, 32, 0.72);
 }
 
 .quote {
