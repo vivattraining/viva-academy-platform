@@ -204,7 +204,7 @@ const faculty: FacultyMember[] = [
   {
     code: "F · 02",
     name: "Dr Ashish Gautam",
-    image: "/faculty/ashish-bhaiya.jpg",
+    image: "/faculty/ashish-bhaiya-home.jpg",
     imageAlt: "Dr Ashish Gautam",
     label: "Guiding Mentor",
     role: "Fondly known as Ashish Bhaiya",
