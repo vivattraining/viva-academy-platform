@@ -1,0 +1,209 @@
+.page {
+  --navy: #0e1b2c;
+  --navy-2: #152740;
+  --ink: #0a1420;
+  --cream: #f5efe4;
+  --paper: #fbf7ee;
+  --rule-soft: rgba(14, 27, 44, 0.12);
+  --accent: #b8895a;
+  --accent-deep: #8c6338;
+  --muted: #5b6576;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+.wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+.hero {
+  padding: 56px 0 44px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.backLink {
+  display: inline-flex;
+  margin-bottom: 28px;
+  color: var(--navy);
+  font-size: 14px;
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 36px;
+  align-items: center;
+}
+
+.kicker,
+.sectionLabel,
+.cardLabel {
+  color: var(--accent-deep);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.title,
+.sectionTitle,
+.card h3 {
+  color: var(--navy);
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+}
+
+.title {
+  font-size: clamp(44px, 6vw, 72px);
+  line-height: 0.98;
+  margin: 14px 0 10px;
+}
+
+.subtitle {
+  color: var(--accent-deep);
+  font-size: 20px;
+  font-style: italic;
+  margin: 0 0 20px;
+}
+
+.lead,
+.story p,
+.card p {
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.tags span {
+  border: 1px solid var(--rule-soft);
+  padding: 8px 12px;
+  color: var(--navy);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--paper);
+}
+
+.imageFrame {
+  position: relative;
+  min-height: 620px;
+  overflow: hidden;
+  background: linear-gradient(160deg, #16263c 0%, #0e1b2c 48%, #1d3150 100%);
+}
+
+.image {
+  object-fit: cover;
+}
+
+.story {
+  padding: 56px 0;
+}
+
+.storyGrid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 28px;
+  margin-top: 18px;
+}
+
+.sectionTitle {
+  font-size: clamp(34px, 5vw, 56px);
+  line-height: 1.02;
+  margin: 0 0 18px;
+}
+
+.sectionTitle em {
+  color: var(--accent-deep);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.quote {
+  margin: 0;
+  padding: 32px;
+  background: var(--paper);
+  border-left: 3px solid var(--accent);
+  align-self: start;
+}
+
+.quote p {
+  margin: 0;
+  color: var(--navy);
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: 28px;
+  line-height: 1.3;
+}
+
+.values {
+  padding: 0 0 72px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.card {
+  padding: 28px;
+  background: var(--paper);
+}
+
+.card h3 {
+  margin: 16px 0 12px;
+  font-size: 28px;
+  line-height: 1.06;
+}
+
+.ctaRow {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 32px;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 22px;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.primaryButton {
+  background: var(--navy);
+  color: var(--cream);
+}
+
+.secondaryButton {
+  border: 1px solid var(--navy);
+  color: var(--navy);
+}
+
+@media (max-width: 900px) {
+  .heroGrid,
+  .storyGrid,
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .imageFrame {
+    min-height: 460px;
+  }
+
+  .quote p {
+    font-size: 22px;
+  }
+}

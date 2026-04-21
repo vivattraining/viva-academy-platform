@@ -1,9 +1,22 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
 import styles from "./claude-home.module.css";
+
+type FacultyMember = {
+  code: string;
+  name: string;
+  role: string;
+  description: string;
+  creds: string[];
+  image?: string;
+  imageAlt?: string;
+  label?: string;
+  href?: string;
+};
 
 const tickerItems = [
   "Hospitality Management",
@@ -175,29 +188,33 @@ const curriculum = [
   },
 ];
 
-const faculty = [
+const faculty: FacultyMember[] = [
   {
     code: "F · 01",
-    name: "Ayesha Rao",
-    initials: "AR",
-    role: "Dean · Hospitality Studies",
+    name: "Vikas Khanduri",
+    image: "/faculty/vikas-khanduri.jpeg",
+    imageAlt: "Vikas Khanduri",
+    label: "Faculty Head, Co-Founder",
+    role: "Travel Entrepreneur · Hospitality Studies",
     description:
-      "Twenty-two years with Taj & Oberoi. Former General Manager, Taj Falaknuma Palace. Leads the institute's flagship Hospitality Management programme.",
-    creds: ["Taj", "Oberoi", "MSc · Lausanne"],
+      "Thirty years with large travel companies. Leads VIVA institute's flagship Hospitality Management programme.",
+    creds: ["Cox & Kings", "Kuoni", "SOTC"],
   },
   {
     code: "F · 02",
-    name: "Captain Nikhil Sharma",
-    initials: "NS",
-    role: "Chair · Aviation & Cruise",
+    name: "Dr Ashish Gautam",
+    image: "/faculty/ashish-bhaiya.jpg",
+    imageAlt: "Dr Ashish Gautam",
+    label: "Guiding Mentor",
+    role: "Fondly known as Ashish Bhaiya",
     description:
-      "Former cabin services director at a major Gulf carrier. Certified IATA/ICAO instructor and senior officer with two global cruise lines.",
-    creds: ["Emirates", "IATA", "RCL"],
+      "He has dedicated some of the best years of his life serving the untouched, needy and the poor.",
+    creds: ["DivyaPrem"],
+    href: "/guiding-mentor/ashish-bhaiya",
   },
   {
     code: "F · 03",
     name: "Chef Marco Tessier",
-    initials: "MT",
     role: "Director · Culinary Arts",
     description:
       "Former Executive Sous Chef at two Michelin-starred kitchens in Lyon. Founding chair of the VIVA culinary track and curator of the institute's visiting-chef series.",
@@ -206,7 +223,6 @@ const faculty = [
   {
     code: "F · 04",
     name: "Priya Menon",
-    initials: "PM",
     role: "Lead · Travel & Operations",
     description:
       "Fifteen years in tour operations across Kerala, Sri Lanka and the Maldives. Designs the institute's GDS and destination studies modules.",
@@ -215,7 +231,6 @@ const faculty = [
   {
     code: "F · 05",
     name: "Daniyal Kapoor",
-    initials: "DK",
     role: "Lead · Events & MICE",
     description:
       "Produced over 400 luxury destination weddings and corporate summits. Leads the institute's event-production studio and industry showcases.",
@@ -224,7 +239,6 @@ const faculty = [
   {
     code: "F · 06",
     name: "Dr. Lakshmi Iyer",
-    initials: "LI",
     role: "Lead · Research & Ethics",
     description:
       "PhD, Tourism Policy, University of Surrey. Former advisor to the Ministry of Tourism. Chairs the institute's ethics & sustainability curriculum.",
@@ -627,21 +641,43 @@ export function ClaudeHome() {
             {faculty.map((member) => (
               <article className={styles.facultyCard} key={member.code}>
                 <div className={styles.facultyImg}>
-                  <div className={styles.portraitCard}>
-                    <div className={styles.portraitAura} />
-                    <div className={styles.portraitInitials}>{member.initials}</div>
-                    <div className={styles.portraitLabel}>Faculty Lead</div>
-                  </div>
+                  {member.image ? (
+                    <Image
+                      className={styles.facultyPhoto}
+                      src={member.image}
+                      alt={member.imageAlt || member.name}
+                      fill
+                      sizes="(max-width: 720px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                  ) : (
+                    <div className={styles.portraitCard}>
+                      <div className={styles.portraitAura} />
+                      <div className={styles.portraitInitials}>{member.name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</div>
+                      <div className={styles.portraitLabel}>Faculty Lead</div>
+                    </div>
+                  )}
                   <div className={styles.facultyNumber}>{member.code}</div>
                 </div>
                 <h4>{member.name}</h4>
+                {member.label ? <div className={styles.facultyLabel}>{member.label}</div> : null}
                 <div className={styles.facultyRole}>{member.role}</div>
                 <p>{member.description}</p>
                 <div className={styles.facultyCreds}>
                   {member.creds.map((item) => (
-                    <span key={item}>{item}</span>
+                    member.href && item === "DivyaPrem" ? (
+                      <Link className={styles.facultyCredLink} href={member.href} key={item}>
+                        {item}
+                      </Link>
+                    ) : (
+                      <span key={item}>{item}</span>
+                    )
                   ))}
                 </div>
+                {member.href ? (
+                  <Link className={styles.facultyLink} href={member.href}>
+                    Read Ashish Bhaiya&apos;s Mission
+                  </Link>
+                ) : null}
               </article>
             ))}
           </div>

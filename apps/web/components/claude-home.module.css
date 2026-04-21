@@ -807,8 +807,15 @@
 }
 
 .facultyImg {
+  position: relative;
   aspect-ratio: 4 / 4.5;
   margin-bottom: 14px;
+  overflow: hidden;
+  background: linear-gradient(160deg, #16263c 0%, #0e1b2c 48%, #1d3150 100%);
+}
+
+.facultyPhoto {
+  object-fit: cover;
 }
 
 .portraitCard {
@@ -866,6 +873,15 @@
   margin-top: 8px;
 }
 
+.facultyLabel {
+  color: var(--muted);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+
 .facultyCreds {
   display: flex;
   gap: 8px;
@@ -881,6 +897,35 @@
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.facultyCredLink {
+  border: 1px solid var(--rule-soft);
+  padding: 6px 10px;
+  color: var(--navy);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.facultyCredLink:hover,
+.facultyLink:hover {
+  color: var(--cream);
+  background: var(--navy);
+  border-color: var(--navy);
+}
+
+.facultyLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  color: var(--accent-deep);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
 }
 
 .testimonialBody {
