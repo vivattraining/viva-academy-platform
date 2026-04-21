@@ -818,6 +818,11 @@
   object-fit: cover;
 }
 
+.facultyPhotoAshish {
+  object-position: center 18%;
+  transform: scale(0.9);
+}
+
 .portraitCard {
   position: relative;
   display: flex;

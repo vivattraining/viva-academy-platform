@@ -16,6 +16,7 @@ type FacultyMember = {
   imageAlt?: string;
   label?: string;
   href?: string;
+  imageClassName?: string;
 };
 
 const tickerItems = [
@@ -207,6 +208,7 @@ const faculty: FacultyMember[] = [
     imageAlt: "Dr Ashish Gautam",
     label: "Guiding Mentor",
     role: "Fondly known as Ashish Bhaiya",
+    imageClassName: styles.facultyPhotoAshish,
     description:
       "He has dedicated some of the best years of his life serving the untouched, needy and the poor.",
     creds: ["DivyaPrem"],
@@ -643,7 +645,7 @@ export function ClaudeHome() {
                 <div className={styles.facultyImg}>
                   {member.image ? (
                     <Image
-                      className={styles.facultyPhoto}
+                      className={`${styles.facultyPhoto}${member.imageClassName ? ` ${member.imageClassName}` : ""}`}
                       src={member.image}
                       alt={member.imageAlt || member.name}
                       fill
