@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@500;700;800&display=swap");
 
 :root {
   --ink: #111d23;
@@ -982,7 +982,7 @@ main {
   min-height: 240px;
   margin-top: 24px;
   display: flex;
-  align-items: end;
+  align-items: flex-end;
   padding: 24px;
   color: white;
   background-image: linear-gradient(180deg, rgba(0,6,102,0.1), rgba(0,6,102,0.7)), url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80");
@@ -1132,7 +1132,7 @@ main {
 }
 
 .dashboard-panel-top {
-  align-items: end;
+  align-items: flex-end;
   margin-bottom: 20px;
 }
 

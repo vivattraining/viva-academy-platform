@@ -1,0 +1,1060 @@
+@keyframes tickerScroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.page {
+  --navy: #0e1b2c;
+  --navy-2: #152740;
+  --ink: #0a1420;
+  --cream: #f5efe4;
+  --cream-2: #efe6d4;
+  --paper: #fbf7ee;
+  --rule-soft: rgba(14, 27, 44, 0.12);
+  --accent: #b8895a;
+  --accent-deep: #8c6338;
+  --muted: #5b6576;
+  --muted-cream: rgba(245, 239, 228, 0.68);
+  --maxw: 1360px;
+  --gutter: clamp(20px, 3vw, 56px);
+  background: var(--cream);
+  color: var(--ink);
+}
+
+.wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.topBanner {
+  background: var(--ink);
+  color: var(--cream);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-align: center;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(245, 239, 228, 0.12);
+}
+
+.topBanner b {
+  color: var(--accent);
+  font-weight: 500;
+  margin: 0 8px;
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(245, 239, 228, 0.92);
+  backdrop-filter: saturate(1.2) blur(10px);
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.navInner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 40px;
+  min-height: 72px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brandMark {
+  width: 38px;
+  height: 38px;
+  border: 1.5px solid var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy);
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.brandWord {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.brandName {
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--navy);
+}
+
+.brandTag {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+.navLinks,
+.navCta,
+.heroCtas,
+.footerSocial,
+.ctaRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.navLinks {
+  justify-self: center;
+  gap: 32px;
+}
+
+.navLinks a {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--navy);
+  padding: 6px 0;
+}
+
+.navLinks a:hover,
+.ghostLink:hover {
+  color: var(--accent-deep);
+}
+
+.ghostLink {
+  font-size: 13px;
+  color: var(--navy);
+  padding: 10px 12px;
+}
+
+.button,
+.buttonGhost,
+.buttonGhostLight {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 22px;
+  border-radius: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+
+.button {
+  background: var(--navy);
+  color: var(--cream);
+}
+
+.button:hover {
+  background: var(--ink);
+}
+
+.buttonAccent {
+  background: var(--accent);
+  color: white;
+}
+
+.buttonAccent:hover {
+  background: var(--accent-deep);
+}
+
+.buttonGhost {
+  border: 1px solid var(--navy);
+  color: var(--navy);
+}
+
+.buttonGhost:hover {
+  background: var(--navy);
+  color: var(--cream);
+}
+
+.buttonGhostLight {
+  border: 1px solid rgba(245, 239, 228, 0.4);
+  color: var(--cream);
+}
+
+.buttonGhostLight:hover {
+  background: var(--cream);
+  color: var(--navy);
+}
+
+.arrow {
+  font-size: 12px;
+}
+
+.hero {
+  padding: clamp(40px, 6vw, 72px) 0 0;
+  overflow: hidden;
+}
+
+.heroMeta {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-bottom: 20px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: clamp(32px, 5vw, 72px);
+  align-items: flex-end;
+}
+
+.heroTitle {
+  color: var(--navy);
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: clamp(54px, 7.4vw, 124px);
+  line-height: 0.96;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
+.heroTitle em,
+.sectionTitle em,
+.programTitle em,
+.facultyTitle em,
+.quote em,
+.admissionsTitle em {
+  color: var(--accent-deep);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.amp {
+  color: var(--accent);
+  font-style: italic;
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+}
+
+.heroLead,
+.bodyText,
+.outcomesSide,
+.faqIntro,
+.footerBrand p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.heroLead {
+  max-width: 440px;
+  font-size: 17px;
+  margin-top: 28px;
+}
+
+.heroMedia {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.heroFrame,
+.testimonialImg,
+.facultyImg {
+  position: relative;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--navy);
+}
+
+.heroFrame {
+  aspect-ratio: 4 / 5;
+}
+
+.placeholder,
+.placeholderLight {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+}
+
+.placeholder {
+  background:
+    repeating-linear-gradient(135deg, rgba(245, 239, 228, 0.06) 0 1px, transparent 1px 14px),
+    linear-gradient(180deg, rgba(184, 137, 90, 0.12), rgba(14, 27, 44, 0));
+  color: var(--muted-cream);
+}
+
+.placeholderLight {
+  background:
+    repeating-linear-gradient(135deg, rgba(14, 27, 44, 0.06) 0 1px, transparent 1px 14px),
+    linear-gradient(180deg, rgba(184, 137, 90, 0.08), rgba(14, 27, 44, 0.02));
+  color: var(--muted);
+}
+
+.heroFrameCaption {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  color: var(--cream);
+}
+
+.frameNum {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  opacity: 0.7;
+}
+
+.frameTitle {
+  max-width: 180px;
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: 18px;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+.heroSub {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.miniStat {
+  padding: 18px 0;
+  border-top: 1px solid var(--rule-soft);
+}
+
+.miniStatValue {
+  color: var(--navy);
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: 36px;
+  line-height: 1;
+}
+
+.miniStatValue sup {
+  color: var(--accent-deep);
+  font-size: 16px;
+}
+
+.miniStatLabel {
+  max-width: 180px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+  margin-top: 8px;
+}
+
+.ticker {
+  overflow: hidden;
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  margin-top: 52px;
+}
+
+.tickerTrack {
+  display: flex;
+  width: max-content;
+  animation: tickerScroll 28s linear infinite;
+}
+
+.tickerTrack span {
+  white-space: nowrap;
+  color: var(--navy);
+  padding: 18px 22px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.section,
+.programs,
+.format,
+.outcomes,
+.curriculum,
+.faculty,
+.testimonial,
+.admissions,
+.faq,
+.footer {
+  padding: clamp(64px, 8vw, 110px) 0;
+}
+
+.secHead,
+.outcomesHead {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 28px;
+  align-items: start;
+  margin-bottom: 40px;
+}
+
+.kicker,
+.eyebrow {
+  color: var(--accent-deep);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.eyebrowDark {
+  color: var(--accent);
+}
+
+.sectionTitle,
+.outcomesTitle,
+.admissionsTitle {
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: clamp(34px, 4vw, 62px);
+  line-height: 1.02;
+  color: var(--navy);
+}
+
+.promiseBody,
+.faqGrid,
+.admissionsBody {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 36px;
+}
+
+.bodyStack {
+  display: grid;
+  gap: 20px;
+}
+
+.pillarList,
+.steps,
+.faqList {
+  display: grid;
+  gap: 16px;
+}
+
+.pillar,
+.step,
+.faqItem,
+.module,
+.programCard,
+.facultyCard,
+.formatCard,
+.stat,
+.employerStrip {
+  border-top: 1px solid var(--rule-soft);
+}
+
+.pillar {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 18px;
+  padding-top: 18px;
+}
+
+.roman {
+  color: var(--accent-deep);
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: 28px;
+}
+
+.pillar h4,
+.moduleTitle,
+.step h5,
+.faqQuestion,
+.footerHeading {
+  color: var(--navy);
+  margin: 0;
+}
+
+.pillar p,
+.moduleMeta,
+.step p,
+.faqAnswer,
+.footerColumn a {
+  color: var(--muted);
+}
+
+.programGrid,
+.facultyGrid,
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.programCard {
+  background: var(--paper);
+  padding-top: 20px;
+}
+
+.programInner {
+  display: grid;
+  gap: 14px;
+  padding: 0 0 18px;
+}
+
+.programArrow,
+.programNumber,
+.facultyNumber {
+  color: var(--accent-deep);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.programTitle,
+.facultyCard h4 {
+  color: var(--navy);
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: 32px;
+  line-height: 1.02;
+}
+
+.programDescription,
+.facultyCard p,
+.lead {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.programMeta {
+  display: grid;
+  gap: 10px;
+}
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--navy);
+  font-size: 14px;
+}
+
+.formatGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.formatCard {
+  padding: 28px;
+  background: var(--navy);
+  color: var(--cream);
+  border-radius: 2px;
+}
+
+.formatCardSecondary {
+  background: var(--navy-2);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--cream);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.formatCard h3 {
+  margin-top: 24px;
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: 40px;
+  line-height: 1.04;
+}
+
+.formatCard p,
+.formatCard li {
+  color: var(--muted-cream);
+}
+
+.formatCard ul {
+  margin: 18px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.formatFoot {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-end;
+  margin-top: 28px;
+}
+
+.price {
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: 34px;
+}
+
+.price small {
+  font-size: 14px;
+  color: var(--muted-cream);
+}
+
+.outcomesHead {
+  grid-template-columns: 1.3fr 0.7fr;
+}
+
+.statGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.stat {
+  padding-top: 18px;
+}
+
+.statValue {
+  color: var(--navy);
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: 56px;
+  line-height: 0.95;
+}
+
+.statValue sup {
+  font-size: 22px;
+  color: var(--accent-deep);
+}
+
+.statLabel {
+  margin-top: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.employerStrip {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 18px;
+  align-items: start;
+  margin-top: 32px;
+  padding-top: 18px;
+}
+
+.employerLabel {
+  color: var(--muted);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.logos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 24px;
+  color: var(--navy);
+}
+
+.curricLayout {
+  display: grid;
+  grid-template-columns: 0.42fr 0.58fr;
+  gap: 26px;
+}
+
+.curricNav {
+  display: grid;
+  gap: 10px;
+}
+
+.curricTab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  border: 1px solid var(--rule-soft);
+  background: transparent;
+  color: var(--navy);
+  text-align: left;
+  cursor: pointer;
+}
+
+.curricTabActive {
+  background: var(--navy);
+  color: var(--cream);
+}
+
+.curricPanel {
+  border-top: 1px solid var(--rule-soft);
+  padding-top: 18px;
+}
+
+.curricPane h3 {
+  color: var(--navy);
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: 40px;
+  line-height: 1.06;
+}
+
+.curricSummary {
+  color: var(--muted);
+  line-height: 1.65;
+  margin-top: 18px;
+}
+
+.modules {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.module {
+  display: grid;
+  grid-template-columns: 110px 1fr 80px;
+  gap: 16px;
+  padding-top: 14px;
+}
+
+.moduleCode {
+  color: var(--accent-deep);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.moduleDuration {
+  color: var(--muted);
+  font-size: 14px;
+  text-align: right;
+}
+
+.facultyCard {
+  padding-top: 18px;
+}
+
+.facultyImg {
+  aspect-ratio: 4 / 4.5;
+  margin-bottom: 14px;
+}
+
+.facultyNumber {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  color: var(--cream);
+}
+
+.facultyRole {
+  color: var(--accent-deep);
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.facultyCreds {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.facultyCreds span {
+  border: 1px solid var(--rule-soft);
+  padding: 6px 10px;
+  color: var(--navy);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.testimonialBody {
+  display: grid;
+  grid-template-columns: 0.42fr 0.58fr;
+  gap: 28px;
+  align-items: center;
+}
+
+.testimonialImg {
+  aspect-ratio: 4 / 4.6;
+}
+
+.quote {
+  color: var(--navy);
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: clamp(28px, 3.3vw, 48px);
+  line-height: 1.14;
+}
+
+.quoteAttrib {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 24px;
+  color: var(--muted);
+}
+
+.quoteWho {
+  color: var(--navy);
+  font-weight: 600;
+}
+
+.quoteWho small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.quoteOutcome {
+  color: var(--accent-deep);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.admissions {
+  background: var(--navy);
+  color: var(--cream);
+}
+
+.admissionsTitle {
+  color: var(--cream);
+}
+
+.lead {
+  color: var(--muted-cream);
+  margin-top: 20px;
+}
+
+.steps {
+  border-top: 1px solid rgba(245, 239, 228, 0.15);
+  padding-top: 10px;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 60px 1fr 120px;
+  gap: 18px;
+  align-items: start;
+  padding-top: 16px;
+  border-top-color: rgba(245, 239, 228, 0.15);
+}
+
+.stepNumber {
+  color: var(--accent);
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: 28px;
+}
+
+.step h5 {
+  color: var(--cream);
+  font-size: 18px;
+}
+
+.step p {
+  color: var(--muted-cream);
+}
+
+.stepWhen {
+  color: var(--accent);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: right;
+}
+
+.faqIntro {
+  max-width: 34ch;
+  font-size: 15px;
+}
+
+.faqItem {
+  padding-top: 14px;
+}
+
+.faqQuestion {
+  list-style: none;
+  cursor: pointer;
+  color: var(--navy);
+  font-size: 18px;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.faqQuestion::-webkit-details-marker {
+  display: none;
+}
+
+.faqPlus {
+  color: var(--accent-deep);
+}
+
+.faqAnswer {
+  padding-top: 12px;
+  line-height: 1.65;
+}
+
+.footer {
+  background: var(--paper);
+  padding-top: 56px;
+}
+
+.footerTop {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr;
+  gap: 28px;
+}
+
+.footerBrand p {
+  max-width: 28ch;
+  margin-top: 18px;
+}
+
+.footerColumn {
+  display: grid;
+  gap: 10px;
+}
+
+.footerHeading {
+  color: var(--navy);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.footerColumn a {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.footerBottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule-soft);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 1100px) {
+  .navInner,
+  .heroGrid,
+  .secHead,
+  .outcomesHead,
+  .promiseBody,
+  .faqGrid,
+  .admissionsBody,
+  .curricLayout,
+  .testimonialBody,
+  .footerTop,
+  .formatGrid,
+  .statGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .navInner {
+    padding: 16px 0;
+  }
+
+  .navLinks {
+    justify-self: start;
+    gap: 18px;
+  }
+
+  .programGrid,
+  .facultyGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .module,
+  .step,
+  .employerStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .stepWhen,
+  .moduleDuration {
+    text-align: left;
+  }
+}
+
+@media (max-width: 720px) {
+  .navInner {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .navLinks {
+    gap: 14px;
+  }
+
+  .heroSub {
+    grid-template-columns: 1fr;
+  }
+
+  .heroTitle {
+    font-size: clamp(44px, 15vw, 72px);
+  }
+
+  .curricTab,
+  .formatCard,
+  .programCard,
+  .facultyCard {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .wrap {
+    padding: 0 20px;
+  }
+}
