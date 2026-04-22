@@ -13,8 +13,8 @@ export const ACADEMY_NAV = [
 ] as const;
 
 export const ACADEMY_THEME = {
-  name: "VIVA Training Institute",
-  shortName: "VIVA",
+  name: "Viva Career Academy",
+  shortName: "VCA",
   tagline: "Not just a course. A career launchpad for the travel industry.",
   primary: "#0B1F3A",
   secondary: "#F4B400",
@@ -23,7 +23,7 @@ export const ACADEMY_THEME = {
   background: "#F7F9FB",
   surface: "#FFFFFF",
   surfaceLow: "#F2F4F6",
-  domain: "academy.vivatraininginstitute.com"
+  domain: "academy.vivacareeracademy.com"
 };
 
 export const ACADEMY_METRICS = [
@@ -149,7 +149,7 @@ export const ACADEMY_SIMULATION_SCENE = {
 
 export const ACADEMY_WHITE_LABEL_CONTROLS = [
   "Custom domain mapping with SSL",
-  "Institute logo, palette, typography, and homepage copy",
+  "Academy logo, palette, typography, and homepage copy",
   "Own trainers, faculty bios, classrooms, and certificates",
   "Shared academy engine with tenant-safe data isolation"
 ];
@@ -159,7 +159,7 @@ export const ACADEMY_STRATEGY_OPTIONS = [
     name: "Separate repo now",
     verdict: "Recommended",
     pros: [
-      "Cleaner product identity for VIVA and future institutes",
+      "Cleaner product identity for Viva Career Academy and future academy brands",
       "Own roadmap, deployments, and white-label positioning",
       "Easier future spinout or dedicated team structure"
     ],

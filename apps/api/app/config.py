@@ -12,12 +12,15 @@ class Settings:
     api_port: int = int(os.getenv("API_PORT", "8000"))
     database_url: str = os.getenv("DATABASE_URL", "sqlite:///./academy_os.db")
     redis_url: str = os.getenv("REDIS_URL", "redis://localhost:6379")
+    app_url: str = os.getenv("APP_URL", "http://localhost:3000")
+    tenant_name: str = os.getenv("TENANT_NAME", "Viva Career Academy")
+    tenant_domain: str = os.getenv("TENANT_DOMAIN", "academy.vivacareeracademy.com")
 
     zoom_account_id: str = os.getenv("ZOOM_ACCOUNT_ID", "")
     zoom_client_id: str = os.getenv("ZOOM_CLIENT_ID", "")
     zoom_client_secret: str = os.getenv("ZOOM_CLIENT_SECRET", "")
     zoom_webhook_secret_token: str = os.getenv("ZOOM_WEBHOOK_SECRET_TOKEN", "")
-    zoom_host_email: str = os.getenv("ZOOM_HOST_EMAIL", "faculty@vivatraininginstitute.com")
+    zoom_host_email: str = os.getenv("ZOOM_HOST_EMAIL", "faculty@vivacareeracademy.com")
     zoom_default_timezone: str = os.getenv("ZOOM_DEFAULT_TIMEZONE", "Asia/Kolkata")
 
     razorpay_key_id: str = os.getenv("RAZORPAY_KEY_ID", "")

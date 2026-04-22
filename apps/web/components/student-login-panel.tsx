@@ -1,15 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
-import { writeSession, type AcademySession } from "../lib/auth";
+import { isSessionExpired, readSession, writeSession, type AcademySession } from "../lib/auth";
 
 export function StudentLoginPanel() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const session = readSession();
+    if (!session || isSessionExpired(session) || session.role !== "student") return;
+    void restoreSession(session);
+  }, []);
+
+  async function restoreSession(session: AcademySession) {
+    try {
+      const data = await apiRequest<{ session: AcademySession }>(
+        `/api/v1/academy/auth/me?tenant_name=${encodeURIComponent(session.tenant_name)}`,
+        { session }
+      );
+      writeSession(data.session);
+    } catch {
+      writeSession(null);
+    }
+  }
 
   async function login() {
     setBusy(true);

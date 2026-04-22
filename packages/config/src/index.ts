@@ -1,10 +1,9 @@
 export const defaultTenant = {
-  tenantName: "VIVA Training Institute",
-  brandName: "VIVA",
+  tenantName: "Viva Career Academy",
+  brandName: "Viva Career Academy",
   platformName: "Academy OS",
-  academyName: "VIVA Career Academy",
-  customDomain: "academy.vivatraininginstitute.com",
-  supportEmail: "support@vivatraininginstitute.com",
+  academyName: "Viva Career Academy",
+  customDomain: "academy.vivacareeracademy.com",
+  supportEmail: "support@vivacareeracademy.com",
   classroomProvider: "zoom"
 } as const;
-

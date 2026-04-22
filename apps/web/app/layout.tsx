@@ -3,8 +3,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "VIVA Academy Platform",
-  description: "Standalone white-label academy OS for VIVA and future institutes."
+  title: "Viva Career Academy Platform",
+  description: "Standalone academy platform for Viva Career Academy and future academy brands."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -14,4 +14,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-

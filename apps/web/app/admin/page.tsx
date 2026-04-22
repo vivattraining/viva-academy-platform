@@ -1,7 +1,8 @@
 import { SiteShell } from "../../components/site-shell";
 import { AdminBrandingStudio } from "../../components/admin-branding-studio";
+import { AdminLmsConsole } from "../../components/admin-lms-console";
 import { OperatorGate } from "../../components/operator-gate";
-import { ACADEMY_ADMIN_METRICS, ACADEMY_OPERATIONS_STACK } from "../../lib/academy";
+import { INTERNAL_ADMIN } from "../../lib/public-site-content";
 
 export default function AdminPage() {
   return (
@@ -9,12 +10,12 @@ export default function AdminPage() {
       activeHref="/admin"
       eyebrow="Academy CMS and operations"
       title="This is the control tower for curriculum, classrooms, attendance, certifications, and white-label setup."
-      description="This page is where VIVA and future institutes manage content, live delivery settings, Zoom defaults, payments, certificates, and custom-domain branding."
+      description="This page is where Viva Career Academy and future academy brands manage content, live delivery settings, Zoom defaults, payments, certificates, and custom-domain branding."
       primaryCta={{ label: "Open white-label controls", href: "/white-label" }}
       secondaryCta={{ label: "Open operations", href: "/operations" }}
     >
       <section className="grid grid-2">
-        {ACADEMY_ADMIN_METRICS.map((item) => (
+        {INTERNAL_ADMIN.metrics.map((item) => (
           <article key={item.label} className="card">
             <div className="eyebrow">{item.label}</div>
             <div className="metric" style={{ marginTop: 12 }}>{item.value}</div>
@@ -23,7 +24,7 @@ export default function AdminPage() {
       </section>
 
       <section className="grid grid-2" style={{ marginTop: 24 }}>
-        {ACADEMY_OPERATIONS_STACK.map((item) => (
+        {INTERNAL_ADMIN.actions.map((item) => (
           <article key={item} className="card">
             <div className="eyebrow">Admin area</div>
             <p className="muted" style={{ marginTop: 12 }}>{item}</p>
@@ -32,6 +33,7 @@ export default function AdminPage() {
       </section>
 
       <OperatorGate title="Admin branding and tenant controls" allowedRoles={["admin"]}>
+        <AdminLmsConsole />
         <AdminBrandingStudio />
       </OperatorGate>
     </SiteShell>

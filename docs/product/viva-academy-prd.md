@@ -1,8 +1,8 @@
-# VIVA Academy OS PRD
+# Viva Career Academy OS PRD
 
 ## Document Control
 
-- Product: VIVA Academy OS
+- Product: Viva Career Academy OS
 - Version: 1.0
 - Status: Launch-ready PRD
 - Date: 2026-04-08
@@ -11,7 +11,7 @@
 
 ## Executive Summary
 
-VIVA Academy OS is a standalone, white-label-ready digital academy platform built for travel, tourism, hospitality, and services education. The first deployment is for VIVA Training Institute on its own domain, with architecture designed to support future institutes without restructuring the core product.
+Viva Career Academy OS is a standalone, white-label-ready digital academy platform built for travel, tourism, hospitality, and services education. The first deployment is for Viva Career Academy on its own domain, with architecture designed to support future academy brands without restructuring the core product.
 
 The platform combines:
 
@@ -45,7 +45,7 @@ This creates revenue leakage, poor student confidence, and operational inefficie
 
 ## Opportunity
 
-VIVA has the opportunity to launch not just a training website, but a modern institute platform that feels premium, operationally mature, and scalable. The platform can first power VIVA Training Institute and later be reused across additional institutes in travel, hospitality, and services.
+Viva Career Academy has the opportunity to launch not just a training website, but a modern academy platform that feels premium, operationally mature, and scalable. The platform can first power Viva Career Academy and later be reused across additional academy brands in travel, hospitality, and services.
 
 ## Product Goals
 
@@ -53,7 +53,7 @@ VIVA has the opportunity to launch not just a training website, but a modern ins
 
 - Increase application-to-payment conversion
 - Reduce operational friction in admissions and class coordination
-- Improve the credibility and trust of the institute experience
+- Improve the credibility and trust of the academy experience
 - Give students a clear, guided post-payment learning journey
 - Support live-class delivery with Zoom and attendance controls
 - Establish a reusable white-label product foundation
@@ -84,7 +84,7 @@ Responsible for branding, overall academy setup, and governance.
 Needs:
 
 - white-label settings
-- institute branding
+- academy branding
 - domain ownership
 - oversight of operations
 
@@ -124,7 +124,7 @@ Needs:
 - live class access
 - attendance and progression visibility
 
-### 5. Future White-Label Institute Owners
+### 5. Future White-Label Academy Owners
 
 Responsible for running their own academy on the shared platform.
 
@@ -137,7 +137,7 @@ Needs:
 
 ## Core Product Principles
 
-- VIVA must feel like the owner of the product, not a tenant inside another visible brand
+- Viva Career Academy must feel like the owner of the product, not a tenant inside another visible brand
 - the user experience must feel premium and trustworthy
 - admissions to enrollment must be a connected journey
 - live class delivery must be operationally integrated
@@ -177,7 +177,7 @@ Needs:
 
 ### Journey 1: Applicant
 
-1. User lands on VIVA admissions page
+1. User lands on the Viva Career Academy admissions page
 2. User submits basic application form
 3. System creates application record
 4. System generates payment link
@@ -543,7 +543,7 @@ Mitigation:
 
 ## Open Questions
 
-- final production domain choice: `academy.vivatraininginstitute.com` vs `learn.vivatraininginstitute.com`
+- final production domain choice: `academy.vivacareeracademy.com` vs `learn.vivacareeracademy.com`
 - final transactional email sender identity
 - final WhatsApp provider account and approved templates
 - real payment fee amount and commercial rules

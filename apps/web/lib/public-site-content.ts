@@ -2,121 +2,202 @@ export const PUBLIC_NAV = [
   { label: "Home", href: "/" },
   { label: "Courses", href: "/courses" },
   { label: "Curriculum", href: "/curriculum" },
-  { label: "Faculty", href: "/faculty" },
-  { label: "Apply Now", href: "/apply" },
-  { label: "Contact", href: "/contact" },
-] as const;
-
-export const PUBLIC_HERO_HIGHLIGHTS = ["12 Weeks Program", "Weekend Live Classes", "Only 20 Seats"] as const;
-
-export const PUBLIC_AUTHORITY = {
-  line: "Built by industry experts with 20+ years of travel industry experience",
-  trust: "Powered by Viva Voyages",
-};
-
-export const PUBLIC_TRAVEL_REASONS = [
-  "One of the fastest-growing global industries",
-  "Massive outbound growth from India",
-  "Opportunities in leisure, MICE, luxury, and cruise segments",
-  "Global career possibilities",
-];
-
-export const PUBLIC_PROBLEMS = [
-  "Only theoretical knowledge",
-  "No real industry exposure",
-  "No structured training discipline",
-  "Companies do not want to retrain from scratch",
-];
-
-export const PUBLIC_SOLUTION_POINTS = [
-  "Industry-led curriculum",
-  "Real case studies",
-  "Live weekend training",
-  "Career-focused learning",
-];
-
-export const PUBLIC_COURSE_HIGHLIGHTS = [
-  "12-Week Certification Program",
-  "Live Weekend Classes",
-  "Real Industry Case Studies",
-  "Strict Progression System",
-  "Certification on Completion",
-];
-
-export const PUBLIC_COURSE_SNAPSHOT = [
-  { label: "Duration", value: "12 Weeks" },
-  { label: "Format", value: "Weekend + Online" },
-  { label: "Batch Size", value: "20 Students" },
-];
-
-export const PUBLIC_PROGRAM_OUTCOMES = [
-  "Understand the travel, tourism, hospitality, and services ecosystem",
-  "Create itineraries, cost packages, and handle real-world enquiries",
-  "Learn documentation, visa processes, customer communication, and operations discipline",
-  "Become interview-ready with applied case studies and guided industry exposure",
-];
-
-export const PUBLIC_HOW_IT_WORKS = [
-  "Enrol",
-  "Weekly Modules Unlock",
-  "Submit Answers",
-  "Get Evaluated",
-  "Progress to Next Level",
-];
-
-export const PUBLIC_MONTHS = [
-  {
-    label: "Month 1 - Foundation",
-    items: ["Travel Industry Overview", "Geography & Destinations", "Airline Basics", "Hotel & DMC Ecosystem"],
-  },
-  {
-    label: "Month 2 - Operations",
-    items: ["Itinerary Planning", "Costing & Pricing", "Visa Processes", "Customer Handling"],
-  },
-  {
-    label: "Month 3 - Advanced",
-    items: ["MICE & Corporate Travel", "Luxury Travel", "Sales & Negotiation", "Crisis Management"],
-  },
-];
-
-export const PUBLIC_INDUSTRY_EDGE = [
-  "Learn booking procedures",
-  "Understand real SOPs",
-  "Get interview-ready",
-  "Train like the real travel industry",
-];
-
-export const PUBLIC_APPLICANTS = ["Fresh Graduates", "Travel Students", "Career Switchers", "Job Seekers"] as const;
-
-export const PUBLIC_SPECIALIZATIONS = ["MICE Specialist", "Luxury Travel Expert", "Ticketing Professional", "DMC Operations"] as const;
-
-export const PUBLIC_TESTIMONIALS = [
-  "This is not just a course. It feels like a serious career opportunity.",
-  "The structure, live classes, and discipline make it feel like real industry preparation.",
-];
-
-export const PUBLIC_FINAL_POSITIONING = "Not just a course - a career launchpad for the travel industry.";
-
-export const PUBLIC_FACULTY = [
-  {
-    name: "Vikas Khanduri",
-    role: "Industry mentor and institute leader",
-    bio: "Brings decades of travel trade experience across operations, training, and institute-building."
-  },
-  {
-    name: "VIVA Guest Faculty",
-    role: "Travel and hospitality specialists",
-    bio: "Guest experts and live faculty connect training to the way the industry works today."
-  },
-  {
-    name: "Career and operations coaches",
-    role: "Execution-focused support",
-    bio: "Students receive guided feedback on discipline, assignments, communication, and readiness."
-  },
+  { label: "Trainers", href: "/trainers" },
+  { label: "AI Platform", href: "/ai-platform" },
+  { label: "Apply", href: "/apply" },
+  { label: "Login", href: "/login" },
 ] as const;
 
 export const PUBLIC_CONTACT = {
-  email: "admissions@vivatraininginstitute.com",
+  email: "admission@vivacareeracademy.com",
   phone: "+91 98765 43210",
-  offices: "Delhi / Mumbai",
+  offices: "Mumbai, Delhi, Bangalore, Goa",
+};
+
+export const LIVE_SITE_HERO = {
+  eyebrow: "Admissions Open · Monsoon Cohort 2026 · Applications close 14 May",
+  title: "A training institute for the world's most hospitable careers.",
+  body:
+    "VIVA prepares the next generation of travel, tourism and hospitality professionals through a hybrid programme of live cohorts, industry mentorship and global placement pathways.",
+  ctas: [
+    { label: "Begin Application", href: "/apply" },
+    { label: "Explore Programs", href: "/courses" },
+  ],
+};
+
+export const LIVE_SITE_METRICS = [
+  { value: "14 yr", label: "Shaping hospitality careers across five continents." },
+  { value: "92%", label: "Graduates placed within 90 days of convocation." },
+  { value: "240+", label: "Partner employers across hospitality, travel, and aviation." },
+];
+
+export const LIVE_SITE_PHILOSOPHY = [
+  {
+    title: "Industry-embedded faculty",
+    body: "Former GMs, cabin leads, sommeliers and destination directors guide each cohort with operator-level standards.",
+  },
+  {
+    title: "Hybrid by design",
+    body: "Three live evenings a week plus guided self-paced labs so working learners can stay disciplined without losing momentum.",
+  },
+  {
+    title: "Placement as a promise",
+    body: "Every programme ends in a career pathway backed by mentors, project review, and employer-facing readiness.",
+  },
+];
+
+export const LIVE_SITE_PROGRAMS = [
+  {
+    code: "P · 01",
+    title: "Hospitality Management",
+    body: "Front office, food and beverage, guest relations, and luxury hotel operations.",
+    duration: "18 months",
+    format: "Hybrid",
+    cohort: "Aug 2026",
+  },
+  {
+    code: "P · 02",
+    title: "Travel & Tour Operations",
+    body: "Itinerary design, GDS systems, destination expertise, and modern travel business workflows.",
+    duration: "12 months",
+    format: "Hybrid",
+    cohort: "Aug 2026",
+  },
+  {
+    code: "P · 03",
+    title: "Airline & Airport Services",
+    body: "Ground operations, cabin preparation, terminal services, and aviation protocols.",
+    duration: "9 months",
+    format: "Hybrid",
+    cohort: "Aug 2026",
+  },
+  {
+    code: "P · 04",
+    title: "Foundation Semester",
+    body: "A 12-week immersion for fresh graduates choosing their track before specialisation.",
+    duration: "3 months",
+    format: "Live + Self-paced",
+    cohort: "Rolling",
+  },
+];
+
+export const LIVE_SITE_CURRICULUM = [
+  {
+    phase: "Semester I",
+    title: "Foundations of Service & Hospitality",
+    body: "Shared vocabulary of service standards, front-of-house operations, communication, and guest-facing professionalism.",
+    modules: [
+      "Introduction to the Hospitality Industry",
+      "Front Office Management & Guest Relations",
+      "Food & Beverage Service Foundations",
+      "Professional Communication & Etiquette",
+      "World Geography & Destination Studies I",
+      "Studio: Service Simulation & Role-Play Labs",
+    ],
+  },
+  {
+    phase: "Semester II",
+    title: "Operations & Travel Systems",
+    body: "Itineraries, costing, documentation, visa logic, and customer handling discipline.",
+    modules: [
+      "Destination Planning",
+      "Travel Costing & Margin Logic",
+      "Visa and Documentation Systems",
+      "Customer Scenarios and Escalation",
+      "GDS Foundations",
+      "Weekly Trainer Assessment",
+    ],
+  },
+];
+
+export const VIVA_12_MODULES = Array.from({ length: 12 }, (_, index) => ({
+  week: `Week ${String(index + 1).padStart(2, "0")}`,
+  title: [
+    "Travel Industry Overview",
+    "Geography & Destination Logic",
+    "Airline and Airport Basics",
+    "Hotels, DMCs, and Supplier Ecosystem",
+    "Itinerary Planning",
+    "Costing and Pricing",
+    "Visa Processes and Documentation",
+    "Customer Handling and Objections",
+    "MICE and Corporate Travel",
+    "Luxury Travel Design",
+    "Sales and Negotiation",
+    "Crisis Management and Career Readiness",
+  ][index],
+  locked: index > 1,
+}));
+
+export const LIVE_SITE_FACULTY = [
+  {
+    name: "Ayesha Rao",
+    role: "Dean · Hospitality Studies",
+    bio: "Twenty-two years with Taj and Oberoi, including GM leadership at Taj Falaknuma Palace.",
+  },
+  {
+    name: "Captain Nikhil Sharma",
+    role: "Chair · Aviation & Cruise",
+    bio: "Former cabin services director and certified IATA/ICAO instructor with cruise operations depth.",
+  },
+  {
+    name: "Priya Menon",
+    role: "Lead · Travel & Operations",
+    bio: "Designs GDS, itinerary, and destination modules from fifteen years in tour operations.",
+  },
+  {
+    name: "Dr. Lakshmi Iyer",
+    role: "Lead · Research & Ethics",
+    bio: "Tourism policy specialist guiding ethics, sustainability, and systems thinking across the curriculum.",
+  },
+];
+
+export const AI_PLATFORM_PILLARS = [
+  {
+    title: "Curriculum AI",
+    body: "Generates roadmap suggestions, chapter summaries, and specialization paths from learner intent.",
+  },
+  {
+    title: "Student AI",
+    body: "Acts as an AI coach that explains concepts, tracks risk, and nudges students before deadlines.",
+  },
+  {
+    title: "Coach AI",
+    body: "Assists trainers with suggested feedback, evaluation summaries, and content drafting.",
+  },
+];
+
+export const INTERNAL_STUDENT = {
+  progress: 68,
+  module: "Module 6 · Costing and Pricing",
+  pendingChapters: 3,
+  penaltyAlert: "Complete this module within 2 days to avoid a ₹2000 relock fee.",
+  chapters: [
+    { name: "Chapter 1 · FIT pricing", status: "Evaluated" },
+    { name: "Chapter 2 · Group costing", status: "Submitted" },
+    { name: "Chapter 3 · Margin discipline", status: "Not started" },
+  ],
+};
+
+export const INTERNAL_TRAINER = {
+  assignedModules: ["Week 05 · Itinerary Planning", "Week 06 · Costing and Pricing"],
+  queue: [
+    { student: "Riya Sharma", module: "Costing and Pricing", status: "Needs review" },
+    { student: "Arjun Nair", module: "Visa Processes", status: "AI feedback ready" },
+  ],
+};
+
+export const INTERNAL_ADMIN = {
+  metrics: [
+    { label: "Active batches", value: "4" },
+    { label: "Students", value: "73" },
+    { label: "Pending payments", value: "9" },
+    { label: "At-risk learners", value: "12" },
+  ],
+  actions: [
+    "Create courses and weekly modules",
+    "Assign trainers and cap batches at 20 students",
+    "Track course fee, specialization fee, and penalty payments",
+    "Monitor progression, lock states, and unlock overrides",
+  ],
 };

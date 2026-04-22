@@ -20,7 +20,7 @@ type BrandingState = {
 const DEFAULT_BRANDING: BrandingState = {
   tenant_name: DEFAULT_TENANT,
   brand_name: ACADEMY_THEME.name,
-  academy_name: "VIVA Career Academy",
+  academy_name: "Viva Career Academy",
   custom_domain: ACADEMY_THEME.domain,
   primary_color: "#000666",
   accent_color: "#B51A1E",
@@ -78,7 +78,7 @@ export function MarketingShell({
                 href={item.href}
                 className={`editorial-nav-link${item.href === activeHref ? " active" : ""}`}
               >
-                {item.label === "Home" ? "Programs" : item.label}
+                {item.label}
               </Link>
             ))}
           </nav>
@@ -98,20 +98,20 @@ export function MarketingShell({
           <div className="editorial-footer-brand">
             <div className="editorial-footer-title">{branding.brand_name}</div>
             <p>
-              Empowering the next generation of travel leaders through rigorous academic training and research-led instruction.
+              A trainer-led, discipline-driven career platform for travel, tourism, hospitality, and service careers.
             </p>
           </div>
           <div className="editorial-footer-links">
-            <a href="/privacy">Privacy Policy</a>
-            <a href="/terms">Terms of Service</a>
-            <a href="/disclosures">Institutional Disclosures</a>
-            <a href="/compliance">Compliance</a>
-            <a href="/accessibility">Accessibility</a>
+            <a href="/courses">Courses</a>
+            <a href="/curriculum">Curriculum</a>
+            <a href="/trainers">Trainers</a>
+            <a href="/ai-platform">AI Platform</a>
+            <a href="/apply">Apply</a>
           </div>
           <div className="editorial-footer-meta">
             <div>{PUBLIC_CONTACT.email}</div>
             <div>{PUBLIC_CONTACT.phone}</div>
-            <div>© 2026 Viva Training Institute. All rights reserved.</div>
+            <div>© 2026 Viva Career Academy. All rights reserved.</div>
           </div>
         </div>
       </footer>

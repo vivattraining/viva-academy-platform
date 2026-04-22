@@ -15,7 +15,7 @@ export default async function PaymentFailedPage({
       title="When payment fails, the application should remain recoverable and visible."
       description="This recovery surface prevents applicants from falling out of the funnel and gives operators a clear handoff back into admissions."
     >
-      <PaymentFailedPanel applicationId={params.applicationId || ""} tenant={params.tenant || "VIVA Training Institute"} token={params.token || ""} />
+      <PaymentFailedPanel applicationId={params.applicationId || ""} tenant={params.tenant || "Viva Career Academy"} token={params.token || ""} />
     </SiteShell>
   );
 }

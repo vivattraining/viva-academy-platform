@@ -129,12 +129,12 @@ def create_payment_link(*, application_id: str, amount_due: float, currency: str
     if razorpay_mode() != "live":
         order_id = f"order_{uuid4().hex[:14]}"
         return {
-          "mode": "mock",
-          "order_id": order_id,
-          "payment_reference": application_id,
-          "payment_url": f"https://payments.vivatraininginstitute.com/checkout/{order_id}",
-          "amount_due": amount_due,
-          "currency": currency,
+            "mode": "mock",
+            "order_id": order_id,
+            "payment_reference": application_id,
+            "payment_url": f"https://payments.vivacareeracademy.com/checkout/{order_id}",
+            "amount_due": amount_due,
+            "currency": currency,
         }
 
     auth = b64encode(f"{settings.razorpay_key_id}:{settings.razorpay_key_secret}".encode("utf-8")).decode("utf-8")
@@ -166,4 +166,55 @@ def create_payment_link(*, application_id: str, amount_due: float, currency: str
         "payment_url": f"https://checkout.razorpay.com/v1/checkout.js?order_id={order_id}",
         "amount_due": amount_due,
         "currency": currency,
+    }
+
+
+def _razorpay_auth_header() -> str:
+    return b64encode(f"{settings.razorpay_key_id}:{settings.razorpay_key_secret}".encode("utf-8")).decode("utf-8")
+
+
+def fetch_payment_status(*, order_id: str) -> dict:
+    if razorpay_mode() != "live":
+        return {
+            "mode": "mock",
+            "order_id": order_id,
+            "order_status": "created",
+            "payment_id": None,
+            "payment_status": "pending",
+            "captured": False,
+            "verified": False,
+        }
+
+    auth = _razorpay_auth_header()
+    try:
+        order = _json_request(
+            f"https://api.razorpay.com/v1/orders/{order_id}",
+            headers={"Authorization": f"Basic {auth}"},
+        )
+        payments = _json_request(
+            f"https://api.razorpay.com/v1/orders/{order_id}/payments",
+            headers={"Authorization": f"Basic {auth}"},
+        )
+    except Exception as error:
+        _raise_provider_error(error, "Unable to fetch Razorpay payment status")
+
+    payment_items = payments.get("items", []) if isinstance(payments, dict) else []
+    prioritized_payment = next(
+        (
+            item for item in payment_items
+            if item.get("status") in {"captured", "authorized", "failed", "created"}
+        ),
+        payment_items[0] if payment_items else {},
+    )
+    payment_status = prioritized_payment.get("status") or ("paid" if order.get("status") == "paid" else "pending")
+    captured = payment_status == "captured" or order.get("status") == "paid"
+
+    return {
+        "mode": "live",
+        "order_id": order_id,
+        "order_status": order.get("status", "created"),
+        "payment_id": prioritized_payment.get("id"),
+        "payment_status": payment_status,
+        "captured": captured,
+        "verified": captured,
     }

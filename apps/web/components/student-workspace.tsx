@@ -42,6 +42,40 @@ type StudentPayload = {
     join_source: string;
     note: string;
   }>;
+  lms?: {
+    course: {
+      id: string;
+      title: string;
+      certificate_name: string;
+    };
+    progress: {
+      completion_percent: number;
+      chapters_completed: number;
+      chapters_total: number;
+      current_week: number;
+      penalty_ready: boolean;
+      current_module?: {
+        id: string;
+        title: string;
+        penalty_ready?: boolean;
+        penalty_fee_amount?: number;
+        penalty_fee_currency?: string;
+        chapters?: Array<{
+          id: string;
+          title: string;
+          status: string;
+        }>;
+      } | null;
+    };
+    modules: Array<{
+      id: string;
+      title: string;
+      status: string;
+      chapters_completed: number;
+      chapters_total: number;
+      penalty_ready?: boolean;
+    }>;
+  } | null;
 };
 
 export function StudentWorkspace() {
@@ -82,31 +116,29 @@ export function StudentWorkspace() {
     return <section className="card">{error || "Student workspace is unavailable."}</section>;
   }
 
-  const attendancePercent = Math.round((payload.application.attendance_completed / Math.max(payload.application.attendance_total, 1)) * 100);
+  const progressPercent = payload.lms?.progress?.completion_percent ?? Math.round((payload.application.attendance_completed / Math.max(payload.application.attendance_total, 1)) * 100);
   const nextSession = payload.sessions[0];
-  const chapterRows = [
-    {
-      id: "01",
-      title: payload.application.course_name,
-      meta: "Core lecture",
-      status: "Evaluated - Pass",
-      tone: "success",
-    },
-    {
-      id: "02",
-      title: nextSession?.title || "Live session review",
-      meta: nextSession ? `${nextSession.start_time} • Workshop` : "Scheduled module",
-      status: payload.attendance[0]?.status === "present" ? "Submitted" : "In review",
-      tone: "info",
-    },
-    {
-      id: "03",
-      title: "Final Assessment: Compliance Audit",
-      meta: nextSession ? `Due after ${nextSession.session_date}` : "Pending unlock",
-      status: "Not Started",
-      tone: "muted",
-    },
-  ];
+  const currentModule = payload.lms?.progress?.current_module;
+  const chapterRows =
+    currentModule?.chapters?.map((chapter, index) => ({
+      id: String(index + 1).padStart(2, "0"),
+      title: chapter.title,
+      meta: currentModule.title,
+      status: chapter.status.replaceAll("_", " "),
+      tone:
+        chapter.status === "completed" ? "success" :
+        chapter.status === "submitted" || chapter.status === "reviewed" ? "info" :
+        "muted",
+    })) ||
+    [
+      {
+        id: "01",
+        title: payload.application.course_name,
+        meta: "Core lecture",
+        status: "Evaluated - Pass",
+        tone: "success",
+      },
+    ];
 
   return (
     <section className="dashboard-shell">
@@ -124,26 +156,26 @@ export function StudentWorkspace() {
             <div className="dashboard-panel-top">
               <div>
                 <h1>Student Dashboard</h1>
-                <p>{payload.batch?.course_name || "Strategic Operations & Global Compliance Track"}</p>
+                <p>{payload.lms?.course?.title || payload.batch?.course_name || "Professional Certification in Travel & Tourism"}</p>
               </div>
               <div className="dashboard-percent">
-                <span>{attendancePercent}%</span>
+                <span>{progressPercent}%</span>
                 <small>Overall Progress</small>
               </div>
             </div>
             <div className="dashboard-progress-rail">
-              <div style={{ width: `${attendancePercent}%` }} />
+              <div style={{ width: `${progressPercent}%` }} />
             </div>
             <div className="dashboard-progress-meta">
-              <span>MODULE 01 COMPLETED</span>
-              <span>CERTIFICATION AT 100%</span>
+              <span>{payload.lms ? `${payload.lms.progress.chapters_completed}/${payload.lms.progress.chapters_total} chapters completed` : "MODULE 01 COMPLETED"}</span>
+              <span>{payload.lms?.course?.certificate_name || "CERTIFICATION AT 100%"}</span>
             </div>
           </div>
 
           <div className="dashboard-panel dashboard-module-panel">
             <div className="dashboard-module-head">
-              <h2>Current Module: Week 04</h2>
-              <span>IN PROGRESS</span>
+              <h2>Current Module: {currentModule?.title || `Week ${String(payload.lms?.progress?.current_week || 1).padStart(2, "0")}`}</h2>
+              <span>{currentModule?.penalty_ready || payload.lms?.progress?.penalty_ready ? "PENALTY ACTIVE" : "IN PROGRESS"}</span>
             </div>
             <div className="dashboard-module-list">
               {chapterRows.map((row) => (
@@ -179,8 +211,12 @@ export function StudentWorkspace() {
             <h3 className="dashboard-side-title">Recent Updates</h3>
             <div className="dashboard-notes">
               <div>
-                <strong>Missed Assessment Deadline</strong>
-                <p>Penalty imposed. Pay to regain access to the next chapter.</p>
+                <strong>{payload.lms?.progress?.penalty_ready ? "Missed Assessment Deadline" : "Module progression is live"}</strong>
+                <p>
+                  {payload.lms?.progress?.penalty_ready
+                    ? `Penalty imposed. Pay ₹${currentModule?.penalty_fee_amount || 2000} to regain access to the next chapter.`
+                    : "Trainer reviews and chapter submissions now drive your progression week by week."}
+                </p>
               </div>
               <div>
                 <strong>Module Feedback Published</strong>
@@ -191,7 +227,7 @@ export function StudentWorkspace() {
 
           <div className="dashboard-certificate">
             <h3>Certification</h3>
-            <p>Your professional certification will be available once all modules are completed and evaluated as pass.</p>
+            <p>Your {payload.lms?.course?.certificate_name || "professional certification"} will be available once all modules are completed and evaluated as pass.</p>
             <button disabled>Download Certificate</button>
           </div>
         </aside>

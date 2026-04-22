@@ -19,7 +19,7 @@ type BrandingState = {
 const DEFAULT_BRANDING: BrandingState = {
   tenant_name: DEFAULT_TENANT,
   brand_name: ACADEMY_THEME.name,
-  academy_name: "VIVA Career Academy",
+  academy_name: "Viva Career Academy",
   custom_domain: ACADEMY_THEME.domain,
   primary_color: ACADEMY_THEME.primary,
   accent_color: ACADEMY_THEME.secondary,

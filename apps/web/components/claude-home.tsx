@@ -296,7 +296,7 @@ export function ClaudeHome() {
             <span className={styles.brandMark}>V</span>
             <span className={styles.brandWord}>
               <span className={styles.brandName}>VIVA</span>
-              <span className={styles.brandTag}>Institute · Est. 2011</span>
+              <span className={styles.brandTag}>Academy · Est. 2011</span>
             </span>
           </Link>
 
@@ -325,7 +325,7 @@ export function ClaudeHome() {
             <span className={styles.chip}>
               <span className={styles.dot} /> Admissions 2026 · Live
             </span>
-            <span className={styles.chip}>Ranked among India&apos;s top 5 travel & hospitality institutes — Industry Survey 2025</span>
+            <span className={styles.chip}>Ranked among India&apos;s top 5 travel & hospitality academies — Industry Survey 2025</span>
           </div>
 
           <div className={styles.heroGrid}>
@@ -728,7 +728,7 @@ export function ClaudeHome() {
               <Link className={styles.buttonGhostLight} href="/brochure">
                 Download Prospectus
               </Link>
-              <a className={styles.buttonGhostLight} href="mailto:admission@vivatraininginstitute.com">
+              <a className={styles.buttonGhostLight} href="mailto:admission@vivacareeracademy.com">
                 Book a Call
               </a>
             </div>
@@ -768,7 +768,7 @@ export function ClaudeHome() {
               <p className={styles.faqIntro}>
                 The questions we hear most often, answered in brief. For anything not covered here, our admissions team replies personally — usually within the same working day.
               </p>
-              <a className={styles.buttonGhost} href="mailto:admission@vivatraininginstitute.com" style={{ marginTop: 20 }}>
+              <a className={styles.buttonGhost} href="mailto:admission@vivacareeracademy.com" style={{ marginTop: 20 }}>
                 Talk to Admissions <span className={styles.arrow}>↗</span>
               </a>
             </div>
@@ -795,7 +795,7 @@ export function ClaudeHome() {
                 <span className={styles.brandMark}>V</span>
                 <span className={styles.brandWord}>
                   <span className={styles.brandName}>VIVA</span>
-                  <span className={styles.brandTag}>Institute · Est. 2011</span>
+                  <span className={styles.brandTag}>Academy · Est. 2011</span>
                 </span>
               </Link>
               <p>
@@ -814,7 +814,7 @@ export function ClaudeHome() {
             </div>
 
             <div className={styles.footerColumn}>
-              <h6 className={styles.footerHeading}>Institute</h6>
+              <h6 className={styles.footerHeading}>Academy</h6>
               <a href="#about">About VIVA</a>
               <a href="#faculty">Faculty</a>
               <a href="#curriculum">Curriculum</a>
@@ -829,13 +829,13 @@ export function ClaudeHome() {
               <a href="#admissions">Fees & Financing</a>
               <a href="#admissions">Scholarships</a>
               <Link href="/brochure">Prospectus</Link>
-              <a href="mailto:admission@vivatraininginstitute.com">Book a Call</a>
+              <a href="mailto:admission@vivacareeracademy.com">Book a Call</a>
               <Link href="/login">Application Login</Link>
             </div>
 
             <div className={styles.footerColumn}>
               <h6 className={styles.footerHeading}>Contact</h6>
-              <a href="mailto:support@vivatraininginstitute.com">support@vivatraininginstitute.com</a>
+              <a href="mailto:support@vivacareeracademy.com">support@vivacareeracademy.com</a>
               <a href="tel:+917042107711">+91 70421 07711</a>
               <span>Mumbai · HQ</span>
               <span>Bangalore · Studio</span>
@@ -845,7 +845,7 @@ export function ClaudeHome() {
           </div>
 
           <div className={styles.footerBottom}>
-            <div>© 2026 VIVA Institute of Travel, Tourism & Hospitality. All rights reserved.</div>
+            <div>© 2026 Viva Career Academy of Travel, Tourism & Hospitality. All rights reserved.</div>
             <div className={styles.footerSocial}>
               <a href="#">Instagram</a>
               <a href="#">LinkedIn</a>

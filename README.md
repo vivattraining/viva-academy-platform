@@ -1,6 +1,6 @@
-# VIVA Academy Platform
+# Viva Career Academy Platform
 
-Standalone academy OS for VIVA and future white-label institutes across travel, tourism, hospitality, and services.
+Standalone academy OS for Viva Career Academy and future white-label academy brands across travel, tourism, hospitality, and services.
 
 ## What This Repo Owns
 
@@ -30,7 +30,7 @@ infra/        Deployment guides and IaC placeholders
 
 This repo should remain product-independent from NAMA.
 
-- VIVA and future institutes run on their own domains.
+- Viva Career Academy and future academy brands run on their own domains.
 - NAMA can remain an integration partner for CRM, AI scoring, or analytics.
 - The learner, trainer, and admin experience should not expose NAMA unless you explicitly want a powered-by relationship.
 
@@ -64,5 +64,4 @@ uvicorn app.main:app --reload --port 8000
 ## Notes
 
 - The scaffold is intentionally production-shaped, not a throwaway prototype.
-- This repo is designed so VIVA can launch first, then expand to multi-tenant white-label academies later.
-
+- This repo is designed so Viva Career Academy can launch first, then expand to multi-tenant white-label academies later.

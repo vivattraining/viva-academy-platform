@@ -7,7 +7,7 @@ export default async function PaymentSuccessPage({
   searchParams: Promise<{ tenant?: string; applicationId?: string; token?: string }>;
 }) {
   const params = await searchParams;
-  const tenant = params.tenant || "VIVA Training Institute";
+  const tenant = params.tenant || "Viva Career Academy";
   const applicationId = params.applicationId || "";
   const token = params.token || "";
 

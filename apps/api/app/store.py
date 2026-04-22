@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 import secrets
 from typing import Optional
 from uuid import uuid4
@@ -22,16 +22,291 @@ def make_id(prefix: str) -> str:
 def _default_branding(tenant_name: str) -> dict:
     return {
         "tenant_name": tenant_name,
-        "brand_name": "VIVA Training Institute",
-        "academy_name": "VIVA Career Academy",
-        "custom_domain": "academy.vivatraininginstitute.com",
+        "brand_name": "Viva Career Academy",
+        "academy_name": "Viva Career Academy",
+        "custom_domain": "academy.vivacareeracademy.com",
         "primary_color": "#0B1F3A",
         "accent_color": "#F4B400",
-        "support_email": "support@vivatraininginstitute.com",
-        "certificate_name": "VIVA Certified Travel Professional",
+        "support_email": "support@vivacareeracademy.com",
+        "certificate_name": "Professional Certification in Travel & Tourism",
         "classroom_provider": "zoom",
-        "zoom_host_email": "faculty@vivatraininginstitute.com",
+        "zoom_host_email": "faculty@vivacareeracademy.com",
         "zoom_default_timezone": "Asia/Kolkata",
+    }
+
+
+def _safe_date(value: Optional[str]) -> Optional[date]:
+    if not value:
+        return None
+    try:
+        return date.fromisoformat(str(value)[:10])
+    except ValueError:
+        return None
+
+
+def _find_by_id(items: list[dict], item_id: str) -> Optional[dict]:
+    return next((item for item in items if item.get("id") == item_id), None)
+
+
+def _ensure_lms_collections(state: dict) -> dict:
+    state.setdefault("courses", [])
+    state.setdefault("course_modules", [])
+    state.setdefault("course_chapters", [])
+    state.setdefault("chapter_submissions", [])
+    state.setdefault("learner_progress", [])
+    state.setdefault("trainer_reviews", [])
+    return state
+
+
+def _default_lms_seed(tenant_name: str, batch_id: str, application_id: str, current: str) -> dict:
+    course_id = "course_viva_flagship"
+    module_1_id = "mod_viva_week_01"
+    module_2_id = "mod_viva_week_02"
+    module_3_id = "mod_viva_week_03"
+    chapter_1_id = "chap_viva_week_01_intro"
+    chapter_2_id = "chap_viva_week_01_customer"
+    chapter_3_id = "chap_viva_week_02_fit"
+    chapter_4_id = "chap_viva_week_02_pricing"
+    submission_id = "sub_viva_demo_01"
+    review_id = "review_viva_demo_01"
+    return {
+        "courses": [
+            {
+                "id": course_id,
+                "tenant_name": tenant_name,
+                "title": "Professional Certification in Travel & Tourism",
+                "slug": "travel-professional-certification",
+                "code": "VCA-TT-12",
+                "description": "Flagship 12-week pathway with weekly unlock discipline and trainer-reviewed chapter submissions.",
+                "duration_weeks": 12,
+                "weekly_unlock_days": 7,
+                "penalty_fee_amount": 2000,
+                "penalty_fee_currency": "INR",
+                "relock_grace_days": 2,
+                "certificate_name": "Professional Certification in Travel & Tourism",
+                "active": True,
+                "created_at": current,
+                "updated_at": current,
+            }
+        ],
+        "course_modules": [
+            {
+                "id": module_1_id,
+                "tenant_name": tenant_name,
+                "course_id": course_id,
+                "title": "Week 01 · Travel Industry Foundations",
+                "week_number": 1,
+                "summary": "Sector orientation, customer journey, and academy expectations.",
+                "unlock_offset_days": 0,
+                "submission_required": True,
+                "passing_score": 70,
+                "penalty_fee_amount": 2000,
+                "penalty_fee_currency": "INR",
+                "relock_grace_days": 2,
+                "created_at": current,
+                "updated_at": current,
+            },
+            {
+                "id": module_2_id,
+                "tenant_name": tenant_name,
+                "course_id": course_id,
+                "title": "Week 02 · FIT Itinerary Planning",
+                "week_number": 2,
+                "summary": "Build itinerary logic and basic traveler matching.",
+                "unlock_offset_days": 7,
+                "submission_required": True,
+                "passing_score": 70,
+                "penalty_fee_amount": 2000,
+                "penalty_fee_currency": "INR",
+                "relock_grace_days": 2,
+                "created_at": current,
+                "updated_at": current,
+            },
+            {
+                "id": module_3_id,
+                "tenant_name": tenant_name,
+                "course_id": course_id,
+                "title": "Week 03 · Costing and Pricing",
+                "week_number": 3,
+                "summary": "Margin discipline, package pricing, and commercial clarity.",
+                "unlock_offset_days": 14,
+                "submission_required": True,
+                "passing_score": 75,
+                "penalty_fee_amount": 2000,
+                "penalty_fee_currency": "INR",
+                "relock_grace_days": 2,
+                "created_at": current,
+                "updated_at": current,
+            },
+        ],
+        "course_chapters": [
+            {
+                "id": chapter_1_id,
+                "tenant_name": tenant_name,
+                "course_id": course_id,
+                "module_id": module_1_id,
+                "title": "Chapter 1 · Industry Overview",
+                "position": 1,
+                "content_type": "lesson",
+                "summary": "Understand the travel trade landscape and stakeholder map.",
+                "estimated_minutes": 18,
+                "mandatory": True,
+                "question_prompt": "Summarize how retail, wholesale, and DMC roles differ in one itinerary journey.",
+                "created_at": current,
+                "updated_at": current,
+            },
+            {
+                "id": chapter_2_id,
+                "tenant_name": tenant_name,
+                "course_id": course_id,
+                "module_id": module_1_id,
+                "title": "Chapter 2 · Customer Intent Mapping",
+                "position": 2,
+                "content_type": "assignment",
+                "summary": "Translate learner discovery notes into travel recommendations.",
+                "estimated_minutes": 25,
+                "mandatory": True,
+                "question_prompt": "Write a short response to a honeymoon inquiry focused on privacy and premium feel.",
+                "created_at": current,
+                "updated_at": current,
+            },
+            {
+                "id": chapter_3_id,
+                "tenant_name": tenant_name,
+                "course_id": course_id,
+                "module_id": module_2_id,
+                "title": "Chapter 1 · FIT Itinerary Logic",
+                "position": 1,
+                "content_type": "lesson",
+                "summary": "Sequence destinations and nights around traveler priorities.",
+                "estimated_minutes": 22,
+                "mandatory": True,
+                "question_prompt": "Outline a 5-night Bali split for a premium honeymoon couple.",
+                "created_at": current,
+                "updated_at": current,
+            },
+            {
+                "id": chapter_4_id,
+                "tenant_name": tenant_name,
+                "course_id": course_id,
+                "module_id": module_3_id,
+                "title": "Chapter 1 · Margin Discipline",
+                "position": 1,
+                "content_type": "assignment",
+                "summary": "Apply markup rules and protect contribution margin.",
+                "estimated_minutes": 30,
+                "mandatory": True,
+                "question_prompt": "Explain how you would protect margin when a client asks for a discount.",
+                "created_at": current,
+                "updated_at": current,
+            },
+        ],
+        "chapter_submissions": [
+            {
+                "id": submission_id,
+                "tenant_name": tenant_name,
+                "application_id": application_id,
+                "course_id": course_id,
+                "module_id": module_1_id,
+                "chapter_id": chapter_2_id,
+                "answer_text": "I would recommend two quiet Ubud nights plus three beach nights in Seminyak, framing privacy, spa options, and availability urgency.",
+                "answer_url": None,
+                "submission_kind": "text",
+                "status": "reviewed",
+                "submitted_at": current,
+                "created_at": current,
+                "updated_at": current,
+            }
+        ],
+        "learner_progress": [
+            {
+                "id": "progress_viva_demo_01",
+                "tenant_name": tenant_name,
+                "application_id": application_id,
+                "course_id": course_id,
+                "batch_id": batch_id,
+                "current_week": 2,
+                "current_module_id": module_2_id,
+                "status": "active",
+                "module_status": "in_progress",
+                "chapter_status": "in_review",
+                "completed_chapter_ids": [chapter_1_id],
+                "submitted_chapter_ids": [chapter_2_id],
+                "reviewed_submission_ids": [submission_id],
+                "unlock_override": False,
+                "last_unlocked_at": current,
+                "last_activity_at": current,
+                "penalty_status": "clear",
+                "penalty_fee_amount": 2000,
+                "penalty_fee_currency": "INR",
+                "penalty_paid_at": None,
+                "note": "Seeded LMS progress for learner workspace.",
+                "created_at": current,
+                "updated_at": current,
+            }
+        ],
+        "trainer_reviews": [
+            {
+                "id": review_id,
+                "tenant_name": tenant_name,
+                "submission_id": submission_id,
+                "application_id": application_id,
+                "course_id": course_id,
+                "module_id": module_1_id,
+                "chapter_id": chapter_2_id,
+                "reviewer_name": "Vikas Khanduri",
+                "outcome": "pass",
+                "score": 82,
+                "ai_feedback": "AI draft suggested stronger urgency and clearer personalization.",
+                "trainer_feedback": "Good structure. Keep the close tighter and specify why the split fits the honeymoon brief.",
+                "unlock_next_module": True,
+                "reviewed_at": current,
+                "created_at": current,
+                "updated_at": current,
+            }
+        ],
+    }
+
+
+def _course_for_application(state: dict, application: dict) -> Optional[dict]:
+    courses = state.get("courses", [])
+    normalized_name = str(application.get("course_name", "")).strip().lower()
+    return next(
+        (
+            item
+            for item in courses
+            if str(item.get("title", "")).strip().lower() == normalized_name
+            or str(item.get("certificate_name", "")).strip().lower() == normalized_name
+        ),
+        courses[0] if courses else None,
+    )
+
+
+def _module_unlock_snapshot(course: dict, module: dict, batch: Optional[dict], progress: Optional[dict]) -> dict:
+    start_date = _safe_date((batch or {}).get("start_date"))
+    unlock_offset = int(module.get("unlock_offset_days", max(int(module.get("week_number", 1)) - 1, 0) * int(course.get("weekly_unlock_days", 7))))
+    unlock_date = start_date + timedelta(days=unlock_offset) if start_date else None
+    weekly_days = int(course.get("weekly_unlock_days", 7) or 7)
+    deadline_date = unlock_date + timedelta(days=weekly_days) if unlock_date else None
+    grace_days = int(module.get("relock_grace_days", course.get("relock_grace_days", 2)) or 2)
+    relock_date = deadline_date + timedelta(days=grace_days) if deadline_date else None
+    today = datetime.now(timezone.utc).date()
+    unlock_override = bool((progress or {}).get("unlock_override"))
+    is_unlocked = unlock_override or unlock_date is None or today >= unlock_date
+    is_overdue = bool(deadline_date and today > deadline_date)
+    is_relocked = bool(relock_date and today > relock_date and not unlock_override)
+    penalty_ready = bool(is_relocked and str((progress or {}).get("penalty_status", "clear")) != "paid")
+    return {
+        "unlock_date": unlock_date.isoformat() if unlock_date else None,
+        "deadline_date": deadline_date.isoformat() if deadline_date else None,
+        "relock_date": relock_date.isoformat() if relock_date else None,
+        "is_unlocked": is_unlocked,
+        "is_overdue": is_overdue,
+        "is_relocked": is_relocked,
+        "penalty_ready": penalty_ready,
+        "penalty_fee_amount": float(module.get("penalty_fee_amount", course.get("penalty_fee_amount", 0)) or 0),
+        "penalty_fee_currency": module.get("penalty_fee_currency", course.get("penalty_fee_currency", "INR")),
+        "relock_grace_days": grace_days,
     }
 
 
@@ -39,7 +314,7 @@ def default_state(tenant_name: str) -> dict:
     current = now_iso()
     batch_id = "batch_viva_01"
     demo_application_id = "acad_demo_student_01"
-    return {
+    state = {
         "tenant_name": tenant_name,
         "branding": _default_branding(tenant_name),
         "applications": [
@@ -59,8 +334,16 @@ def default_state(tenant_name: str) -> dict:
                 "amount_due": 2500.0,
                 "currency": "INR",
                 "payment_order_id": "order_demo_student_01",
-                "payment_url": "https://payments.vivatraininginstitute.com/demo/order_demo_student_01",
+                "payment_url": "https://payments.vivacareeracademy.com/demo/order_demo_student_01",
                 "payment_reference": "payref_demo_student_01",
+                "payment_mode": "mock",
+                "payment_gateway_status": "mock_captured",
+                "payment_gateway_order_status": "paid",
+                "payment_gateway_payment_id": "mockpay_demo_student_01",
+                "payment_reconciliation_status": "verified",
+                "payment_verified_at": current,
+                "payment_failed_at": None,
+                "payment_last_checked_at": current,
                 "certificate_url": None,
                 "attendance_completed": 1,
                 "attendance_total": 12,
@@ -72,12 +355,12 @@ def default_state(tenant_name: str) -> dict:
             {
                 "id": batch_id,
                 "tenant_name": tenant_name,
-                "name": "VIVA Batch 01",
-                "course_name": "Travel Professional Certification",
+                "name": "VCA Batch 01",
+                "course_name": "Professional Certification in Travel & Tourism",
                 "start_date": "2026-05-04",
                 "trainer_name": "Vikas Khanduri",
                 "classroom_mode": "hybrid",
-                "classroom_link": "https://academy.vivatraininginstitute.com/classrooms/batch-01",
+                "classroom_link": "https://academy.vivacareeracademy.com/classrooms/batch-01",
                 "zoom_meeting_id": None,
                 "capacity": 20,
                 "created_at": current,
@@ -94,7 +377,7 @@ def default_state(tenant_name: str) -> dict:
                 "start_time": "11:00",
                 "end_time": "12:30",
                 "trainer_name": "Vikas Khanduri",
-                "classroom_link": "https://academy.vivatraininginstitute.com/classrooms/batch-01",
+                "classroom_link": "https://academy.vivacareeracademy.com/classrooms/batch-01",
                 "zoom_meeting_id": None,
                 "zoom_join_url": None,
                 "zoom_start_url": None,
@@ -111,7 +394,7 @@ def default_state(tenant_name: str) -> dict:
                 "start_time": "11:00",
                 "end_time": "12:30",
                 "trainer_name": "Guest Faculty",
-                "classroom_link": "https://academy.vivatraininginstitute.com/classrooms/batch-01",
+                "classroom_link": "https://academy.vivacareeracademy.com/classrooms/batch-01",
                 "zoom_meeting_id": None,
                 "zoom_join_url": None,
                 "zoom_start_url": None,
@@ -139,6 +422,8 @@ def default_state(tenant_name: str) -> dict:
         ],
         "message_events": [],
     }
+    state.update(_default_lms_seed(tenant_name, batch_id, demo_application_id, current))
+    return _ensure_lms_collections(state)
 
 
 def get_tenant_state(db: Session, tenant_name: str) -> dict:
@@ -155,12 +440,12 @@ def get_tenant_state(db: Session, tenant_name: str) -> dict:
         db.add(record)
         db.commit()
         db.refresh(record)
-    return deepcopy(record.state or default_state(tenant_name))
+    return _ensure_lms_collections(deepcopy(record.state or default_state(tenant_name)))
 
 
 def save_tenant_state(db: Session, tenant_name: str, state: dict) -> dict:
     record = db.query(AcademyTenantState).filter(AcademyTenantState.tenant_name == tenant_name).first()
-    next_state = deepcopy(state)
+    next_state = _ensure_lms_collections(deepcopy(state))
     next_state["tenant_name"] = tenant_name
     current = now_iso()
     if record is None:
@@ -237,6 +522,14 @@ def create_application(db: Session, tenant_name: str, payload: dict) -> dict:
         "payment_order_id": None,
         "payment_url": None,
         "payment_reference": None,
+        "payment_mode": None,
+        "payment_gateway_status": "not_started",
+        "payment_gateway_order_status": None,
+        "payment_gateway_payment_id": None,
+        "payment_reconciliation_status": "not_started",
+        "payment_verified_at": None,
+        "payment_failed_at": None,
+        "payment_last_checked_at": None,
         "public_receipt_token": secrets.token_urlsafe(18),
         "certificate_url": None,
         "attendance_completed": 0,
@@ -300,6 +593,102 @@ def create_batch(db: Session, tenant_name: str, payload: dict) -> dict:
         "updated_at": current,
     }
     state["batches"].append(record)
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def list_courses(db: Session, tenant_name: str) -> list[dict]:
+    items = list_items(db, tenant_name, "courses")
+    return sorted(items, key=lambda item: item.get("created_at", ""))
+
+
+def create_course(db: Session, tenant_name: str, payload: dict) -> dict:
+    state = get_tenant_state(db, tenant_name)
+    current = now_iso()
+    record = {
+        "id": make_id("course"),
+        "tenant_name": tenant_name,
+        "title": payload["title"].strip(),
+        "slug": payload["slug"].strip(),
+        "code": payload["code"].strip(),
+        "description": payload.get("description", "").strip(),
+        "duration_weeks": int(payload.get("duration_weeks", 12) or 12),
+        "weekly_unlock_days": int(payload.get("weekly_unlock_days", 7) or 7),
+        "penalty_fee_amount": float(payload.get("penalty_fee_amount", 2000) or 0),
+        "penalty_fee_currency": payload.get("penalty_fee_currency", "INR").strip().upper(),
+        "relock_grace_days": int(payload.get("relock_grace_days", 2) or 2),
+        "certificate_name": payload.get("certificate_name") or payload["title"].strip(),
+        "active": bool(payload.get("active", True)),
+        "created_at": current,
+        "updated_at": current,
+    }
+    state["courses"].append(record)
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def list_course_modules(db: Session, tenant_name: str, course_id: str) -> list[dict]:
+    items = list_items(db, tenant_name, "course_modules")
+    filtered = [item for item in items if item.get("course_id") == course_id]
+    return sorted(filtered, key=lambda item: (int(item.get("week_number", 0)), item.get("title", "")))
+
+
+def create_course_module(db: Session, tenant_name: str, payload: dict) -> dict:
+    state = get_tenant_state(db, tenant_name)
+    current = now_iso()
+    course = _find_by_id(state["courses"], payload["course_id"])
+    if course is None:
+        raise ValueError("Course not found")
+    record = {
+        "id": make_id("mod"),
+        "tenant_name": tenant_name,
+        "course_id": payload["course_id"],
+        "title": payload["title"].strip(),
+        "week_number": int(payload["week_number"]),
+        "summary": payload.get("summary", "").strip(),
+        "unlock_offset_days": int(payload.get("unlock_offset_days", max(int(payload["week_number"]) - 1, 0) * int(course.get("weekly_unlock_days", 7)))),
+        "submission_required": bool(payload.get("submission_required", True)),
+        "passing_score": float(payload.get("passing_score", 70) or 70),
+        "penalty_fee_amount": float(payload.get("penalty_fee_amount", course.get("penalty_fee_amount", 2000)) or 0),
+        "penalty_fee_currency": payload.get("penalty_fee_currency", course.get("penalty_fee_currency", "INR")).strip().upper(),
+        "relock_grace_days": int(payload.get("relock_grace_days", course.get("relock_grace_days", 2)) or 2),
+        "created_at": current,
+        "updated_at": current,
+    }
+    state["course_modules"].append(record)
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def list_course_chapters(db: Session, tenant_name: str, module_id: str) -> list[dict]:
+    items = list_items(db, tenant_name, "course_chapters")
+    filtered = [item for item in items if item.get("module_id") == module_id]
+    return sorted(filtered, key=lambda item: (int(item.get("position", 0)), item.get("title", "")))
+
+
+def create_course_chapter(db: Session, tenant_name: str, payload: dict) -> dict:
+    state = get_tenant_state(db, tenant_name)
+    current = now_iso()
+    if _find_by_id(state["courses"], payload["course_id"]) is None:
+        raise ValueError("Course not found")
+    if _find_by_id(state["course_modules"], payload["module_id"]) is None:
+        raise ValueError("Module not found")
+    record = {
+        "id": make_id("chap"),
+        "tenant_name": tenant_name,
+        "course_id": payload["course_id"],
+        "module_id": payload["module_id"],
+        "title": payload["title"].strip(),
+        "position": int(payload["position"]),
+        "content_type": payload.get("content_type", "lesson").strip(),
+        "summary": payload.get("summary", "").strip(),
+        "estimated_minutes": int(payload.get("estimated_minutes", 20) or 20),
+        "mandatory": bool(payload.get("mandatory", True)),
+        "question_prompt": payload.get("question_prompt", "").strip(),
+        "created_at": current,
+        "updated_at": current,
+    }
+    state["course_chapters"].append(record)
     save_tenant_state(db, tenant_name, state)
     return record
 
@@ -422,6 +811,342 @@ def mark_attendance(db: Session, tenant_name: str, payload: dict) -> Optional[di
 
     save_tenant_state(db, tenant_name, state)
     return record
+
+
+def list_chapter_submissions(
+    db: Session,
+    tenant_name: str,
+    application_id: Optional[str] = None,
+    module_id: Optional[str] = None,
+) -> list[dict]:
+    items = list_items(db, tenant_name, "chapter_submissions")
+    filtered = [
+        item
+        for item in items
+        if (not application_id or item.get("application_id") == application_id)
+        and (not module_id or item.get("module_id") == module_id)
+    ]
+    return sorted(filtered, key=lambda item: item.get("submitted_at", item.get("updated_at", "")), reverse=True)
+
+
+def get_submission(db: Session, tenant_name: str, submission_id: str) -> Optional[dict]:
+    return next((item for item in list_items(db, tenant_name, "chapter_submissions") if item.get("id") == submission_id), None)
+
+
+def _progress_for_application(state: dict, application_id: str, course_id: str) -> Optional[dict]:
+    return next(
+        (
+            item
+            for item in state.get("learner_progress", [])
+            if item.get("application_id") == application_id and item.get("course_id") == course_id
+        ),
+        None,
+    )
+
+
+def ensure_learner_progress(db: Session, tenant_name: str, application_id: str, course_id: str) -> dict:
+    state = get_tenant_state(db, tenant_name)
+    application = _find_by_id(state["applications"], application_id)
+    if application is None:
+        raise ValueError("Application not found")
+    existing = _progress_for_application(state, application_id, course_id)
+    if existing is not None:
+        return existing
+    current = now_iso()
+    modules = list_course_modules(db, tenant_name, course_id)
+    record = {
+        "id": make_id("progress"),
+        "tenant_name": tenant_name,
+        "application_id": application_id,
+        "course_id": course_id,
+        "batch_id": application.get("batch_id"),
+        "current_week": 1,
+        "current_module_id": modules[0]["id"] if modules else None,
+        "status": "active",
+        "module_status": "not_started",
+        "chapter_status": "not_started",
+        "completed_chapter_ids": [],
+        "submitted_chapter_ids": [],
+        "reviewed_submission_ids": [],
+        "unlock_override": False,
+        "last_unlocked_at": current,
+        "last_activity_at": current,
+        "penalty_status": "clear",
+        "penalty_fee_amount": 0,
+        "penalty_fee_currency": "INR",
+        "penalty_paid_at": None,
+        "note": "",
+        "created_at": current,
+        "updated_at": current,
+    }
+    state["learner_progress"].append(record)
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def update_learner_progress(db: Session, tenant_name: str, application_id: str, course_id: str, patch: dict) -> Optional[dict]:
+    state = get_tenant_state(db, tenant_name)
+    for index, item in enumerate(state["learner_progress"]):
+        if item.get("application_id") == application_id and item.get("course_id") == course_id:
+            next_item = {
+                **item,
+                **patch,
+                "last_activity_at": now_iso(),
+                "updated_at": now_iso(),
+            }
+            state["learner_progress"][index] = next_item
+            save_tenant_state(db, tenant_name, state)
+            return next_item
+    return None
+
+
+def create_chapter_submission(db: Session, tenant_name: str, payload: dict) -> dict:
+    state = get_tenant_state(db, tenant_name)
+    application = _find_by_id(state["applications"], payload["application_id"])
+    if application is None:
+        raise ValueError("Application not found")
+    chapter = _find_by_id(state["course_chapters"], payload["chapter_id"])
+    if chapter is None:
+        raise ValueError("Chapter not found")
+    ensure_learner_progress(db, tenant_name, payload["application_id"], payload["course_id"])
+    state = get_tenant_state(db, tenant_name)
+    current = now_iso()
+    record = {
+        "id": make_id("sub"),
+        "tenant_name": tenant_name,
+        "application_id": payload["application_id"],
+        "course_id": payload["course_id"],
+        "module_id": payload["module_id"],
+        "chapter_id": payload["chapter_id"],
+        "answer_text": payload.get("answer_text", "").strip(),
+        "answer_url": payload.get("answer_url"),
+        "submission_kind": payload.get("submission_kind", "text"),
+        "status": "submitted",
+        "submitted_at": current,
+        "created_at": current,
+        "updated_at": current,
+    }
+    state["chapter_submissions"].append(record)
+    progress = _progress_for_application(state, payload["application_id"], payload["course_id"])
+    if progress is not None:
+        submitted_ids = list(dict.fromkeys([*progress.get("submitted_chapter_ids", []), payload["chapter_id"]]))
+        for index, item in enumerate(state["learner_progress"]):
+            if item["id"] == progress["id"]:
+                state["learner_progress"][index] = {
+                    **item,
+                    "current_module_id": payload["module_id"],
+                    "chapter_status": "submitted",
+                    "module_status": "in_review",
+                    "submitted_chapter_ids": submitted_ids,
+                    "last_activity_at": current,
+                    "updated_at": current,
+                }
+                break
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def list_trainer_reviews(
+    db: Session,
+    tenant_name: str,
+    application_id: Optional[str] = None,
+    module_id: Optional[str] = None,
+) -> list[dict]:
+    items = list_items(db, tenant_name, "trainer_reviews")
+    filtered = [
+        item
+        for item in items
+        if (not application_id or item.get("application_id") == application_id)
+        and (not module_id or item.get("module_id") == module_id)
+    ]
+    return sorted(filtered, key=lambda item: item.get("reviewed_at", item.get("updated_at", "")), reverse=True)
+
+
+def create_trainer_review(db: Session, tenant_name: str, payload: dict) -> dict:
+    state = get_tenant_state(db, tenant_name)
+    submission = _find_by_id(state["chapter_submissions"], payload["submission_id"])
+    if submission is None:
+        raise ValueError("Submission not found")
+    current = now_iso()
+    record = {
+        "id": make_id("review"),
+        "tenant_name": tenant_name,
+        "submission_id": submission["id"],
+        "application_id": submission["application_id"],
+        "course_id": submission["course_id"],
+        "module_id": submission["module_id"],
+        "chapter_id": submission["chapter_id"],
+        "reviewer_name": payload["reviewer_name"].strip(),
+        "outcome": payload["outcome"].strip(),
+        "score": payload.get("score"),
+        "ai_feedback": payload.get("ai_feedback", "").strip(),
+        "trainer_feedback": payload.get("trainer_feedback", "").strip(),
+        "unlock_next_module": bool(payload.get("unlock_next_module", False)),
+        "reviewed_at": current,
+        "created_at": current,
+        "updated_at": current,
+    }
+    state["trainer_reviews"].append(record)
+    for index, item in enumerate(state["chapter_submissions"]):
+        if item["id"] == submission["id"]:
+            state["chapter_submissions"][index] = {
+                **item,
+                "status": "reviewed" if record["outcome"] in {"pass", "resubmit", "fail"} else item.get("status", "submitted"),
+                "updated_at": current,
+            }
+            break
+    progress = _progress_for_application(state, submission["application_id"], submission["course_id"])
+    if progress is not None:
+        reviewed_ids = list(dict.fromkeys([*progress.get("reviewed_submission_ids", []), submission["id"]]))
+        completed_ids = progress.get("completed_chapter_ids", [])
+        if record["outcome"] == "pass":
+            completed_ids = list(dict.fromkeys([*completed_ids, submission["chapter_id"]]))
+        next_status = "in_review"
+        module_status = progress.get("module_status", "in_progress")
+        if record["outcome"] == "pass":
+            module_status = "completed" if record["unlock_next_module"] else "in_progress"
+            next_status = "evaluated"
+        elif record["outcome"] == "resubmit":
+            module_status = "resubmission_required"
+            next_status = "resubmission_required"
+        elif record["outcome"] == "fail":
+            module_status = "failed"
+            next_status = "failed"
+        for index, item in enumerate(state["learner_progress"]):
+            if item["id"] == progress["id"]:
+                next_week = item.get("current_week", 1)
+                next_module_id = item.get("current_module_id")
+                if record["unlock_next_module"] and record["outcome"] == "pass":
+                    modules = list_course_modules(db, tenant_name, submission["course_id"])
+                    next_module = next((module for module in modules if int(module.get("week_number", 0)) == int(item.get("current_week", 1)) + 1), None)
+                    next_week = int(item.get("current_week", 1)) + 1 if next_module else item.get("current_week", 1)
+                    next_module_id = next_module["id"] if next_module else next_module_id
+                state["learner_progress"][index] = {
+                    **item,
+                    "current_week": next_week,
+                    "current_module_id": next_module_id,
+                    "chapter_status": next_status,
+                    "module_status": module_status,
+                    "reviewed_submission_ids": reviewed_ids,
+                    "completed_chapter_ids": completed_ids,
+                    "status": "active" if record["outcome"] != "fail" else "at_risk",
+                    "last_activity_at": current,
+                    "updated_at": current,
+                }
+                break
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def get_course_outline(db: Session, tenant_name: str, course_id: str, application_id: Optional[str] = None) -> Optional[dict]:
+    state = get_tenant_state(db, tenant_name)
+    course = _find_by_id(state["courses"], course_id)
+    if course is None:
+        return None
+    application = _find_by_id(state["applications"], application_id) if application_id else None
+    batch = _find_by_id(state["batches"], application.get("batch_id")) if application else None
+    progress = _progress_for_application(state, application_id, course_id) if application_id else None
+    submissions = list_chapter_submissions(db, tenant_name, application_id=application_id)
+    reviews = list_trainer_reviews(db, tenant_name, application_id=application_id)
+    modules = []
+    for module in list_course_modules(db, tenant_name, course_id):
+        unlock = _module_unlock_snapshot(course, module, batch, progress)
+        chapters = []
+        for chapter in list_course_chapters(db, tenant_name, module["id"]):
+            chapter_submission = next((item for item in submissions if item.get("chapter_id") == chapter["id"]), None)
+            chapter_review = next((item for item in reviews if item.get("chapter_id") == chapter["id"]), None)
+            chapter_status = "not_started"
+            if chapter["id"] in (progress or {}).get("completed_chapter_ids", []):
+                chapter_status = "completed"
+            elif chapter_review and chapter_review.get("outcome") == "resubmit":
+                chapter_status = "resubmission_required"
+            elif chapter_submission:
+                chapter_status = chapter_submission.get("status", "submitted")
+            chapters.append(
+                {
+                    **chapter,
+                    "status": chapter_status,
+                    "submission": chapter_submission,
+                    "review": chapter_review,
+                }
+            )
+        completed_count = len([item for item in chapters if item.get("status") == "completed"])
+        modules.append(
+            {
+                **module,
+                **unlock,
+                "status": "completed" if chapters and completed_count == len(chapters) else ("locked" if unlock["is_relocked"] else "in_progress" if unlock["is_unlocked"] else "pending"),
+                "chapters_completed": completed_count,
+                "chapters_total": len(chapters),
+                "chapters": chapters,
+            }
+        )
+    return {
+        "course": course,
+        "modules": modules,
+        "progress": progress,
+    }
+
+
+def get_student_lms_overview(db: Session, tenant_name: str, application_id: str) -> Optional[dict]:
+    state = get_tenant_state(db, tenant_name)
+    application = _find_by_id(state["applications"], application_id)
+    if application is None:
+        return None
+    course = _course_for_application(state, application)
+    if course is None:
+        return None
+    progress = ensure_learner_progress(db, tenant_name, application_id, course["id"])
+    outline = get_course_outline(db, tenant_name, course["id"], application_id)
+    submissions = list_chapter_submissions(db, tenant_name, application_id=application_id)
+    reviews = list_trainer_reviews(db, tenant_name, application_id=application_id)
+    modules = outline["modules"] if outline else []
+    chapters_total = sum(module.get("chapters_total", 0) for module in modules)
+    chapters_completed = sum(module.get("chapters_completed", 0) for module in modules)
+    current_module = next((item for item in modules if item.get("id") == progress.get("current_module_id")), modules[0] if modules else None)
+    return {
+        "course": course,
+        "progress": {
+            **progress,
+            "completion_percent": round((chapters_completed / max(chapters_total, 1)) * 100),
+            "chapters_completed": chapters_completed,
+            "chapters_total": chapters_total,
+            "current_module": current_module,
+            "penalty_ready": bool(current_module and current_module.get("penalty_ready")),
+        },
+        "modules": modules,
+        "submissions": submissions,
+        "reviews": reviews,
+    }
+
+
+def get_trainer_review_queue(db: Session, tenant_name: str) -> list[dict]:
+    state = get_tenant_state(db, tenant_name)
+    submissions = [item for item in list_items(db, tenant_name, "chapter_submissions") if item.get("status") != "reviewed"]
+    applications = {item["id"]: item for item in state.get("applications", [])}
+    chapters = {item["id"]: item for item in state.get("course_chapters", [])}
+    modules = {item["id"]: item for item in state.get("course_modules", [])}
+    queue = []
+    for submission in submissions:
+        application = applications.get(submission.get("application_id"))
+        chapter = chapters.get(submission.get("chapter_id"))
+        module = modules.get(submission.get("module_id"))
+        queue.append(
+            {
+                "submission_id": submission["id"],
+                "submitted_at": submission.get("submitted_at"),
+                "status": submission.get("status", "submitted"),
+                "student_name": (application or {}).get("student_name"),
+                "student_email": (application or {}).get("student_email"),
+                "course_name": (application or {}).get("course_name"),
+                "module_title": (module or {}).get("title"),
+                "chapter_title": (chapter or {}).get("title"),
+                "application_id": submission.get("application_id"),
+                "module_id": submission.get("module_id"),
+                "chapter_id": submission.get("chapter_id"),
+            }
+        )
+    return sorted(queue, key=lambda item: item.get("submitted_at", ""), reverse=True)
 
 
 def list_message_events(db: Session, tenant_name: str) -> list[dict]:

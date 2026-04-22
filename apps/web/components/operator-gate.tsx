@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
-import { readSession, writeSession, type AcademySession } from "../lib/auth";
+import { isSessionExpired, readSession, writeSession, type AcademySession } from "../lib/auth";
 
 export function OperatorGate({
   title,
@@ -21,11 +21,33 @@ export function OperatorGate({
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    const sync = () => setSession(readSession());
+    const sync = () => {
+      const current = readSession();
+      setSession(current);
+      if (!current || isSessionExpired(current)) {
+        if (current) writeSession(null);
+        return;
+      }
+      void hydrateSession(current);
+    };
     sync();
     window.addEventListener("academy-session-changed", sync);
     return () => window.removeEventListener("academy-session-changed", sync);
   }, []);
+
+  async function hydrateSession(current: AcademySession) {
+    try {
+      const data = await apiRequest<{ session: AcademySession }>(
+        `/api/v1/academy/auth/me?tenant_name=${encodeURIComponent(current.tenant_name)}`,
+        { session: current }
+      );
+      writeSession(data.session);
+      setSession(data.session);
+    } catch {
+      writeSession(null);
+      setSession(null);
+    }
+  }
 
   async function login() {
     setBusy(true);

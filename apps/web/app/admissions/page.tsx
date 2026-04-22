@@ -34,7 +34,7 @@ const launchTestimonials = [
     quote: "The journey feels structured, premium, and believable from first enquiry to live classroom access."
   },
   {
-    name: "Institute operations clarity",
+    name: "Academy operations clarity",
     quote: "Admissions, batch assignment, Zoom provisioning, and attendance no longer sit in disconnected tools."
   }
 ];

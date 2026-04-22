@@ -1,5 +1,6 @@
 import { SiteShell } from "../../components/site-shell";
-import { ACADEMY_TRAINER_TOOLS } from "../../lib/academy";
+import { OperatorGate } from "../../components/operator-gate";
+import { TrainerReviewWorkspace } from "../../components/trainer-review-workspace";
 
 export default function TrainerPage() {
   return (
@@ -11,14 +12,9 @@ export default function TrainerPage() {
       primaryCta={{ label: "Open operations", href: "/operations" }}
       secondaryCta={{ label: "Open admin CMS", href: "/admin" }}
     >
-      <section className="grid grid-3">
-        {ACADEMY_TRAINER_TOOLS.map((item) => (
-          <article key={item} className="card">
-            <div className="eyebrow">Trainer capability</div>
-            <div style={{ marginTop: 12, fontSize: 24, fontWeight: 900, lineHeight: 1.2, letterSpacing: "-0.04em" }}>{item}</div>
-          </article>
-        ))}
-      </section>
+      <OperatorGate title="Trainer sign-in" allowedRoles={["trainer", "admin", "operations"]}>
+        <TrainerReviewWorkspace />
+      </OperatorGate>
     </SiteShell>
   );
 }
