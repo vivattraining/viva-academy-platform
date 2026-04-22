@@ -68,19 +68,19 @@ export function AdminLmsConsole() {
   }
 
   return (
-    <section className="card">
+    <section className="editorial-workbench-card">
       <div className="eyebrow">LMS catalog</div>
-      <div className="grid grid-2" style={{ marginTop: 16 }}>
-        <input value={title} onChange={(event) => setTitle(event.target.value)} className="pill" style={{ borderRadius: 18, textTransform: "none", letterSpacing: "normal", fontWeight: 600 }} placeholder="Course title" />
-        <input value={slug} onChange={(event) => setSlug(event.target.value)} className="pill" style={{ borderRadius: 18, textTransform: "none", letterSpacing: "normal", fontWeight: 600 }} placeholder="Course slug" />
-        <input value={code} onChange={(event) => setCode(event.target.value)} className="pill" style={{ borderRadius: 18, textTransform: "none", letterSpacing: "normal", fontWeight: 600 }} placeholder="Course code" />
+      <div className="editorial-form-grid" style={{ marginTop: 16 }}>
+        <input value={title} onChange={(event) => setTitle(event.target.value)} className="editorial-input" placeholder="Course title" />
+        <input value={slug} onChange={(event) => setSlug(event.target.value)} className="editorial-input" placeholder="Course slug" />
+        <input value={code} onChange={(event) => setCode(event.target.value)} className="editorial-input" placeholder="Course code" />
       </div>
       <div className="button-row">
         <button className="button-primary" onClick={() => void createCourse()}>Create course shell</button>
       </div>
       <div className="stack" style={{ marginTop: 16 }}>
         {items.map((item) => (
-          <div key={item.course.id} className="panel">
+          <div key={item.course.id} className="editorial-workbench-panel">
             <strong>{item.course.title}</strong>
             <p className="muted">{item.course.certificate_name}</p>
             <div className="badge-row" style={{ marginTop: 12 }}>
@@ -92,7 +92,7 @@ export function AdminLmsConsole() {
           </div>
         ))}
       </div>
-      {message ? <div className="panel" style={{ marginTop: 16 }}>{message}</div> : null}
+      {message ? <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>{message}</div> : null}
     </section>
   );
 }

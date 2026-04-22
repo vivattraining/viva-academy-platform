@@ -81,12 +81,12 @@ export function TrainerReviewWorkspace() {
   }
 
   return (
-    <section className="grid grid-2">
-      <article className="card">
+    <section className="editorial-workbench-grid">
+      <article className="editorial-workbench-card">
         <div className="eyebrow">Evaluation queue</div>
         <div className="stack" style={{ marginTop: 16 }}>
           {items.length ? items.map((item) => (
-            <div key={item.submission_id} className="panel">
+            <div key={item.submission_id} className="editorial-workbench-panel">
               <strong>{item.student_name || "Learner"}</strong>
               <p className="muted">{item.module_title || item.course_name}</p>
               <p className="muted">{item.chapter_title}</p>
@@ -100,17 +100,18 @@ export function TrainerReviewWorkspace() {
           )) : <p className="muted">No submissions are waiting for trainer review right now.</p>}
         </div>
       </article>
-      <article className="card">
+      <article className="editorial-workbench-card editorial-workbench-contrast">
         <div className="eyebrow">Review workflow</div>
-        <p className="muted" style={{ marginTop: 12 }}>
+        <h2 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2.25rem" }}>Trainer approvals now drive progression week by week.</h2>
+        <p className="editorial-workbench-subtitle">
           Trainers can now work against the live LMS queue, where each submission is tied to a learner, module, and chapter.
         </p>
-        <div className="panel" style={{ marginTop: 16 }}>
+        <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>
           <strong>Next step</strong>
           <p className="muted">Trainer decisions now post directly to the LMS review API for pass, fail, and resubmission outcomes.</p>
         </div>
       </article>
-      {message ? <article className="panel" style={{ gridColumn: "1 / -1" }}>{message}</article> : null}
+      {message ? <article className="editorial-workbench-panel" style={{ gridColumn: "1 / -1" }}>{message}</article> : null}
     </section>
   );
 }

@@ -51,12 +51,12 @@ export function AdminBrandingStudio() {
     }
   }
 
-  if (!branding) return <section className="card">Loading branding…</section>;
+  if (!branding) return <section className="editorial-workbench-card">Loading branding…</section>;
 
   return (
-    <section className="card">
+    <section className="editorial-workbench-card">
       <div className="eyebrow">Branding studio</div>
-      <div className="grid grid-2" style={{ marginTop: 18 }}>
+      <div className="editorial-form-grid" style={{ marginTop: 18 }}>
         {[
           ["brand_name", "Brand name"],
           ["academy_name", "Academy name"],
@@ -66,13 +66,12 @@ export function AdminBrandingStudio() {
           ["zoom_host_email", "Zoom host email"],
           ["zoom_default_timezone", "Zoom timezone"]
         ].map(([key, label]) => (
-          <label key={key} className="stack">
-            <span className="eyebrow">{label}</span>
+          <label key={key} className="editorial-form-field">
+            <span>{label}</span>
             <input
               value={(branding as Record<string, string>)[key]}
               onChange={(event) => setBranding((current) => current ? { ...current, [key]: event.target.value } : current)}
-              className="pill"
-              style={{ borderRadius: 18, textTransform: "none", letterSpacing: "normal", fontWeight: 600 }}
+              className="editorial-input"
             />
           </label>
         ))}
@@ -80,7 +79,7 @@ export function AdminBrandingStudio() {
       <div className="button-row">
         <button className="button-primary" onClick={() => void save()}>Save branding</button>
       </div>
-      {message ? <div className="panel" style={{ marginTop: 16 }}>{message}</div> : null}
+      {message ? <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>{message}</div> : null}
     </section>
   );
 }

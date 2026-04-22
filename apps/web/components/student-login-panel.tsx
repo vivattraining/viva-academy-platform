@@ -51,20 +51,20 @@ export function StudentLoginPanel() {
   }
 
   return (
-    <section className="card">
+    <section className="editorial-workbench-card">
       <div className="eyebrow">Student access</div>
-      <h2 style={{ marginTop: 12, fontSize: 28, fontWeight: 900, letterSpacing: "-0.05em" }}>Open the learner dashboard directly.</h2>
-      <p className="muted" style={{ marginTop: 12 }}>
+      <h2 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2.1rem" }}>Open the learner dashboard directly.</h2>
+      <p className="editorial-workbench-subtitle">
         Use your student credentials to access schedule, attendance, and classroom visibility without admin clutter.
       </p>
-      <div className="grid grid-2" style={{ marginTop: 18 }}>
-        <label className="stack">
-          <span className="eyebrow">Student email</span>
-          <input value={email} onChange={(event) => setEmail(event.target.value)} className="pill" style={{ borderRadius: 20, textTransform: "none", letterSpacing: "normal", fontWeight: 600 }} />
+      <div className="editorial-form-grid" style={{ marginTop: 18 }}>
+        <label className="editorial-form-field">
+          <span>Student email</span>
+          <input value={email} onChange={(event) => setEmail(event.target.value)} className="editorial-input" />
         </label>
-        <label className="stack">
-          <span className="eyebrow">Password</span>
-          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="pill" style={{ borderRadius: 20, textTransform: "none", letterSpacing: "normal", fontWeight: 600 }} />
+        <label className="editorial-form-field">
+          <span>Password</span>
+          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="editorial-input" />
         </label>
       </div>
       <div className="button-row">
@@ -72,7 +72,7 @@ export function StudentLoginPanel() {
           {busy ? "Opening..." : "Enter learner workspace"}
         </button>
       </div>
-      {message ? <div className="panel" style={{ marginTop: 16, background: "#EFF6FF" }}>{message}</div> : null}
+      {message ? <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>{message}</div> : null}
     </section>
   );
 }

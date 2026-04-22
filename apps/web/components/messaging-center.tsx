@@ -102,22 +102,22 @@ export function MessagingCenter() {
   }
 
   return (
-    <>
+    <div className="editorial-workbench">
       <section className="split">
-        <article className="hero hero-contrast">
+        <article className="editorial-workbench-card editorial-workbench-contrast">
           <div className="eyebrow" style={{ color: "#F4D77B" }}>Delivery control</div>
-          <h2 style={{ marginTop: 14, fontSize: 34, lineHeight: 1.06, letterSpacing: "-0.05em" }}>
+          <h2 className="editorial-workbench-title" style={{ marginTop: 14, fontSize: "2.25rem" }}>
             Email, WhatsApp, and Zoom reminder workflows now move from queue to action.
           </h2>
-          <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7 }}>
+          <p className="editorial-workbench-subtitle">
             Operators can trigger the right message directly from this surface, while keeping the queue grounded in application and class state.
           </p>
-          {flash ? <div className="panel" style={{ marginTop: 18, background: "rgba(255,255,255,0.12)", color: "white" }}>{flash}</div> : null}
+          {flash ? <div className="editorial-workbench-panel" style={{ marginTop: 18, background: "rgba(255,255,255,0.12)", color: "white" }}>{flash}</div> : null}
         </article>
-        <article className="card">
+        <article className="editorial-workbench-card">
           <div className="section-head">
             <div className="eyebrow">Message counts</div>
-            <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: "-0.05em" }}>{items.length} recommended actions</div>
+            <div className="editorial-workbench-title" style={{ fontSize: "2rem" }}>{items.length} recommended actions</div>
           </div>
           <div className="badge-row">
             <div className="badge">{counts.email} Email</div>
@@ -127,14 +127,14 @@ export function MessagingCenter() {
         </article>
       </section>
 
-      <section className="grid grid-2" style={{ marginTop: 24 }}>
+      <section className="editorial-workbench-grid">
         {items.map((item) => (
-          <article key={item.id} className="card">
+          <article key={item.id} className="editorial-workbench-card">
             <div className="badge-row">
               <div className="badge">{item.channel}</div>
               <div className="badge">{item.status}</div>
             </div>
-            <div style={{ marginTop: 14, fontSize: 26, fontWeight: 900, letterSpacing: "-0.05em" }}>{item.purpose}</div>
+            <div className="editorial-workbench-title" style={{ marginTop: 14, fontSize: "1.8rem" }}>{item.purpose}</div>
             <p className="muted" style={{ marginTop: 12 }}>Audience: {item.audience}</p>
             <p className="muted" style={{ marginTop: 8 }}>Trigger: {item.trigger}</p>
             <p className="muted" style={{ marginTop: 8 }}>Template: {item.template}</p>
@@ -148,6 +148,6 @@ export function MessagingCenter() {
           </article>
         ))}
       </section>
-    </>
+    </div>
   );
 }

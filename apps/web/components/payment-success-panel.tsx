@@ -57,12 +57,12 @@ export function PaymentSuccessPanel({
   }, [applicationId, tenant, token]);
 
   return (
-    <section className="hero hero-contrast">
+    <section className="editorial-workbench-card editorial-workbench-contrast">
       <div className="eyebrow" style={{ color: "#F4D77B" }}>Payment success</div>
-      <h2 style={{ marginTop: 14, fontSize: 38, lineHeight: 1.06, letterSpacing: "-0.05em" }}>
+      <h2 className="editorial-workbench-title" style={{ marginTop: 14 }}>
         {status === "paid" ? "Your VIVA application fee is confirmed." : "We are checking your payment confirmation."}
       </h2>
-      <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7 }}>
+      <p className="editorial-workbench-subtitle">
         {message}
       </p>
       <div className="button-row">

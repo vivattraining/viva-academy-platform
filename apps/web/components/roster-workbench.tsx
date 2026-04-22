@@ -58,11 +58,11 @@ export function RosterWorkbench() {
   }
 
   return (
-    <section className="grid grid-2">
+    <section className="editorial-workbench-grid">
       {enrolled.map((item) => (
-        <article key={item.id} className="card">
+        <article key={item.id} className="editorial-workbench-card">
           <div className="eyebrow">{item.student_name}</div>
-          <p className="muted" style={{ marginTop: 8 }}>{item.student_email}</p>
+          <p className="editorial-workbench-subtitle" style={{ marginTop: 8 }}>{item.student_email}</p>
           <div className="metric" style={{ marginTop: 12 }}>{item.attendance_completed}/{item.attendance_total}</div>
           <div className="button-row">
             <button className="button-primary" onClick={() => void issueCertificate(item)}>Issue certificate</button>

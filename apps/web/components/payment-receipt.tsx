@@ -88,23 +88,23 @@ export function PaymentReceipt({ applicationId, tenantName }: { applicationId: s
   }
 
   return (
-    <section className="card">
+    <section className="editorial-workbench-card">
       <div className="section-head">
         <div className="eyebrow">Application receipt</div>
-        <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: "-0.05em" }}>{item.student_name}</div>
+        <div className="editorial-workbench-title" style={{ fontSize: "2.25rem" }}>{item.student_name}</div>
       </div>
       <div className="badge-row" style={{ marginTop: 18 }}>
         <div className="badge">{item.application_stage}</div>
         <div className="badge">{item.payment_stage}</div>
         <div className="badge">{item.enrollment_stage}</div>
       </div>
-      <div className="grid grid-2" style={{ marginTop: 20 }}>
-        <div className="panel" style={{ background: "#F8FAFC" }}>
+      <div className="editorial-workbench-grid" style={{ marginTop: 20 }}>
+        <div className="editorial-workbench-panel">
           <div className="eyebrow">Program</div>
           <div style={{ marginTop: 10, fontSize: 24, fontWeight: 900 }}>{item.course_name}</div>
           <p className="muted" style={{ marginTop: 8 }}>{item.student_email}</p>
         </div>
-        <div className="panel" style={{ background: "#F8FAFC" }}>
+        <div className="editorial-workbench-panel">
           <div className="eyebrow">Payment</div>
           <div style={{ marginTop: 10, fontSize: 24, fontWeight: 900 }}>{item.currency} {item.amount_due.toFixed(2)}</div>
           <p className="muted" style={{ marginTop: 8 }}>Stage: {item.payment_stage}</p>
@@ -112,19 +112,19 @@ export function PaymentReceipt({ applicationId, tenantName }: { applicationId: s
             Gateway: {item.payment_gateway_status || "pending"} {item.payment_mode ? `· ${item.payment_mode}` : ""}
           </p>
         </div>
-        <div className="panel" style={{ background: "#F8FAFC" }}>
+        <div className="editorial-workbench-panel">
           <div className="eyebrow">Reference</div>
           <div style={{ marginTop: 10, fontSize: 18, fontWeight: 800 }}>{item.payment_reference || "Pending"}</div>
           <p className="muted" style={{ marginTop: 8 }}>Order: {item.payment_order_id || "Not issued"}</p>
           <p className="muted" style={{ marginTop: 8 }}>Gateway payment: {item.payment_gateway_payment_id || "Awaiting capture"}</p>
         </div>
-        <div className="panel" style={{ background: "#F8FAFC" }}>
+        <div className="editorial-workbench-panel">
           <div className="eyebrow">Enrollment</div>
           <div style={{ marginTop: 10, fontSize: 18, fontWeight: 800 }}>{item.enrollment_stage}</div>
           <p className="muted" style={{ marginTop: 8 }}>Batch: {item.batch_id || "Not assigned yet"}</p>
         </div>
       </div>
-      <div className="panel" style={{ marginTop: 20, background: "#F8FAFC" }}>
+      <div className="editorial-workbench-panel" style={{ marginTop: 20 }}>
         <div className="section-head">
           <div className="eyebrow">Verification trail</div>
           <button className="button-secondary" onClick={() => void refreshStatus()} disabled={isRefreshing}>
@@ -137,7 +137,7 @@ export function PaymentReceipt({ applicationId, tenantName }: { applicationId: s
         <p className="muted" style={{ marginTop: 8 }}>Failed at: {item.payment_failed_at || "No failed attempt recorded"}</p>
         <p className="muted" style={{ marginTop: 8 }}>Last checked: {item.payment_last_checked_at || "Not checked yet"}</p>
       </div>
-      <div className="panel" style={{ marginTop: 20, background: "#F8FAFC" }}>
+      <div className="editorial-workbench-panel" style={{ marginTop: 20 }}>
         <div className="eyebrow">What happens next</div>
         <div className="badge-row" style={{ marginTop: 12 }}>
           <div className="badge">Welcome confirmation</div>

@@ -19,6 +19,18 @@ export default function RosterPage() {
       primaryCta={{ label: "Open operations", href: "/operations" }}
       secondaryCta={{ label: "Open student view", href: "/student" }}
     >
+      <section className="split">
+        <article className="editorial-workbench-card editorial-workbench-contrast">
+          <div className="eyebrow">Roster discipline</div>
+          <h2 className="editorial-workbench-title" style={{ marginTop: 14, fontSize: "2.25rem" }}>
+            Certificates, attendance, and learner status now sit in one academic record.
+          </h2>
+          <p className="editorial-workbench-subtitle">
+            This keeps academic operations premium on the front end and consistent on the backend.
+          </p>
+        </article>
+      </section>
+
       <section className="grid grid-2">
         {rosterActions.map((item) => (
           <article key={item} className="card">

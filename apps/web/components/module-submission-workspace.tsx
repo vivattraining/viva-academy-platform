@@ -84,25 +84,26 @@ export function ModuleSubmissionWorkspace({ moduleId }: { moduleId: string }) {
   }
 
   return (
-    <section className="stack">
-      <section className="card">
+    <section className="editorial-workbench">
+      <section className="editorial-workbench-card editorial-workbench-contrast">
         <div className="eyebrow">Module workspace</div>
-        <h2 style={{ marginTop: 12, fontSize: 32, fontWeight: 900, letterSpacing: "-0.05em" }}>{activeModule.title}</h2>
-        <p className="muted" style={{ marginTop: 12 }}>{payload.lms.course.title}</p>
+        <h2 className="editorial-workbench-title" style={{ marginTop: 12 }}>{activeModule.title}</h2>
+        <p className="editorial-workbench-subtitle">{payload.lms.course.title}</p>
       </section>
       {activeModule.chapters.map((chapter) => (
-        <section key={chapter.id} className="card">
+        <section key={chapter.id} className="editorial-workbench-card">
           <div className="eyebrow">{chapter.status.replaceAll("_", " ")}</div>
-          <h3 style={{ marginTop: 10, fontSize: 24 }}>{chapter.title}</h3>
-          <p className="muted" style={{ marginTop: 10 }}>{chapter.summary}</p>
-          <div className="panel" style={{ marginTop: 16 }}>
+          <h3 className="editorial-workbench-title" style={{ marginTop: 10, fontSize: "2rem" }}>{chapter.title}</h3>
+          <p className="editorial-workbench-subtitle">{chapter.summary}</p>
+          <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>
             <strong>Question</strong>
             <p className="muted" style={{ marginTop: 8 }}>{chapter.question_prompt}</p>
           </div>
           <textarea
             value={answers[chapter.id] || ""}
             onChange={(event) => setAnswers((current) => ({ ...current, [chapter.id]: event.target.value }))}
-            style={{ width: "100%", minHeight: 160, marginTop: 16, borderRadius: 20, padding: 16, border: "1px solid var(--border)", font: "inherit" }}
+            className="editorial-textarea"
+            style={{ marginTop: 16 }}
             placeholder="Write your answer here"
           />
           <div className="button-row">
@@ -111,7 +112,7 @@ export function ModuleSubmissionWorkspace({ moduleId }: { moduleId: string }) {
           </div>
         </section>
       ))}
-      {message ? <section className="panel">{message}</section> : null}
+      {message ? <section className="editorial-workbench-panel">{message}</section> : null}
     </section>
   );
 }

@@ -73,10 +73,10 @@ export function OperatorGate({
 
   if (session && allowedRoles.includes(session.role)) {
     return (
-      <div className="stack">
-        <div className="panel" style={{ background: "#ECFDF3" }}>
+      <div className="editorial-workbench">
+        <div className="editorial-workbench-panel">
           <div className="eyebrow">Operator session</div>
-          <div style={{ marginTop: 10, fontWeight: 800 }}>{session.full_name} · {session.role}</div>
+          <div className="editorial-workbench-title" style={{ marginTop: 10, fontSize: "1.65rem" }}>{session.full_name} · {session.role}</div>
           <div className="muted" style={{ marginTop: 6 }}>{session.email}</div>
           <button className="button-secondary" style={{ marginTop: 14 }} onClick={() => writeSession(null)}>
             Sign out
@@ -88,20 +88,20 @@ export function OperatorGate({
   }
 
   return (
-    <section className="card" style={{ marginTop: 24 }}>
+    <section className="editorial-workbench-card" style={{ marginTop: 24 }}>
       <div className="eyebrow">Operator access</div>
-      <h2 style={{ marginTop: 12, fontSize: 28, fontWeight: 900, letterSpacing: "-0.05em" }}>{title}</h2>
-      <p className="muted" style={{ marginTop: 12 }}>
+      <h2 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2.1rem" }}>{title}</h2>
+      <p className="editorial-workbench-subtitle">
         Use an operator account to open the secure VIVA academy surfaces.
       </p>
-      <div className="grid grid-2" style={{ marginTop: 18 }}>
-        <label className="stack">
-          <span className="eyebrow">Email</span>
-          <input value={email} onChange={(event) => setEmail(event.target.value)} className="pill" style={{ borderRadius: 20, textTransform: "none", letterSpacing: "normal", fontWeight: 600 }} />
+      <div className="editorial-form-grid" style={{ marginTop: 18 }}>
+        <label className="editorial-form-field">
+          <span>Email</span>
+          <input value={email} onChange={(event) => setEmail(event.target.value)} className="editorial-input" />
         </label>
-        <label className="stack">
-          <span className="eyebrow">Password</span>
-          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="pill" style={{ borderRadius: 20, textTransform: "none", letterSpacing: "normal", fontWeight: 600 }} />
+        <label className="editorial-form-field">
+          <span>Password</span>
+          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="editorial-input" />
         </label>
       </div>
       <div className="button-row">
@@ -109,7 +109,7 @@ export function OperatorGate({
           {busy ? "Signing in" : "Open operator view"}
         </button>
       </div>
-      {message ? <div className="panel" style={{ marginTop: 16, background: "#FEF2F2" }}>{message}</div> : null}
+      {message ? <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>{message}</div> : null}
     </section>
   );
 }

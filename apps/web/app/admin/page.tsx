@@ -14,18 +14,30 @@ export default function AdminPage() {
       primaryCta={{ label: "Open white-label controls", href: "/white-label" }}
       secondaryCta={{ label: "Open operations", href: "/operations" }}
     >
-      <section className="grid grid-2">
+      <section className="split">
+        <article className="editorial-workbench-card editorial-workbench-contrast">
+          <div className="eyebrow">Control tower</div>
+          <h2 className="editorial-workbench-title" style={{ marginTop: 14, fontSize: "2.35rem" }}>
+            The academy control layer now matches the public site’s editorial tone.
+          </h2>
+          <p className="editorial-workbench-subtitle">
+            Curriculum controls, classroom operations, branding, and LMS creation now sit inside the same premium interface language.
+          </p>
+        </article>
+      </section>
+
+      <section className="editorial-workbench-grid compact">
         {INTERNAL_ADMIN.metrics.map((item) => (
-          <article key={item.label} className="card">
+          <article key={item.label} className="editorial-workbench-card">
             <div className="eyebrow">{item.label}</div>
             <div className="metric" style={{ marginTop: 12 }}>{item.value}</div>
           </article>
         ))}
       </section>
 
-      <section className="grid grid-2" style={{ marginTop: 24 }}>
+      <section className="editorial-workbench-grid" style={{ marginTop: 24 }}>
         {INTERNAL_ADMIN.actions.map((item) => (
-          <article key={item} className="card">
+          <article key={item} className="editorial-workbench-card">
             <div className="eyebrow">Admin area</div>
             <p className="muted" style={{ marginTop: 12 }}>{item}</p>
           </article>

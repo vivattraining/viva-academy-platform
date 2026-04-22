@@ -19,6 +19,27 @@ export default function OperationsPage() {
       primaryCta={{ label: "Open roster", href: "/roster" }}
       secondaryCta={{ label: "Open admissions", href: "/admissions" }}
     >
+      <section className="split">
+        <article className="editorial-workbench-card editorial-workbench-contrast">
+          <div className="eyebrow">Operations theatre</div>
+          <h2 className="editorial-workbench-title" style={{ marginTop: 14, fontSize: "2.3rem" }}>
+            Class delivery should feel coordinated, calm, and visible from one surface.
+          </h2>
+          <p className="editorial-workbench-subtitle">
+            Batch mapping, live session setup, Zoom provisioning, and attendance marking now live in the same visual system as the rest of the academy.
+          </p>
+        </article>
+        <article className="editorial-workbench-card">
+          <div className="eyebrow">Operational rhythm</div>
+          <div className="editorial-workbench-meta">
+            <span className="editorial-workbench-chip">Batch selection</span>
+            <span className="editorial-workbench-chip">Session control</span>
+            <span className="editorial-workbench-chip">Zoom handoff</span>
+            <span className="editorial-workbench-chip">Attendance marks</span>
+          </div>
+        </article>
+      </section>
+
       <section className="grid grid-2">
         {opsCards.map(([title, body]) => (
           <article key={title} className="card">

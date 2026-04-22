@@ -103,17 +103,17 @@ export function OperationsWorkbench() {
   }
 
   return (
-    <div className="stack">
-      <section className="grid grid-2">
-        <article className="card">
+    <div className="editorial-workbench">
+      <section className="editorial-workbench-grid compact">
+        <article className="editorial-workbench-card">
           <div className="eyebrow">Batch</div>
-          <select value={selectedBatchId} onChange={(event) => { setSelectedBatchId(event.target.value); setSelectedSessionId(""); }} className="pill" style={{ marginTop: 16, borderRadius: 20, width: "100%" }}>
+          <select value={selectedBatchId} onChange={(event) => { setSelectedBatchId(event.target.value); setSelectedSessionId(""); }} className="editorial-select" style={{ marginTop: 16 }}>
             {batches.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
         </article>
-        <article className="card">
+        <article className="editorial-workbench-card">
           <div className="eyebrow">Session</div>
-          <select value={selectedSessionId} onChange={(event) => setSelectedSessionId(event.target.value)} className="pill" style={{ marginTop: 16, borderRadius: 20, width: "100%" }}>
+          <select value={selectedSessionId} onChange={(event) => setSelectedSessionId(event.target.value)} className="editorial-select" style={{ marginTop: 16 }}>
             {sessions.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
           </select>
           {selectedSession ? (
@@ -123,18 +123,22 @@ export function OperationsWorkbench() {
               {selectedSession.zoom_start_url ? <a className="button-secondary" href={selectedSession.zoom_start_url} target="_blank" rel="noopener noreferrer">Trainer start</a> : null}
             </div>
           ) : null}
-          {message ? <div className="panel" style={{ marginTop: 16 }}>{message}</div> : null}
+          {message ? <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>{message}</div> : null}
         </article>
       </section>
 
-      <section className="grid grid-2">
+      <section className="editorial-workbench-grid">
         {batchStudents.map((student) => {
           const record = attendance.find((item) => item.application_id === student.id);
           return (
-            <article key={student.id} className="card">
+            <article key={student.id} className="editorial-workbench-card">
               <div className="eyebrow">{student.student_name}</div>
-              <p className="muted" style={{ marginTop: 8 }}>{student.student_email}</p>
-              <p className="muted">{record ? `${record.status} · ${record.marked_by}` : "Not marked yet"}</p>
+              <p className="editorial-workbench-subtitle" style={{ marginTop: 8 }}>{student.student_email}</p>
+              <div style={{ marginTop: 12 }}>
+                <span className={`editorial-status ${record?.status === "present" ? "success" : record?.status === "late" ? "warning" : record?.status === "absent" ? "neutral" : "info"}`}>
+                  {record ? `${record.status} · ${record.marked_by}` : "Not marked yet"}
+                </span>
+              </div>
               <div className="button-row">
                 <button className="button-primary" onClick={() => void markAttendance(student.id, "present")}>Present</button>
                 <button className="button-secondary" onClick={() => void markAttendance(student.id, "late")}>Late</button>

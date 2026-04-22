@@ -70,20 +70,32 @@ export function AdmissionsWorkbench() {
   }
 
   return (
-    <div className="stack">
-      <section className="card">
+    <div className="editorial-workbench">
+      <section className="editorial-workbench-card editorial-workbench-contrast">
         <div className="eyebrow">Admissions control</div>
-        <div style={{ marginTop: 12, fontSize: 28, fontWeight: 900, letterSpacing: "-0.05em" }}>Review every applicant in one queue and push them toward payment or enrollment.</div>
-        {message ? <div className="panel" style={{ marginTop: 16 }}>{message}</div> : <p className="muted" style={{ marginTop: 12 }}>This board is for VIVA operations after the public application has already been submitted.</p>}
+        <h2 className="editorial-workbench-title" style={{ marginTop: 12 }}>
+          Review every applicant in one queue and move them toward payment or enrollment.
+        </h2>
+        {message ? (
+          <div className="editorial-workbench-panel" style={{ marginTop: 18 }}>{message}</div>
+        ) : (
+          <p className="editorial-workbench-subtitle">
+            This board is for Viva Career Academy operations after the public application has already been submitted.
+          </p>
+        )}
       </section>
 
-      <section className="grid grid-2">
+      <section className="editorial-workbench-grid">
         {items.map((item) => (
-          <article key={item.id} className="card">
+          <article key={item.id} className="editorial-workbench-card">
             <div className="eyebrow">{item.course_name}</div>
-            <div style={{ marginTop: 12, fontSize: 28, fontWeight: 900, letterSpacing: "-0.04em" }}>{item.student_name}</div>
-            <p className="muted" style={{ marginTop: 8 }}>{item.student_email}</p>
-            <p className="muted">{item.application_stage} · {item.payment_stage} · {item.enrollment_stage}</p>
+            <h3 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2rem" }}>{item.student_name}</h3>
+            <p className="editorial-workbench-subtitle" style={{ marginTop: 8 }}>{item.student_email}</p>
+            <div className="editorial-workbench-meta">
+              <span className="editorial-workbench-chip">{item.application_stage}</span>
+              <span className="editorial-workbench-chip">{item.payment_stage}</span>
+              <span className="editorial-workbench-chip">{item.enrollment_stage}</span>
+            </div>
             <div className="button-row">
               <button className="button-secondary" onClick={() => void issuePaymentLink(item.id)}>Issue payment link</button>
               <button className="button-primary" onClick={() => void markEnrolled(item.id)}>Mark enrolled</button>

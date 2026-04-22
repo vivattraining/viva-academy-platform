@@ -50,22 +50,22 @@ export default function AdmissionsPage() {
       secondaryCta={{ label: "Open public apply page", href: "/apply" }}
     >
       <section className="split">
-        <article className="hero hero-contrast">
+        <article className="editorial-workbench-card editorial-workbench-contrast">
           <div className="eyebrow" style={{ color: "#F4D77B" }}>Internal only</div>
-          <h2 style={{ marginTop: 14, fontSize: 36, lineHeight: 1.08, letterSpacing: "-0.05em" }}>
+          <h2 className="editorial-workbench-title" style={{ marginTop: 14, fontSize: "2.35rem" }}>
             This page is for counselors and operators, not students.
           </h2>
-          <p style={{ marginTop: 14, color: "#D7E4F6", lineHeight: 1.7 }}>
+          <p className="editorial-workbench-subtitle">
             Students should see the VIVA marketing website and apply journey. Once their application enters the system, your team manages payment, screening, and enrollment here.
           </p>
           <div className="button-row">
             <a href="/apply" className="button-ghost">Review public apply page</a>
           </div>
         </article>
-        <article className="card">
+        <article className="editorial-workbench-card">
           <div className="section-head">
             <div className="eyebrow">Operator outcome</div>
-            <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: "-0.05em" }}>One admissions surface should own the handoff from application to active batch.</div>
+            <div className="editorial-workbench-title" style={{ fontSize: "2rem" }}>One admissions surface should own the handoff from application to active batch.</div>
           </div>
           <div className="badge-row">
             <div className="badge">Apply</div>
@@ -77,41 +77,41 @@ export default function AdmissionsPage() {
         </article>
       </section>
 
-      <section className="grid grid-2">
-        <article className="card">
+      <section className="editorial-workbench-grid">
+        <article className="editorial-workbench-card">
           <div className="eyebrow">Why this matters</div>
           <div className="stack" style={{ marginTop: 18 }}>
             {credibilitySignals.map((item) => (
-              <div key={item} className="panel" style={{ background: "#F8FAFC" }}>{item}</div>
+              <div key={item} className="editorial-workbench-panel">{item}</div>
             ))}
           </div>
         </article>
-        <article className="hero hero-contrast">
+        <article className="editorial-workbench-card editorial-workbench-contrast">
           <div className="eyebrow" style={{ color: "#F4D77B" }}>Public vs internal split</div>
-          <h2 style={{ marginTop: 14, fontSize: 34, lineHeight: 1.06, letterSpacing: "-0.05em" }}>The public VIVA website sells the program. This page runs the operation.</h2>
+          <h2 className="editorial-workbench-title" style={{ marginTop: 14, fontSize: "2.2rem" }}>The public VIVA website sells the program. This page runs the operation.</h2>
           <div className="badge-row" style={{ marginTop: 18 }}>
             <div className="badge">Internal users only</div>
             <div className="badge">Admissions control</div>
             <div className="badge">Enrollment pipeline</div>
           </div>
-          <p style={{ marginTop: 16, color: "#D7E4F6", lineHeight: 1.7 }}>
+          <p className="editorial-workbench-subtitle">
             Keeping this route operational lets you reuse the backend and workbench capabilities later without confusing students or parents with internal controls.
           </p>
         </article>
       </section>
 
-      <section className="grid grid-2">
+      <section className="editorial-workbench-grid">
         {admissionsCards.map((item) => (
-          <article key={item.title} className="card">
+          <article key={item.title} className="editorial-workbench-card">
             <div className="eyebrow">{item.title}</div>
             <p className="muted" style={{ marginTop: 12 }}>{item.body}</p>
           </article>
         ))}
       </section>
 
-      <section className="grid grid-2">
+      <section className="editorial-workbench-grid">
         {launchTestimonials.map((item) => (
-          <article key={item.name} className="card">
+          <article key={item.name} className="editorial-workbench-card">
             <div className="eyebrow">{item.name}</div>
             <p style={{ marginTop: 14, fontSize: 22, lineHeight: 1.45, letterSpacing: "-0.03em" }}>&ldquo;{item.quote}&rdquo;</p>
           </article>
