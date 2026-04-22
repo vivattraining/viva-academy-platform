@@ -7,8 +7,8 @@ export default function TrainerPage() {
     <SiteShell
       activeHref="/trainer"
       eyebrow="Trainer studio"
-      title="Trainers create sessions, publish lessons, record avatar-safe content, and run live Zoom classrooms."
-      description="This screen is the working hub for faculty and guest lecturers. It should support live delivery, AI avatar content generation, materials, assignments, and session-level attendance review."
+      title="Trainers review submissions, publish progression, and run disciplined cohort delivery."
+      description="The trainer workspace now follows the homepage language too: premium surfaces, clearer hierarchy, and a more deliberate review flow."
       primaryCta={{ label: "Open operations", href: "/operations" }}
       secondaryCta={{ label: "Open admin CMS", href: "/admin" }}
     >

@@ -6,6 +6,10 @@ import { useState } from "react";
 
 import styles from "./claude-home.module.css";
 
+const HERO_VIDEO_MP4 = "/hero/viva-career-academy-campus.mp4";
+const HERO_VIDEO_WEBM = "/hero/viva-career-academy-campus.webm";
+const HERO_VIDEO_POSTER = "/hero/viva-career-academy-travel-consultant.png";
+
 type FacultyMember = {
   code: string;
   name: string;
@@ -287,7 +291,7 @@ export function ClaudeHome() {
   return (
     <main className={styles.page}>
       <div className={styles.topBanner}>
-        Admissions Open · Monsoon Cohort 2026 <b>·</b> Applications close 14 May <b>·</b> Live + Self-paced
+        Admissions Open · Travel Careers 2026 <b>·</b> Applications close 14 May <b>·</b> Live + Self-paced
       </div>
 
       <nav className={styles.nav}>
@@ -331,18 +335,18 @@ export function ClaudeHome() {
           <div className={styles.heroGrid}>
             <div>
               <h1 className={styles.heroTitle}>
-                A training
+                Build a
                 <br />
-                institute for
+                career in
                 <br />
-                the world&apos;s most
+                travel, tourism
                 <br />
-                <em>hospitable</em>
+                <em>& hospitality</em>
                 <br />
-                careers<span className={styles.amp}>.</span>
+                with confidence<span className={styles.amp}>.</span>
               </h1>
               <p className={styles.heroLead}>
-                VIVA prepares the next generation of travel, tourism and hospitality professionals through a hybrid programme of live cohorts, industry mentorship and global placement pathways.
+                Viva Career Academy prepares the next generation of travel professionals through trainer-led learning, industry discipline, and a modern AI-supported path into real travel careers.
               </p>
               <div className={styles.heroCtas}>
                 <a className={styles.button} href="#admissions">
@@ -356,12 +360,24 @@ export function ClaudeHome() {
 
             <div className={styles.heroMedia}>
               <div className={styles.heroFrame}>
+                <video
+                  className={styles.heroVideo}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  poster={HERO_VIDEO_POSTER}
+                >
+                  <source src={HERO_VIDEO_WEBM} type="video/webm" />
+                  <source src={HERO_VIDEO_MP4} type="video/mp4" />
+                </video>
+                <div className={styles.heroVideoFallback} aria-hidden="true" />
                 <div className={styles.heroImageOverlay}>
-                  <div className={styles.heroImageBadge}>Live cohort immersion</div>
+                  <div className={styles.heroImageBadge}>Travel careers · Live academy</div>
                 </div>
                 <div className={styles.heroFrameCaption}>
                   <span className={styles.frameNum}>No. 01 / 04</span>
-                  <span className={styles.frameTitle}>Front Office rotation — The Leela, Udaipur</span>
+                  <span className={styles.frameTitle}>Travel planning, destination logic & career preparation</span>
                 </div>
               </div>
               <div className={styles.heroSub}>

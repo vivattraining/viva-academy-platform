@@ -1,44 +1,39 @@
 import { MarketingShell } from "../../components/marketing-shell";
+import styles from "../../components/claude-home.module.css";
 import { PublicAdmissionsFlow } from "../../components/public-admissions-flow";
 
 export default function ApplyPage() {
   return (
     <MarketingShell activeHref="/apply">
-      <section className="apply-layout">
-        <div className="apply-copy">
-          <span className="editorial-kicker">Admissions Open 2026</span>
-          <h1 className="apply-title">
-            Your career begins with one application.
-          </h1>
-          <p className="editorial-section-copy">
-            The live-site tone is now reflected here too: a concise admissions funnel, premium trust signals, and clear next steps into payment.
-          </p>
-
-          <div className="editorial-grid editorial-grid-2">
-            <article className="editorial-flag-card left">
-              <h3>Submit your application</h3>
-              <p>A 15-minute form with background, interests, and one short written response.</p>
-            </article>
-            <article className="editorial-flag-card right">
-              <h3>Admissions conversation</h3>
-              <p>A 30-minute online conversation followed by offer and scholarship review.</p>
-            </article>
-          </div>
-
-          <div className="apply-image-card">
-            <div>
-              <span>Institutional Excellence</span>
-              <strong>Research-First Pedagogy</strong>
+      <section className={styles.admissions} id="admissions">
+        <div className={`${styles.wrap} ${styles.admissionsBody}`}>
+          <div>
+            <div className={`${styles.eyebrow} ${styles.eyebrowDark}`}>§ 07 — Admissions</div>
+            <h1 className={styles.admissionsTitle} style={{ marginTop: 20 }}>Your <em>career</em> begins with one application.</h1>
+            <p className={styles.lead}>
+              The admissions page now follows the restored homepage style: high-trust, academic, and sharply guided into payment and enrollment.
+            </p>
+            <div className={styles.steps} style={{ marginTop: 28 }}>
+              {[
+                ["01", "Submit your application", "A 15-minute form with background, interests and one written response.", "15 min"],
+                ["02", "Admissions conversation", "A 30-minute online conversation with the VCA team.", "Within 7 days"],
+                ["03", "Offer and scholarship review", "Final fit, pricing and scholarship discussion.", "Within 14 days"],
+              ].map(([number, title, copy, when]) => (
+                <div className={styles.step} key={number}>
+                  <div className={styles.stepNumber}>{number}</div>
+                  <div><h5>{title}</h5><p>{copy}</p></div>
+                  <div className={styles.stepWhen}>{when}</div>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-
-        <div className="apply-form-side">
-          <PublicAdmissionsFlow />
-          <div className="apply-trust-row">
-            <span>256-Bit SSL Security</span>
-            <span>Razorpay Ready</span>
-            <span>Trainer-led Review</span>
+          <div>
+            <PublicAdmissionsFlow />
+            <div className={styles.footerSocial} style={{ marginTop: 18 }}>
+              <span className={styles.chip}>256-Bit SSL Security</span>
+              <span className={styles.chip}>Razorpay Ready</span>
+              <span className={styles.chip}>Trainer-led Review</span>
+            </div>
           </div>
         </div>
       </section>

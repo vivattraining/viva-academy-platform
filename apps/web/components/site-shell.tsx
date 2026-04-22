@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { ACADEMY_NAV, ACADEMY_THEME } from "../lib/academy";
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
+import styles from "./claude-home.module.css";
 
 type BrandingState = {
   tenant_name: string;
@@ -81,68 +82,68 @@ export function SiteShell({
     };
   }, []);
 
-  const shortName = (branding.brand_name || DEFAULT_BRANDING.brand_name).slice(0, 4).toUpperCase();
-
   return (
-    <main>
-      <div className="shell">
-        <header className="hero" style={{ padding: 24, marginBottom: 24, backdropFilter: "blur(18px)" }}>
-          <div className="nav" style={{ marginBottom: 20 }}>
-            <Link href="/" style={{ display: "flex", gap: 16, alignItems: "center" }}>
-              <div
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 18,
-                  display: "grid",
-                  placeItems: "center",
-                  fontWeight: 900,
-                  color: "white",
-                  background: `linear-gradient(135deg, ${branding.primary_color} 0%, #1A3457 100%)`
-                }}
-              >
-                {shortName}
-              </div>
-              <div>
-                <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-0.04em" }}>{branding.brand_name}</div>
-                <div className="eyebrow">{branding.custom_domain}</div>
-              </div>
-            </Link>
-            <div className="nav-links">
+    <main className={styles.page}>
+      <div className={styles.topBanner}>
+        Secure Academy Workspace <b>·</b> Viva Career Academy <b>·</b> Operator + Learner Access
+      </div>
+      <nav className={styles.nav}>
+        <div className={`${styles.wrap} ${styles.navInner}`}>
+          <Link className={styles.brand} href="/">
+            <span className={styles.brandMark}>V</span>
+            <span className={styles.brandWord}>
+              <span className={styles.brandName}>VIVA</span>
+              <span className={styles.brandTag}>{branding.custom_domain}</span>
+            </span>
+          </Link>
+          <div className={styles.navLinks}>
               {ACADEMY_NAV.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="pill"
-                  style={{
-                    background: item.href === activeHref ? branding.primary_color : "rgba(255,255,255,0.78)",
-                    color: item.href === activeHref ? "white" : ACADEMY_THEME.ink
-                  }}
+                  style={{ color: item.href === activeHref ? "var(--accent-deep)" : undefined }}
                 >
                   {item.label}
                 </Link>
               ))}
+          </div>
+          <div className={styles.navCta}>
+            {primaryCta ? <Link href={primaryCta.href} className={styles.button}>{primaryCta.label}</Link> : null}
+            {secondaryCta ? <Link href={secondaryCta.href} className={styles.buttonGhost}>{secondaryCta.label}</Link> : null}
+          </div>
+        </div>
+      </nav>
+
+      <section className={styles.section} style={{ paddingTop: "56px" }}>
+        <div className={styles.wrap}>
+          <div className={styles.secHead}>
+            <div className={styles.kicker}>{eyebrow}</div>
+            <div>
+              <h1 className={styles.sectionTitle}>{title}</h1>
+              <p className={styles.bodyText} style={{ marginTop: 20, maxWidth: 760 }}>{description}</p>
+              <div className={styles.footerSocial} style={{ marginTop: 22 }}>
+                <span className={styles.chip}><span className={styles.dot} /> {branding.academy_name}</span>
+                <span className={styles.chip}>Own domain</span>
+                <span className={styles.chip}>Zoom-enabled live classes</span>
+              </div>
             </div>
           </div>
 
-          <div className="eyebrow">{eyebrow}</div>
-          <h1 style={{ fontSize: 52, lineHeight: 1.04, letterSpacing: "-0.06em", margin: "14px 0 12px", maxWidth: 920 }}>{title}</h1>
-          <p className="muted" style={{ maxWidth: 860, fontSize: 16 }}>{description}</p>
-          <div className="badge-row" style={{ marginTop: 18 }}>
-            <div className="badge">{branding.academy_name}</div>
-            <div className="badge">Own domain</div>
-            <div className="badge">Zoom-enabled live classes</div>
-          </div>
-          {(primaryCta || secondaryCta) ? (
-            <div className="button-row">
-              {primaryCta ? <Link href={primaryCta.href} className="button-primary">{primaryCta.label}</Link> : null}
-              {secondaryCta ? <Link href={secondaryCta.href} className="button-secondary">{secondaryCta.label}</Link> : null}
-            </div>
-          ) : null}
-        </header>
+          <div style={{ display: "grid", gap: 24 }}>{children}</div>
+        </div>
+      </section>
 
-        <div className="stack">{children}</div>
-      </div>
+      <footer className={styles.footer} style={{ paddingTop: 0 }}>
+        <div className={styles.wrap}>
+          <div className={styles.footerBottom}>
+            <div>© 2026 Viva Career Academy. Secure workspace.</div>
+            <div className={styles.footerSocial}>
+              <Link href="/login">Login</Link>
+              <Link href="/apply">Admissions</Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }

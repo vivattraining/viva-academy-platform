@@ -1,4 +1,5 @@
 import { MarketingShell } from "../../components/marketing-shell";
+import styles from "../../components/claude-home.module.css";
 import {
   LIVE_SITE_PROGRAMS,
 } from "../../lib/public-site-content";
@@ -6,57 +7,44 @@ import {
 export default function CoursesPage() {
   return (
     <MarketingShell activeHref="/courses">
-      <section className="editorial-page-hero">
-        <div className="editorial-page-hero-copy">
-          <span className="editorial-kicker">Programs</span>
-          <h1 className="editorial-page-title">Career tracks built for modern travel and hospitality careers.</h1>
-          <p className="editorial-section-copy">
-            The VIVA marketing direction now reflects the live academy site: premium positioning, clear durations, hybrid delivery, and a stronger career-outcomes story.
+      <section className={styles.section}>
+        <div className={styles.wrap}>
+          <div className={styles.secHead}>
+            <div className={styles.kicker}>§ 02 — Programs</div>
+            <h1 className={styles.sectionTitle}>Career tracks built for <em>modern</em> travel and hospitality careers.</h1>
+          </div>
+          <p className={styles.bodyText} style={{ maxWidth: 760, marginBottom: 28 }}>
+            The programmes page now follows the restored landing language: academic, editorial, premium, and placement-oriented.
           </p>
-          <div className="editorial-button-row">
-            <a href="/apply" className="editorial-primary">Apply Now</a>
-            <a href="/curriculum" className="editorial-secondary">View Curriculum</a>
+          <div className={styles.programGrid}>
+            {LIVE_SITE_PROGRAMS.map((item) => (
+              <article key={item.code} className={styles.programCard}>
+                <div className={styles.programInner}>
+                  <div className={styles.programArrow}>↗</div>
+                  <div className={styles.programNumber}>{item.code}</div>
+                  <h3 className={styles.programTitle}>{item.title}</h3>
+                  <div className={styles.programDescription}>{item.body}</div>
+                  <div className={styles.programMeta}>
+                    <div className={styles.metaRow}><span>Duration</span><span>{item.duration}</span></div>
+                    <div className={styles.metaRow}><span>Format</span><span>{item.format}</span></div>
+                    <div className={styles.metaRow}><span>Next cohort</span><span>{item.cohort}</span></div>
+                  </div>
+                </div>
+              </article>
+            ))}
           </div>
-        </div>
-        <div className="editorial-page-hero-visual">
-          <div className="editorial-image-card large" style={{ backgroundImage: "linear-gradient(180deg, rgba(11,31,58,0.18), rgba(11,31,58,0.55)), url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80')" }} />
-          <div className="editorial-floating-note">
-            <strong>Fee band</strong>
-            <p>Lean MVP placeholder pricing: flagship tracks can be framed between ₹25K and ₹40K.</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="editorial-section">
-        <div className="editorial-section-head">
-          <h2 className="editorial-section-title">Program overview</h2>
-        </div>
-        <div className="editorial-grid editorial-grid-2">
-          {LIVE_SITE_PROGRAMS.map((item) => (
-            <article key={item.code} className="editorial-card">
-              <span className="editorial-index">{item.code}</span>
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
-              <div className="editorial-chip-row">
-                <span className="editorial-chip light">Duration {item.duration}</span>
-                <span className="editorial-chip light">Format {item.format}</span>
-                <span className="editorial-chip">Next cohort {item.cohort}</span>
-              </div>
+          <div className={styles.formatGrid} style={{ marginTop: 32 }}>
+            <article className={styles.formatCard}>
+              <div className={styles.tag}><span className={styles.dot} /> Payment options</div>
+              <h3>Flexible fee structures for a <em>serious</em> cohort.</h3>
+              <p>Support full-fee enrollment, deposit-based admissions, and Razorpay-driven collection once live keys are connected.</p>
             </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="editorial-section editorial-tonal">
-        <div className="editorial-grid editorial-grid-2">
-          <article className="editorial-card">
-            <h3>Payment options</h3>
-            <p>Support full fee, deposit-based onboarding, or Razorpay installment plans for the lean launch.</p>
-          </article>
-          <article className="editorial-card">
-            <h3>Specialization upsell</h3>
-            <p>After the flagship program, learners can unlock MICE, luxury travel, ticketing, or DMC specialist tracks.</p>
-          </article>
+            <article className={`${styles.formatCard} ${styles.formatCardSecondary}`}>
+              <div className={styles.tag}><span className={styles.dot} /> Upsell ladder</div>
+              <h3>Specialisations unlock after the <em>flagship</em> track.</h3>
+              <p>MICE, Luxury Travel, Ticketing, and DMC-focused tracks sit on top of the core academy journey.</p>
+            </article>
+          </div>
         </div>
       </section>
     </MarketingShell>

@@ -9,8 +9,8 @@ export default function AdminPage() {
     <SiteShell
       activeHref="/admin"
       eyebrow="Academy CMS and operations"
-      title="This is the control tower for curriculum, classrooms, attendance, certifications, and white-label setup."
-      description="This page is where Viva Career Academy and future academy brands manage content, live delivery settings, Zoom defaults, payments, certificates, and custom-domain branding."
+      title="This is the control tower for curriculum, classrooms, attendance, certifications, and launch control."
+      description="The admin surface is now being brought into the same editorial premium system while preserving the new LMS and branding controls underneath."
       primaryCta={{ label: "Open white-label controls", href: "/white-label" }}
       secondaryCta={{ label: "Open operations", href: "/operations" }}
     >

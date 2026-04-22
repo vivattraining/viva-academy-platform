@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { ACADEMY_THEME } from "../lib/academy";
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
+import styles from "./claude-home.module.css";
 import { PUBLIC_CONTACT, PUBLIC_NAV } from "../lib/public-site-content";
 
 type BrandingState = {
@@ -64,54 +65,84 @@ export function MarketingShell({
   }, []);
 
   return (
-    <main className="editorial-shell">
-      <header className="editorial-nav">
-        <div className="editorial-nav-inner">
-          <Link href="/" className="editorial-brand">
-            <span className="editorial-brand-text">{branding.brand_name}</span>
+    <main className={styles.page}>
+      <div className={styles.topBanner}>
+        Admissions Open · Viva Career Academy <b>·</b> Hybrid + Trainer-led <b>·</b> Travel Industry Careers
+      </div>
+      <nav className={styles.nav}>
+        <div className={`${styles.wrap} ${styles.navInner}`}>
+          <Link className={styles.brand} href="/">
+            <span className={styles.brandMark}>V</span>
+            <span className={styles.brandWord}>
+              <span className={styles.brandName}>VIVA</span>
+              <span className={styles.brandTag}>Academy · Est. 2011</span>
+            </span>
           </Link>
 
-          <nav className="editorial-nav-links">
+          <div className={styles.navLinks}>
             {PUBLIC_NAV.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`editorial-nav-link${item.href === activeHref ? " active" : ""}`}
+                style={{ color: item.href === activeHref ? "var(--accent-deep)" : undefined }}
               >
                 {item.label}
               </Link>
             ))}
-          </nav>
+          </div>
 
-          <div className="editorial-nav-actions">
-            <span className="editorial-nav-icon" aria-hidden="true">🏛</span>
-            <span className="editorial-nav-icon" aria-hidden="true">🌐</span>
-            <Link href="/apply" className="editorial-enroll">Enroll Now</Link>
+          <div className={styles.navCta}>
+            <Link className={styles.ghostLink} href="/login">
+              Student Login
+            </Link>
+            <Link href="/apply" className={styles.button}>
+              Apply Now <span className={styles.arrow}>↗</span>
+            </Link>
           </div>
         </div>
-      </header>
+      </nav>
 
-      <div className="editorial-main">{children}</div>
+      {children}
 
-      <footer className="editorial-footer">
-        <div className="editorial-footer-inner">
-          <div className="editorial-footer-brand">
-            <div className="editorial-footer-title">{branding.brand_name}</div>
+      <footer className={styles.footer}>
+        <div className={styles.wrap}>
+          <div className={styles.footerTop}>
+            <div className={styles.footerBrand}>
+              <Link className={styles.brand} href="/">
+                <span className={styles.brandMark}>V</span>
+                <span className={styles.brandWord}>
+                  <span className={styles.brandName}>VIVA</span>
+                  <span className={styles.brandTag}>Academy · Est. 2011</span>
+                </span>
+              </Link>
             <p>
               A trainer-led, discipline-driven career platform for travel, tourism, hospitality, and service careers.
             </p>
           </div>
-          <div className="editorial-footer-links">
-            <a href="/courses">Courses</a>
-            <a href="/curriculum">Curriculum</a>
-            <a href="/trainers">Trainers</a>
-            <a href="/ai-platform">AI Platform</a>
-            <a href="/apply">Apply</a>
+
+            <div className={styles.footerColumn}>
+              <h6 className={styles.footerHeading}>Explore</h6>
+              <Link href="/courses">Courses</Link>
+              <Link href="/curriculum">Curriculum</Link>
+              <Link href="/trainers">Trainers</Link>
+              <Link href="/ai-platform">AI Platform</Link>
+              <Link href="/apply">Apply</Link>
+            </div>
+
+            <div className={styles.footerColumn}>
+              <h6 className={styles.footerHeading}>Contact</h6>
+              <a href={`mailto:${PUBLIC_CONTACT.email}`}>{PUBLIC_CONTACT.email}</a>
+              <a href={`tel:${PUBLIC_CONTACT.phone.replace(/\s+/g, "")}`}>{PUBLIC_CONTACT.phone}</a>
+              <span>{branding.custom_domain}</span>
+            </div>
           </div>
-          <div className="editorial-footer-meta">
-            <div>{PUBLIC_CONTACT.email}</div>
-            <div>{PUBLIC_CONTACT.phone}</div>
+
+          <div className={styles.footerBottom}>
             <div>© 2026 Viva Career Academy. All rights reserved.</div>
+            <div className={styles.footerSocial}>
+              <a href="/login">Login</a>
+              <a href="/apply">Admissions</a>
+            </div>
           </div>
         </div>
       </footer>

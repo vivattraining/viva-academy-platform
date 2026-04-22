@@ -1,26 +1,28 @@
 import { MarketingShell } from "../../components/marketing-shell";
+import styles from "../../components/claude-home.module.css";
 import { AI_PLATFORM_PILLARS } from "../../lib/public-site-content";
 
 export default function AIPlatformPage() {
   return (
     <MarketingShell activeHref="/ai-platform">
-      <section className="editorial-page-hero compact">
-        <div className="editorial-page-hero-copy">
-          <span className="editorial-kicker">AI Platform</span>
-          <h1 className="editorial-page-title">A human-led academy with an AI intelligence layer underneath.</h1>
-          <p className="editorial-section-copy">
-            VIVA uses AI to personalize roadmaps, support students, assist trainer feedback, and power disciplined progression without replacing human judgement.
-          </p>
+      <section className={styles.section}>
+        <div className={styles.wrap}>
+          <div className={styles.secHead}>
+            <div className={styles.kicker}>§ 06 — AI Layer</div>
+            <h1 className={styles.sectionTitle}>A human-led academy with an <em>AI</em> intelligence layer underneath.</h1>
+          </div>
+          <div className={styles.programGrid}>
+            {AI_PLATFORM_PILLARS.map((item, index) => (
+              <article key={item.title} className={styles.programCard}>
+                <div className={styles.programInner}>
+                  <div className={styles.programNumber}>{`A · 0${index + 1}`}</div>
+                  <h3 className={styles.programTitle}>{item.title}</h3>
+                  <div className={styles.programDescription}>{item.body}</div>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
-      </section>
-
-      <section className="editorial-grid editorial-grid-3">
-        {AI_PLATFORM_PILLARS.map((item) => (
-          <article key={item.title} className="editorial-card">
-            <h3>{item.title}</h3>
-            <p>{item.body}</p>
-          </article>
-        ))}
       </section>
     </MarketingShell>
   );
