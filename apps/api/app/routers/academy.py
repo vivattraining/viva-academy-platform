@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
-from app.auth import auth_dependency, bootstrap_admin_user, create_credential, login_user, tenant_has_credentials
+from app.auth import auth_dependency, bootstrap_admin_user, create_credential, list_credentials, login_user, tenant_has_credentials
 from app.config import settings
 from app.db import get_db
 from app.integrations import create_payment_link, fetch_payment_status, provision_zoom_meeting, razorpay_mode
@@ -248,6 +248,29 @@ def academy_create_user_secure(
             "full_name": credential.full_name,
             "role": credential.role,
         },
+    }
+
+
+@router.get("/auth/users/secure")
+def academy_list_users_secure(
+    tenant_name: str,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_dependency(db, tenant_name, x_academy_session, authorization, {"admin"})
+    credentials = list_credentials(db, tenant_name)
+    return {
+        "ok": True,
+        "items": [
+            {
+                "email": credential.email,
+                "full_name": credential.full_name,
+                "role": credential.role,
+                "created_at": credential.created_at,
+            }
+            for credential in credentials
+        ],
     }
 
 

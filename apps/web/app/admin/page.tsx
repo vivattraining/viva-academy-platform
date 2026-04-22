@@ -1,6 +1,7 @@
 import { SiteShell } from "../../components/site-shell";
 import { AdminBrandingStudio } from "../../components/admin-branding-studio";
 import { AdminLmsConsole } from "../../components/admin-lms-console";
+import { AdminUserManagement } from "../../components/admin-user-management";
 import { OperatorGate } from "../../components/operator-gate";
 import { INTERNAL_ADMIN } from "../../lib/public-site-content";
 
@@ -45,6 +46,7 @@ export default function AdminPage() {
       </section>
 
       <OperatorGate title="Admin branding and tenant controls" allowedRoles={["admin"]}>
+        <AdminUserManagement />
         <AdminLmsConsole />
         <AdminBrandingStudio />
       </OperatorGate>

@@ -51,21 +51,30 @@ export function AdminBootstrapPanel() {
   }
 
   return (
-    <section className="card">
+    <section className="editorial-workbench-card">
       <div className="eyebrow">Founding admin setup</div>
-      <h2 style={{ marginTop: 12, fontSize: 28, fontWeight: 900, letterSpacing: "-0.05em" }}>Create the first admin without demo credentials.</h2>
-      <p className="muted" style={{ marginTop: 12 }}>
+      <h2 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2rem" }}>Create the first admin account for this tenant.</h2>
+      <p className="editorial-workbench-subtitle">
         Use this once for a fresh tenant to create the founding admin account. After that, admin users should be added from the secured platform.
       </p>
-      <div className="grid grid-2" style={{ marginTop: 18 }}>
-        <input value={fullName} onChange={(event) => setFullName(event.target.value)} className="pill" style={{ borderRadius: 20, textTransform: "none", letterSpacing: "normal", fontWeight: 600 }} placeholder="Full name" />
-        <input value={email} onChange={(event) => setEmail(event.target.value)} className="pill" style={{ borderRadius: 20, textTransform: "none", letterSpacing: "normal", fontWeight: 600 }} placeholder="Admin email" />
-        <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="pill" style={{ borderRadius: 20, textTransform: "none", letterSpacing: "normal", fontWeight: 600 }} placeholder="Password" />
+      <div className="editorial-form-grid" style={{ marginTop: 18 }}>
+        <label className="editorial-form-field">
+          <span>Full name</span>
+          <input value={fullName} onChange={(event) => setFullName(event.target.value)} className="editorial-input" placeholder="Full name" />
+        </label>
+        <label className="editorial-form-field">
+          <span>Admin email</span>
+          <input value={email} onChange={(event) => setEmail(event.target.value)} className="editorial-input" placeholder="admin@vivacareeracademy.com" />
+        </label>
+        <label className="editorial-form-field">
+          <span>Password</span>
+          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="editorial-input" placeholder="Minimum 8 characters" />
+        </label>
       </div>
       <div className="button-row">
         <button className="button-primary" onClick={() => void bootstrap()}>Create founding admin</button>
       </div>
-      {message ? <div className="panel" style={{ marginTop: 16 }}>{message}</div> : null}
+      {message ? <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>{message}</div> : null}
     </section>
   );
 }
