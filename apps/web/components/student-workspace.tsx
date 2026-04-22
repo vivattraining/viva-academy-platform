@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
@@ -109,16 +110,17 @@ export function StudentWorkspace() {
   }, []);
 
   if (loading) {
-    return <section className="card">Loading student workspace...</section>;
+    return <section className="editorial-workbench-card">Loading student workspace...</section>;
   }
 
   if (error || !payload) {
-    return <section className="card">{error || "Student workspace is unavailable."}</section>;
+    return <section className="editorial-workbench-card">{error || "Student workspace is unavailable."}</section>;
   }
 
   const progressPercent = payload.lms?.progress?.completion_percent ?? Math.round((payload.application.attendance_completed / Math.max(payload.application.attendance_total, 1)) * 100);
   const nextSession = payload.sessions[0];
   const currentModule = payload.lms?.progress?.current_module;
+  const penaltyReady = Boolean(currentModule?.penalty_ready || payload.lms?.progress?.penalty_ready);
   const chapterRows =
     currentModule?.chapters?.map((chapter, index) => ({
       id: String(index + 1).padStart(2, "0"),
@@ -141,97 +143,127 @@ export function StudentWorkspace() {
     ];
 
   return (
-    <section className="dashboard-shell">
-      <div className="dashboard-alert">
-        <div>
-          <strong>You missed deadline</strong>
-          <p>Pay ₹2000 to unlock for 2 days and continue your assessment.</p>
-        </div>
-        <button>Unlock Access</button>
-      </div>
-
-      <div className="dashboard-grid">
-        <div className="dashboard-main">
-          <div className="dashboard-panel">
-            <div className="dashboard-panel-top">
-              <div>
-                <h1>Student Dashboard</h1>
-                <p>{payload.lms?.course?.title || payload.batch?.course_name || "Professional Certification in Travel & Tourism"}</p>
-              </div>
-              <div className="dashboard-percent">
-                <span>{progressPercent}%</span>
-                <small>Overall Progress</small>
-              </div>
-            </div>
-            <div className="dashboard-progress-rail">
-              <div style={{ width: `${progressPercent}%` }} />
-            </div>
-            <div className="dashboard-progress-meta">
-              <span>{payload.lms ? `${payload.lms.progress.chapters_completed}/${payload.lms.progress.chapters_total} chapters completed` : "MODULE 01 COMPLETED"}</span>
-              <span>{payload.lms?.course?.certificate_name || "CERTIFICATION AT 100%"}</span>
-            </div>
+    <section className="editorial-workbench">
+      {penaltyReady ? (
+        <section className="editorial-workbench-card editorial-workbench-contrast">
+          <div className="eyebrow">Penalty active</div>
+          <h2 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2.2rem" }}>
+            Your submission window closed. A temporary unlock is available.
+          </h2>
+          <p className="editorial-workbench-subtitle">
+            Pay ₹{currentModule?.penalty_fee_amount || 2000} to unlock this module for two more days and continue your assessment journey.
+          </p>
+          <div className="button-row">
+            <button className="button-primary">Unlock access</button>
           </div>
+        </section>
+      ) : null}
 
-          <div className="dashboard-panel dashboard-module-panel">
-            <div className="dashboard-module-head">
-              <h2>Current Module: {currentModule?.title || `Week ${String(payload.lms?.progress?.current_week || 1).padStart(2, "0")}`}</h2>
-              <span>{currentModule?.penalty_ready || payload.lms?.progress?.penalty_ready ? "PENALTY ACTIVE" : "IN PROGRESS"}</span>
-            </div>
-            <div className="dashboard-module-list">
-              {chapterRows.map((row) => (
-                <div key={row.id} className={`dashboard-module-row ${row.tone}`}>
-                  <div className="dashboard-module-left">
-                    <span className="dashboard-index">{row.id}</span>
-                    <div>
-                      <h3>{row.title}</h3>
-                      <p>{row.meta}</p>
-                    </div>
+      <section className="split">
+        <article className="editorial-workbench-card editorial-workbench-contrast">
+          <div className="eyebrow">Learner dashboard</div>
+          <h1 className="editorial-workbench-title" style={{ marginTop: 12 }}>
+            {payload.student.name}
+          </h1>
+          <p className="editorial-workbench-subtitle">
+            {payload.lms?.course?.title || payload.batch?.course_name || "Professional Certification in Travel & Tourism"}
+          </p>
+          <div className="editorial-workbench-meta">
+            <span className="editorial-workbench-chip">{progressPercent}% progress</span>
+            <span className="editorial-workbench-chip">
+              {payload.lms ? `${payload.lms.progress.chapters_completed}/${payload.lms.progress.chapters_total} chapters` : "Attendance tracked"}
+            </span>
+            <span className="editorial-workbench-chip">{payload.batch?.classroom_mode || "Live cohort"}</span>
+          </div>
+        </article>
+
+        <article className="editorial-workbench-card">
+          <div className="eyebrow">Progress and award</div>
+          <div className="metric" style={{ marginTop: 12 }}>{progressPercent}%</div>
+          <div style={{ marginTop: 18, height: 12, borderRadius: 999, background: "rgba(14, 27, 44, 0.08)", overflow: "hidden" }}>
+            <div style={{ width: `${progressPercent}%`, height: "100%", background: "linear-gradient(90deg, #8c6338, #0e1b2c)" }} />
+          </div>
+          <p className="editorial-workbench-subtitle">
+            {payload.lms?.course?.certificate_name || "Certification"} unlocks once all modules are completed and evaluated as pass.
+          </p>
+        </article>
+      </section>
+
+      <section className="editorial-workbench-grid">
+        <article className="editorial-workbench-card">
+          <div className="eyebrow">Current module</div>
+          <h2 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2rem" }}>
+            {currentModule?.title || `Week ${String(payload.lms?.progress?.current_week || 1).padStart(2, "0")}`}
+          </h2>
+          <div className="editorial-workbench-meta">
+            <span className={`editorial-status ${penaltyReady ? "warning" : "info"}`}>
+              {penaltyReady ? "Penalty active" : "In progress"}
+            </span>
+          </div>
+          <div className="stack" style={{ marginTop: 18 }}>
+            {chapterRows.map((row) => (
+              <div key={row.id} className="editorial-workbench-panel">
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center" }}>
+                  <div>
+                    <div className="eyebrow">{row.id}</div>
+                    <strong style={{ display: "block", marginTop: 8 }}>{row.title}</strong>
+                    <p className="muted" style={{ marginTop: 8 }}>{row.meta}</p>
                   </div>
-                  <div className="dashboard-module-right">
-                    <span className={`dashboard-status ${row.tone}`}>{row.status}</span>
-                  </div>
+                  <span className={`editorial-status ${row.tone === "success" ? "success" : row.tone === "info" ? "info" : "neutral"}`}>
+                    {row.status}
+                  </span>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-        </div>
-
-        <aside className="dashboard-side">
-          <div className="dashboard-live-card">
-            <p className="kicker">Live Interaction</p>
-            <h2>{nextSession ? nextSession.title : "Advanced Ethics & Compliance Seminar"}</h2>
-            <div className="dashboard-live-meta">
-              <p>{nextSession ? `${nextSession.session_date}, ${nextSession.start_time}` : "Tomorrow, 10:00 AM IST"}</p>
-              <p>{nextSession?.trainer_name || payload.batch?.trainer_name || "Faculty Lead"}</p>
-            </div>
-            {nextSession?.zoom_join_url ? <a href={nextSession.zoom_join_url} target="_blank" rel="noopener noreferrer" className="dashboard-live-button">Join Session</a> : <button className="dashboard-live-button">Join Session</button>}
+          <div className="button-row">
+            <Link className="button-primary" href={`/dashboard/module/${currentModule?.id || payload.lms?.progress?.current_week || 1}`}>
+              Open module workspace
+            </Link>
           </div>
+        </article>
 
-          <div className="dashboard-panel">
-            <h3 className="dashboard-side-title">Recent Updates</h3>
-            <div className="dashboard-notes">
-              <div>
-                <strong>{payload.lms?.progress?.penalty_ready ? "Missed Assessment Deadline" : "Module progression is live"}</strong>
-                <p>
-                  {payload.lms?.progress?.penalty_ready
+        <div className="editorial-workbench">
+          <article className="editorial-workbench-card editorial-workbench-contrast">
+            <div className="eyebrow">Live interaction</div>
+            <h2 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2rem" }}>
+              {nextSession ? nextSession.title : "Advanced Ethics & Compliance Seminar"}
+            </h2>
+            <p className="editorial-workbench-subtitle">
+              {nextSession ? `${nextSession.session_date}, ${nextSession.start_time} · ${nextSession.trainer_name}` : `Tomorrow, 10:00 AM IST · ${payload.batch?.trainer_name || "Faculty Lead"}`}
+            </p>
+            <div className="button-row">
+              {nextSession?.zoom_join_url ? (
+                <a href={nextSession.zoom_join_url} target="_blank" rel="noopener noreferrer" className="button-primary">
+                  Join session
+                </a>
+              ) : (
+                <button className="button-primary">Join session</button>
+              )}
+            </div>
+          </article>
+
+          <article className="editorial-workbench-card">
+            <div className="eyebrow">Recent updates</div>
+            <div className="stack" style={{ marginTop: 18 }}>
+              <div className="editorial-workbench-panel">
+                <strong>{penaltyReady ? "Missed assessment deadline" : "Module progression is live"}</strong>
+                <p className="muted" style={{ marginTop: 8 }}>
+                  {penaltyReady
                     ? `Penalty imposed. Pay ₹${currentModule?.penalty_fee_amount || 2000} to regain access to the next chapter.`
                     : "Trainer reviews and chapter submissions now drive your progression week by week."}
                 </p>
               </div>
-              <div>
-                <strong>Module Feedback Published</strong>
-                <p>Your recent work has been evaluated and recorded in the learner system.</p>
+              <div className="editorial-workbench-panel">
+                <strong>Module feedback published</strong>
+                <p className="muted" style={{ marginTop: 8 }}>
+                  Your recent work has been evaluated and recorded in the learner system.
+                </p>
               </div>
             </div>
-          </div>
-
-          <div className="dashboard-certificate">
-            <h3>Certification</h3>
-            <p>Your {payload.lms?.course?.certificate_name || "professional certification"} will be available once all modules are completed and evaluated as pass.</p>
-            <button disabled>Download Certificate</button>
-          </div>
-        </aside>
-      </div>
+          </article>
+        </div>
+      </section>
     </section>
   );
 }
