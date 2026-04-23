@@ -197,7 +197,7 @@ const faculty: FacultyMember[] = [
   {
     code: "F · 01",
     name: "Vikas Khanduri",
-    image: "/faculty/vikas-khanduri.jpeg",
+    image: "/faculty/vikas-khanduri-updated.png",
     imageAlt: "Vikas Khanduri",
     label: "Faculty Head, Co-Founder",
     role: "Travel Entrepreneur · Hospitality Studies",
@@ -244,11 +244,14 @@ const faculty: FacultyMember[] = [
   },
   {
     code: "F · 06",
-    name: "Dr. Lakshmi Iyer",
-    role: "Lead · Research & Ethics",
+    name: "Narayan",
+    image: "/faculty/narayan-home.jpeg",
+    imageAlt: "Narayan",
+    label: "Leadership",
+    role: "Operations & Growth",
     description:
-      "PhD, Tourism Policy, University of Surrey. Former advisor to the Ministry of Tourism. Chairs the institute's ethics & sustainability curriculum.",
-    creds: ["PhD · Surrey", "MoT India"],
+      "Supports Viva Career Academy across operations, growth, and launch execution as the platform scales into its next chapter.",
+    creds: ["Admissions", "Operations", "Growth"],
   },
 ];
 
