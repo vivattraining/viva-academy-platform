@@ -50,6 +50,10 @@ export function OperatorGate({
   }
 
   async function login() {
+    if (!email.trim() || !password.trim()) {
+      setMessage("Enter your email and password to continue.");
+      return;
+    }
     setBusy(true);
     setMessage("Signing in...");
     try {
@@ -71,6 +75,20 @@ export function OperatorGate({
     }
   }
 
+  async function signOut() {
+    const current = readSession();
+    if (current?.tenant_name) {
+      try {
+        await apiRequest(`/api/v1/academy/auth/logout?tenant_name=${encodeURIComponent(current.tenant_name)}`, {
+          method: "POST",
+          session: current,
+        });
+      } catch {}
+    }
+    writeSession(null);
+    setSession(null);
+  }
+
   if (session && allowedRoles.includes(session.role)) {
     return (
       <div className="editorial-workbench">
@@ -78,7 +96,7 @@ export function OperatorGate({
           <div className="eyebrow">Operator session</div>
           <div className="editorial-workbench-title" style={{ marginTop: 10, fontSize: "1.65rem" }}>{session.full_name} · {session.role}</div>
           <div className="muted" style={{ marginTop: 6 }}>{session.email}</div>
-          <button className="button-secondary" style={{ marginTop: 14 }} onClick={() => writeSession(null)}>
+          <button className="button-secondary" style={{ marginTop: 14 }} onClick={() => void signOut()}>
             Sign out
           </button>
         </div>

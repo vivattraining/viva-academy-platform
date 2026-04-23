@@ -30,6 +30,10 @@ export function StudentLoginPanel() {
   }
 
   async function login() {
+    if (!email.trim() || !password.trim()) {
+      setMessage("Enter your student email and password to continue.");
+      return;
+    }
     setBusy(true);
     setMessage("Opening learner workspace...");
     try {

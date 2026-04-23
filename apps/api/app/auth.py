@@ -243,6 +243,24 @@ def revoke_sessions_for_email(db: Session, tenant_name: str, email: str) -> int:
     return len(sessions)
 
 
+def revoke_session(db: Session, tenant_name: str, session_token: str) -> bool:
+    record = (
+        db.query(AcademyAuthSession)
+        .filter(
+            AcademyAuthSession.tenant_name == tenant_name,
+            AcademyAuthSession.session_token == session_token,
+            AcademyAuthSession.revoked_at.is_(None),
+        )
+        .first()
+    )
+    if record is None:
+        return False
+    record.revoked_at = now_iso()
+    db.add(record)
+    db.commit()
+    return True
+
+
 def bootstrap_admin_user(db: Session, tenant_name: str, *, email: str, full_name: str, password: str) -> dict:
     if tenant_has_credentials(db, tenant_name):
         raise HTTPException(status_code=409, detail="Admin bootstrap is already completed for this tenant")
@@ -293,11 +311,16 @@ def create_session(db: Session, tenant_name: str, credential: AcademyUserCredent
 
 
 def login_user(db: Session, tenant_name: str, email: str, password: str) -> dict:
+    normalized_email = email.strip().lower()
+    if "@" not in normalized_email:
+        raise HTTPException(status_code=422, detail="Enter a valid email address")
+    if len(password.strip()) < 8:
+        raise HTTPException(status_code=422, detail="Password must be at least 8 characters")
     if settings.allow_demo_auth:
         ensure_default_users(db, tenant_name)
     credential = (
         db.query(AcademyUserCredential)
-        .filter(AcademyUserCredential.tenant_name == tenant_name, AcademyUserCredential.email == email.strip().lower())
+        .filter(AcademyUserCredential.tenant_name == tenant_name, AcademyUserCredential.email == normalized_email)
         .first()
     )
     if credential is None or not verify_password(password, credential.password_hash):

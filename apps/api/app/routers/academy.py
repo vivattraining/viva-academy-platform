@@ -15,6 +15,7 @@ from app.auth import (
     create_credential,
     list_credentials,
     login_user,
+    revoke_session,
     revoke_sessions_for_email,
     tenant_has_credentials,
     update_credential,
@@ -324,6 +325,21 @@ def academy_me(
     return {
         "ok": True,
         "session": auth_dependency(db, tenant_name, x_academy_session, authorization, None),
+    }
+
+
+@router.post("/auth/logout")
+def academy_logout(
+    tenant_name: str,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    session = auth_dependency(db, tenant_name, x_academy_session, authorization, None)
+    revoke_session(db, tenant_name, session["session_token"])
+    return {
+        "ok": True,
+        "logged_out": True,
     }
 
 
