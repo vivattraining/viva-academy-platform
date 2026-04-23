@@ -5,7 +5,6 @@ export const PUBLIC_NAV = [
   { label: "Trainers", href: "/trainers" },
   { label: "AI Platform", href: "/ai-platform" },
   { label: "Apply", href: "/apply" },
-  { label: "Login", href: "/login" },
 ] as const;
 
 export const PUBLIC_CONTACT = {

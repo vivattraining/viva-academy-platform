@@ -92,9 +92,6 @@ export function MarketingShell({
           </div>
 
           <div className={styles.navCta}>
-            <Link className={styles.ghostLink} href="/login">
-              Student Login
-            </Link>
             <Link href="/apply" className={styles.button}>
               Apply Now <span className={styles.arrow}>↗</span>
             </Link>
@@ -140,7 +137,7 @@ export function MarketingShell({
           <div className={styles.footerBottom}>
             <div>© 2026 Viva Career Academy. All rights reserved.</div>
             <div className={styles.footerSocial}>
-              <a href="/login">Login</a>
+              <a href="/login">Student Portal</a>
               <a href="/apply">Admissions</a>
             </div>
           </div>

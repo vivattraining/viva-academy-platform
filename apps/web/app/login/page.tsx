@@ -1,25 +1,27 @@
-import { AdminBootstrapPanel } from "../../components/admin-bootstrap-panel";
 import { SiteShell } from "../../components/site-shell";
-import { OperatorGate } from "../../components/operator-gate";
 import { StudentLoginPanel } from "../../components/student-login-panel";
-import styles from "../../components/claude-home.module.css";
 import { CurrentSessionPanel } from "../../components/current-session-panel";
 
 export default function LoginPage() {
   return (
     <SiteShell
       activeHref="/login"
-      eyebrow="Access"
-      title="Choose the right VIVA entry point for operators and learners."
-      description="Staff can open the secure operating surfaces here, while students can move directly into the learner dashboard with their own account."
+      eyebrow="Student Access"
+      title="Open the learner portal once your enrollment is activated."
+      description="Student login is shared after payment and enrollment activation. Team members should use the separate internal login route."
     >
       <CurrentSessionPanel />
-      <AdminBootstrapPanel />
-      <section className={styles.programGrid}>
+      <section className="editorial-workbench-card editorial-workbench-contrast">
+        <div className="eyebrow">Before you sign in</div>
+        <h2 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2rem" }}>
+          Student access is enabled only after the admissions team activates your account.
+        </h2>
+        <p className="editorial-workbench-subtitle">
+          If you have already paid and have not received your student login yet, contact the admissions team for activation. Internal team members should use <strong>/internal/login</strong>.
+        </p>
+      </section>
+      <section className="editorial-workbench-grid" style={{ marginTop: 24 }}>
         <StudentLoginPanel />
-        <OperatorGate title="Open operator workspace" allowedRoles={["admin", "operations", "trainer"]}>
-          <section className="card">Signed in. Use the navigation to open admissions, operations, messaging, and admin surfaces.</section>
-        </OperatorGate>
       </section>
     </SiteShell>
   );
