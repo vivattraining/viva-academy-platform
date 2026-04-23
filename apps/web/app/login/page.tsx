@@ -3,6 +3,7 @@ import { SiteShell } from "../../components/site-shell";
 import { OperatorGate } from "../../components/operator-gate";
 import { StudentLoginPanel } from "../../components/student-login-panel";
 import styles from "../../components/claude-home.module.css";
+import { CurrentSessionPanel } from "../../components/current-session-panel";
 
 export default function LoginPage() {
   return (
@@ -12,6 +13,7 @@ export default function LoginPage() {
       title="Choose the right VIVA entry point for operators and learners."
       description="Staff can open the secure operating surfaces here, while students can move directly into the learner dashboard with their own account."
     >
+      <CurrentSessionPanel />
       <AdminBootstrapPanel />
       <section className={styles.programGrid}>
         <StudentLoginPanel />

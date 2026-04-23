@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
-import { isSessionExpired, readSession, writeSession, type AcademySession } from "../lib/auth";
+import { defaultRouteForRole, isSessionExpired, readSession, writeSession, type AcademySession } from "../lib/auth";
 
 export function StudentLoginPanel() {
   const [email, setEmail] = useState("");
@@ -46,7 +46,7 @@ export function StudentLoginPanel() {
         }),
       });
       writeSession(data.session);
-      window.location.href = "/student";
+      window.location.href = defaultRouteForRole(data.session.role);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to sign in as student.");
     } finally {

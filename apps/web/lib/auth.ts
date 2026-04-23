@@ -61,3 +61,18 @@ export function getAuthHeaders(session?: AcademySession | null) {
   }
   return headers;
 }
+
+export function defaultRouteForRole(role?: string | null) {
+  switch (role) {
+    case "admin":
+      return "/admin";
+    case "operations":
+      return "/admissions";
+    case "trainer":
+      return "/trainer";
+    case "student":
+      return "/student";
+    default:
+      return "/login";
+  }
+}

@@ -90,6 +90,9 @@ router = APIRouter()
 READ_ROLES = {"admin", "operations", "trainer"}
 WRITE_ROLES = {"admin", "operations"}
 TRAINER_ROLES = {"admin", "operations", "trainer"}
+VALID_APPLICATION_STAGES = {"applied", "payment_pending", "enrolled", "certificate_issued"}
+VALID_PAYMENT_STAGES = {"not_started", "order_created", "verification_pending", "paid", "payment_failed"}
+VALID_ENROLLMENT_STAGES = {"prospect", "active", "completed"}
 
 
 def _apply_payment_state_transition(item: dict, patch: dict) -> dict:
@@ -110,10 +113,31 @@ def _apply_payment_state_transition(item: dict, patch: dict) -> dict:
     return next_item
 
 
+def _validate_application_transition(current: dict, patch: dict) -> None:
+    next_application_stage = patch.get("application_stage", current.get("application_stage"))
+    next_payment_stage = patch.get("payment_stage", current.get("payment_stage"))
+    next_enrollment_stage = patch.get("enrollment_stage", current.get("enrollment_stage"))
+
+    if next_application_stage and next_application_stage not in VALID_APPLICATION_STAGES:
+        raise HTTPException(status_code=422, detail="Invalid application stage")
+    if next_payment_stage and next_payment_stage not in VALID_PAYMENT_STAGES:
+        raise HTTPException(status_code=422, detail="Invalid payment stage")
+    if next_enrollment_stage and next_enrollment_stage not in VALID_ENROLLMENT_STAGES:
+        raise HTTPException(status_code=422, detail="Invalid enrollment stage")
+
+    if next_application_stage == "enrolled" and next_payment_stage != "paid":
+        raise HTTPException(status_code=422, detail="Application cannot be enrolled before payment is marked paid")
+    if next_enrollment_stage == "active" and next_payment_stage != "paid":
+        raise HTTPException(status_code=422, detail="Enrollment cannot become active before payment is marked paid")
+    if next_application_stage == "certificate_issued" and next_enrollment_stage != "completed":
+        raise HTTPException(status_code=422, detail="Certificate issuance requires enrollment to be completed")
+
+
 def _save_payment_transition(db: Session, tenant_name: str, application_id: str, patch: dict) -> Optional[dict]:
     current = get_application(db, tenant_name, application_id)
     if current is None:
         return None
+    _validate_application_transition(current, patch)
     next_patch = _apply_payment_state_transition(current, patch)
     next_patch.pop("id", None)
     next_patch.pop("tenant_name", None)
@@ -484,6 +508,8 @@ def create_application_payment_link(application_id: str, payload: PaymentLinkUpd
     application = get_application(db, payload.tenant_name, application_id)
     if application is None:
         raise HTTPException(status_code=404, detail="Application not found")
+    if application.get("payment_stage") == "paid":
+        raise HTTPException(status_code=409, detail="Payment is already completed for this application")
     payment = create_payment_link(
         application_id=application_id,
         amount_due=payload.amount_due if payload.amount_due is not None else float(application.get("amount_due", 0)),
