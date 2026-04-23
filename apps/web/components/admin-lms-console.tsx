@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
+import { readSession } from "../lib/auth";
 
 type CourseOutline = {
   course: { id: string; title: string; certificate_name: string };
@@ -17,11 +18,18 @@ export function AdminLmsConsole() {
   const [slug, setSlug] = useState("");
   const [code, setCode] = useState("");
   const [message, setMessage] = useState("");
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSessionToken(readSession()?.session_token || null);
+  }, []);
 
   async function load() {
+    if (!sessionToken) return;
     try {
       const data = await apiRequest<{ items: CourseOutline[] }>(
-        `/api/v1/academy/courses/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`
+        `/api/v1/academy/courses/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
+        { sessionToken }
       );
       setItems(data.items || []);
     } catch (loadError) {
@@ -31,13 +39,22 @@ export function AdminLmsConsole() {
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [sessionToken]);
 
   async function createCourse() {
+    if (!sessionToken) {
+      setMessage("Admin session required.");
+      return;
+    }
+    if (!title.trim() || !slug.trim() || !code.trim()) {
+      setMessage("Enter a course title, slug, and code before creating the course shell.");
+      return;
+    }
     setMessage("Creating course...");
     try {
       await apiRequest("/api/v1/academy/courses/secure", {
         method: "POST",
+        sessionToken,
         body: JSON.stringify({
           tenant_name: DEFAULT_TENANT,
           title,
@@ -70,6 +87,12 @@ export function AdminLmsConsole() {
   return (
     <section className="editorial-workbench-card">
       <div className="eyebrow">LMS catalog</div>
+      <h2 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2rem" }}>
+        Create the course shell and review the active module structure.
+      </h2>
+      <p className="editorial-workbench-subtitle">
+        This is the internal course CMS starting point for launch. Use it to create the main academy course and verify the module inventory behind student delivery.
+      </p>
       <div className="editorial-form-grid" style={{ marginTop: 16 }}>
         <input value={title} onChange={(event) => setTitle(event.target.value)} className="editorial-input" placeholder="Course title" />
         <input value={slug} onChange={(event) => setSlug(event.target.value)} className="editorial-input" placeholder="Course slug" />

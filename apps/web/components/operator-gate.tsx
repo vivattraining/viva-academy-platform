@@ -19,6 +19,8 @@ export function OperatorGate({
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const expectedRole = allowedRoles.length === 1 ? allowedRoles[0] : null;
+  const roleLabel = allowedRoles.map((role) => role.charAt(0).toUpperCase() + role.slice(1)).join(", ");
 
   useEffect(() => {
     const sync = () => {
@@ -63,7 +65,7 @@ export function OperatorGate({
           tenant_name: DEFAULT_TENANT,
           email,
           password,
-          expected_role: "operations",
+          expected_role: expectedRole,
         })
       });
       writeSession(data.session);
@@ -112,7 +114,7 @@ export function OperatorGate({
       <div className="eyebrow">Operator access</div>
       <h2 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2.1rem" }}>{title}</h2>
       <p className="editorial-workbench-subtitle">
-        Use an operator account to open the secure VIVA academy surfaces.
+        Use a {roleLabel.toLowerCase()} account to open the secure VIVA academy surfaces.
       </p>
       <div className="editorial-form-grid" style={{ marginTop: 18 }}>
         <label className="editorial-form-field">
