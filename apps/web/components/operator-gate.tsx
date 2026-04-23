@@ -62,7 +62,8 @@ export function OperatorGate({
         body: JSON.stringify({
           tenant_name: DEFAULT_TENANT,
           email,
-          password
+          password,
+          expected_role: "operations",
         })
       });
       writeSession(data.session);

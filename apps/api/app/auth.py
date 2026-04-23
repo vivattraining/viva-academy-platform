@@ -310,12 +310,15 @@ def create_session(db: Session, tenant_name: str, credential: AcademyUserCredent
     }
 
 
-def login_user(db: Session, tenant_name: str, email: str, password: str) -> dict:
+def login_user(db: Session, tenant_name: str, email: str, password: str, expected_role: Optional[str] = None) -> dict:
     normalized_email = email.strip().lower()
     if "@" not in normalized_email:
         raise HTTPException(status_code=422, detail="Enter a valid email address")
     if len(password.strip()) < 8:
         raise HTTPException(status_code=422, detail="Password must be at least 8 characters")
+    normalized_expected_role = expected_role.strip().lower() if expected_role else None
+    if normalized_expected_role is not None and normalized_expected_role not in ALLOWED_ROLES:
+        raise HTTPException(status_code=422, detail="Invalid expected role")
     if settings.allow_demo_auth:
         ensure_default_users(db, tenant_name)
     credential = (
@@ -325,6 +328,11 @@ def login_user(db: Session, tenant_name: str, email: str, password: str) -> dict
     )
     if credential is None or not verify_password(password, credential.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
+    if normalized_expected_role and credential.role != normalized_expected_role:
+        raise HTTPException(
+            status_code=403,
+            detail=f"This account is registered as {credential.role}. Please use the correct workspace for that role.",
+        )
     return create_session(db, tenant_name, credential)
 
 

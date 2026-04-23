@@ -43,6 +43,7 @@ export function StudentLoginPanel() {
           tenant_name: DEFAULT_TENANT,
           email,
           password,
+          expected_role: "student",
         }),
       });
       writeSession(data.session);

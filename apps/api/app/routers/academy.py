@@ -233,7 +233,7 @@ def _reconcile_application_payment(db: Session, application: dict, *, reported_o
 def academy_login(payload: LoginRequest, db: Session = Depends(get_db)):
     return {
         "ok": True,
-        "session": login_user(db, payload.tenant_name, payload.email, payload.password),
+        "session": login_user(db, payload.tenant_name, payload.email, payload.password, payload.expected_role),
     }
 
 

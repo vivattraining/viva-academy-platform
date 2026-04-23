@@ -126,6 +126,7 @@ class LoginRequest(BaseModel):
     tenant_name: str
     email: str
     password: str
+    expected_role: Optional[str] = None
 
 
 class BootstrapAdminRequest(BaseModel):
