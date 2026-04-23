@@ -9,7 +9,16 @@ from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
-from app.auth import auth_dependency, bootstrap_admin_user, create_credential, list_credentials, login_user, tenant_has_credentials
+from app.auth import (
+    auth_dependency,
+    bootstrap_admin_user,
+    create_credential,
+    list_credentials,
+    login_user,
+    revoke_sessions_for_email,
+    tenant_has_credentials,
+    update_credential,
+)
 from app.config import settings
 from app.db import get_db
 from app.integrations import create_payment_link, fetch_payment_status, provision_zoom_meeting, razorpay_mode
@@ -21,6 +30,7 @@ from app.schemas import (
     BootstrapAdminRequest,
     ChapterSubmissionCreate,
     CredentialCreateRequest,
+    CredentialUpdateRequest,
     CourseChapterCreate,
     CourseCreate,
     CourseModuleCreate,
@@ -271,6 +281,36 @@ def academy_list_users_secure(
             }
             for credential in credentials
         ],
+    }
+
+
+@router.patch("/auth/users/secure")
+def academy_update_user_secure(
+    payload: CredentialUpdateRequest,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_dependency(db, payload.tenant_name, x_academy_session, authorization, {"admin"})
+    credential = update_credential(
+        db,
+        payload.tenant_name,
+        email=payload.email,
+        full_name=payload.full_name,
+        role=payload.role,
+        password=payload.password,
+    )
+    revoked_sessions = revoke_sessions_for_email(db, payload.tenant_name, payload.email) if payload.password else 0
+    return {
+        "ok": True,
+        "item": {
+            "email": credential.email,
+            "full_name": credential.full_name,
+            "role": credential.role,
+            "created_at": credential.created_at,
+            "updated_at": credential.updated_at,
+            "revoked_sessions": revoked_sessions,
+        },
     }
 
 

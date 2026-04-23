@@ -173,6 +173,55 @@ def create_credential(db: Session, tenant_name: str, *, email: str, full_name: s
     return record
 
 
+def update_credential(
+    db: Session,
+    tenant_name: str,
+    *,
+    email: str,
+    full_name: Optional[str] = None,
+    role: Optional[str] = None,
+    password: Optional[str] = None,
+) -> AcademyUserCredential:
+    normalized_email = email.strip().lower()
+    record = (
+        db.query(AcademyUserCredential)
+        .filter(AcademyUserCredential.tenant_name == tenant_name, AcademyUserCredential.email == normalized_email)
+        .first()
+    )
+    if record is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    if full_name is not None:
+        record.full_name = full_name.strip()
+    if role is not None:
+        record.role = role.strip()
+    if password is not None:
+        record.password_hash = hash_password(password)
+    record.updated_at = now_iso()
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+    return record
+
+
+def revoke_sessions_for_email(db: Session, tenant_name: str, email: str) -> int:
+    normalized_email = email.strip().lower()
+    sessions = (
+        db.query(AcademyAuthSession)
+        .filter(
+            AcademyAuthSession.tenant_name == tenant_name,
+            AcademyAuthSession.email == normalized_email,
+            AcademyAuthSession.revoked_at.is_(None),
+        )
+        .all()
+    )
+    revoked_at = now_iso()
+    for record in sessions:
+        record.revoked_at = revoked_at
+        db.add(record)
+    db.commit()
+    return len(sessions)
+
+
 def bootstrap_admin_user(db: Session, tenant_name: str, *, email: str, full_name: str, password: str) -> dict:
     if tenant_has_credentials(db, tenant_name):
         raise HTTPException(status_code=409, detail="Admin bootstrap is already completed for this tenant")

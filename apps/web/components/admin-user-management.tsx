@@ -10,6 +10,7 @@ type UserItem = {
   full_name: string;
   role: string;
   created_at: string;
+  updated_at?: string;
 };
 
 const ROLE_OPTIONS = ["admin", "operations", "trainer", "student"] as const;
@@ -22,6 +23,10 @@ export function AdminUserManagement() {
   const [role, setRole] = useState<(typeof ROLE_OPTIONS)[number]>("operations");
   const [message, setMessage] = useState("");
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [activeEditEmail, setActiveEditEmail] = useState<string | null>(null);
+  const [editFullName, setEditFullName] = useState("");
+  const [editRole, setEditRole] = useState<(typeof ROLE_OPTIONS)[number]>("operations");
+  const [editPassword, setEditPassword] = useState("");
 
   useEffect(() => {
     setSessionToken(readSession()?.session_token || null);
@@ -30,14 +35,18 @@ export function AdminUserManagement() {
   useEffect(() => {
     async function load() {
       if (!sessionToken) return;
-      const data = await apiRequest<{ items: UserItem[] }>(
-        `/api/v1/academy/auth/users/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
-        { sessionToken }
-      );
-      setItems(data.items || []);
+      await loadUsers(sessionToken);
     }
     void load();
   }, [sessionToken]);
+
+  async function loadUsers(token: string) {
+    const data = await apiRequest<{ items: UserItem[] }>(
+      `/api/v1/academy/auth/users/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
+      { sessionToken: token }
+    );
+    setItems(data.items || []);
+  }
 
   async function createUser() {
     if (!sessionToken) {
@@ -62,15 +71,51 @@ export function AdminUserManagement() {
       setPassword("");
       setRole("operations");
       setMessage("User created.");
-      if (sessionToken) {
-        const data = await apiRequest<{ items: UserItem[] }>(
-          `/api/v1/academy/auth/users/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
-          { sessionToken }
-        );
-        setItems(data.items || []);
-      }
+      await loadUsers(sessionToken);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to create user.");
+    }
+  }
+
+  function startEdit(item: UserItem) {
+    setActiveEditEmail(item.email);
+    setEditFullName(item.full_name);
+    setEditRole(item.role as (typeof ROLE_OPTIONS)[number]);
+    setEditPassword("");
+    setMessage("");
+  }
+
+  async function saveEdit(email: string) {
+    if (!sessionToken) {
+      setMessage("Admin session required.");
+      return;
+    }
+    setMessage("Updating user...");
+    try {
+      const payload: Record<string, string> = {
+        tenant_name: DEFAULT_TENANT,
+        email,
+        full_name: editFullName,
+        role: editRole,
+      };
+      if (editPassword.trim()) {
+        payload.password = editPassword;
+      }
+      const data = await apiRequest<{ item: { revoked_sessions?: number } }>("/api/v1/academy/auth/users/secure", {
+        method: "PATCH",
+        sessionToken,
+        body: JSON.stringify(payload),
+      });
+      setActiveEditEmail(null);
+      setEditPassword("");
+      setMessage(
+        data.item.revoked_sessions
+          ? `User updated. ${data.item.revoked_sessions} active session(s) were revoked after password reset.`
+          : "User updated."
+      );
+      await loadUsers(sessionToken);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to update user.");
     }
   }
 
@@ -126,6 +171,33 @@ export function AdminUserManagement() {
                 <span className="editorial-workbench-chip">Created {item.created_at.slice(0, 10)}</span>
               </div>
             </div>
+            <div className="button-row" style={{ marginTop: 16 }}>
+              <button className="button-secondary" onClick={() => startEdit(item)}>Edit access</button>
+            </div>
+            {activeEditEmail === item.email ? (
+              <div className="editorial-form-grid" style={{ marginTop: 16 }}>
+                <label className="editorial-form-field">
+                  <span>Full name</span>
+                  <input className="editorial-input" value={editFullName} onChange={(event) => setEditFullName(event.target.value)} />
+                </label>
+                <label className="editorial-form-field">
+                  <span>Role</span>
+                  <select className="editorial-select" value={editRole} onChange={(event) => setEditRole(event.target.value as (typeof ROLE_OPTIONS)[number])}>
+                    {ROLE_OPTIONS.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="editorial-form-field" style={{ gridColumn: "1 / -1" }}>
+                  <span>Reset password</span>
+                  <input className="editorial-input" type="password" value={editPassword} onChange={(event) => setEditPassword(event.target.value)} placeholder="Leave blank to keep current password" />
+                </label>
+                <div className="button-row" style={{ marginTop: 0 }}>
+                  <button className="button-primary" onClick={() => void saveEdit(item.email)}>Save changes</button>
+                  <button className="button-secondary" onClick={() => setActiveEditEmail(null)}>Cancel</button>
+                </div>
+              </div>
+            ) : null}
           </div>
         ))}
       </div>

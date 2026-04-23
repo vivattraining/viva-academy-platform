@@ -143,6 +143,14 @@ class CredentialCreateRequest(BaseModel):
     role: str = Field(..., min_length=1)
 
 
+class CredentialUpdateRequest(BaseModel):
+    tenant_name: str
+    email: str
+    full_name: Optional[str] = Field(default=None, min_length=1)
+    password: Optional[str] = Field(default=None, min_length=8)
+    role: Optional[str] = Field(default=None, min_length=1)
+
+
 class AuthSession(BaseModel):
     session_token: str
     access_token: str
