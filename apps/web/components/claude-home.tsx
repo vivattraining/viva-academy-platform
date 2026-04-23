@@ -244,9 +244,9 @@ const faculty: FacultyMember[] = [
   },
   {
     code: "F · 06",
-    name: "Narayan",
+    name: "Narayan Mallapur",
     image: "/faculty/narayan-home.jpeg",
-    imageAlt: "Narayan",
+    imageAlt: "Narayan Mallapur",
     label: "Leadership",
     role: "Operations & Growth",
     description:
