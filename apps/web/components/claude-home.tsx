@@ -316,9 +316,6 @@ export function ClaudeHome() {
           </div>
 
           <div className={styles.navCta}>
-            <Link className={styles.ghostLink} href="/login">
-              Student Login
-            </Link>
             <a className={styles.button} href="#admissions">
               Apply Now <span className={styles.arrow}>↗</span>
             </a>
@@ -330,7 +327,7 @@ export function ClaudeHome() {
         <div className={styles.wrap}>
           <div className={styles.heroMeta}>
             <span className={styles.chip}>
-              <span className={styles.dot} /> Admissions 2026 · Live
+              <span className={styles.dot} /> Admissions 2026 · <span className={styles.liveStatus}>Live</span>
             </span>
             <span className={styles.chip}>Ranked among India&apos;s top 5 travel & hospitality academies — Industry Survey 2025</span>
           </div>

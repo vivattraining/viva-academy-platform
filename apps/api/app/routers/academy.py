@@ -59,6 +59,7 @@ from app.store import (
     create_session,
     create_trainer_review,
     find_application_by_email,
+    find_application_by_order_id,
     find_application_by_reference,
     find_session_by_zoom_meeting_id,
     find_tenant_by_domain,
@@ -227,6 +228,30 @@ def _reconcile_application_payment(db: Session, application: dict, *, reported_o
         )
 
     return _save_payment_transition(db, tenant_name, application_id, patch) or application
+
+
+def _resolve_razorpay_application(db: Session, event: dict, reference: Optional[str] = None) -> Optional[dict]:
+    if reference:
+        application = find_application_by_reference(db, reference)
+        if application is not None:
+            return application
+
+    payment_entity = (((event.get("payload") or {}).get("payment") or {}).get("entity") or {})
+    order_id = payment_entity.get("order_id")
+    if isinstance(order_id, str) and order_id:
+        application = find_application_by_order_id(db, order_id)
+        if application is not None:
+            return application
+
+    notes = payment_entity.get("notes")
+    if isinstance(notes, dict):
+        application_id = notes.get("application_id")
+        if isinstance(application_id, str) and application_id:
+            application = find_application_by_reference(db, application_id)
+            if application is not None:
+                return application
+
+    return None
 
 
 @router.post("/auth/login")
@@ -560,12 +585,11 @@ def verify_application_payment(application_id: str, payload: PaymentVerification
     return {"ok": True, "item": item}
 
 
-@router.post("/payments/webhook/razorpay/{reference}")
-async def capture_payment(
-    reference: str,
+async def _capture_payment(
     request: Request,
     x_razorpay_signature: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
+    reference: Optional[str] = None,
 ):
     # 1. Read the raw request body for signature verification
     body_bytes = await request.body()
@@ -602,10 +626,10 @@ async def capture_payment(
         return {"ok": True, "ignored": True, "event": event_type}
 
     # 5. Resolve the application by payment_reference (or fallback id)
-    application = find_application_by_reference(db, reference)
+    application = _resolve_razorpay_application(db, event, reference)
     if application is None:
-        logger.error("Razorpay webhook: no application found for reference=%s", reference)
-        raise HTTPException(status_code=404, detail="Application not found for this reference")
+        logger.error("Razorpay webhook: no application found for reference=%s", reference or "static")
+        raise HTTPException(status_code=404, detail="Application not found for this payment")
 
     tenant_name = application.get("tenant_name", "")
 
@@ -632,6 +656,30 @@ async def capture_payment(
         tenant_name,
     )
     return {"ok": True, "application_id": updated["id"], "payment_stage": updated.get("payment_stage")}
+
+
+@router.post("/payments/webhook/razorpay")
+async def capture_payment_static(
+    request: Request,
+    x_razorpay_signature: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    return await _capture_payment(request=request, x_razorpay_signature=x_razorpay_signature, db=db)
+
+
+@router.post("/payments/webhook/razorpay/{reference}")
+async def capture_payment(
+    reference: str,
+    request: Request,
+    x_razorpay_signature: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    return await _capture_payment(
+        request=request,
+        x_razorpay_signature=x_razorpay_signature,
+        db=db,
+        reference=reference,
+    )
 
 
 @router.get("/students/me")

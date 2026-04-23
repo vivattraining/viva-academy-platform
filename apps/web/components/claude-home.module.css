@@ -234,6 +234,10 @@
   background: var(--accent);
 }
 
+.liveStatus {
+  color: #1f9d55;
+}
+
 .heroGrid {
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;

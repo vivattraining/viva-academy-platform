@@ -565,6 +565,15 @@ def find_application_by_reference(db: Session, reference: str) -> Optional[dict]
     return None
 
 
+def find_application_by_order_id(db: Session, order_id: str) -> Optional[dict]:
+    for record in db.query(AcademyTenantState).all():
+        state = record.state or {}
+        for item in state.get("applications", []):
+            if item.get("payment_order_id") == order_id:
+                return deepcopy(item)
+    return None
+
+
 def find_application_by_email(db: Session, tenant_name: str, email: str) -> Optional[dict]:
     normalized = email.strip().lower()
     return next((item for item in list_items(db, tenant_name, "applications") if item.get("student_email") == normalized), None)
