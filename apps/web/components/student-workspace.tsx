@@ -87,7 +87,7 @@ export function StudentWorkspace() {
   useEffect(() => {
     const session = readSession();
     if (!session?.session_token) {
-      setError("Sign in with the student demo login to see the learner workspace.");
+      setError("Sign in with a student account to open the learner workspace.");
       setLoading(false);
       return;
     }

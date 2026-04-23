@@ -29,6 +29,10 @@ export function AdminBootstrapPanel() {
   async function bootstrap() {
     setMessage("Creating founding admin...");
     try {
+      if (!fullName.trim() || !email.trim() || password.trim().length < 8) {
+        setMessage("Enter a full name, valid email, and a password with at least 8 characters.");
+        return;
+      }
       const data = await apiRequest<{ session: AcademySession }>("/api/v1/academy/auth/bootstrap-admin", {
         method: "POST",
         body: JSON.stringify({
@@ -55,7 +59,7 @@ export function AdminBootstrapPanel() {
       <div className="eyebrow">Founding admin setup</div>
       <h2 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2rem" }}>Create the first admin account for this tenant.</h2>
       <p className="editorial-workbench-subtitle">
-        Use this once for a fresh tenant to create the founding admin account. After that, admin users should be added from the secured platform.
+        Use this once for a fresh tenant. After that, manage staff and learner access from the secured admin platform.
       </p>
       <div className="editorial-form-grid" style={{ marginTop: 18 }}>
         <label className="editorial-form-field">

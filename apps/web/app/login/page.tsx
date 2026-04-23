@@ -10,7 +10,7 @@ export default function LoginPage() {
       activeHref="/login"
       eyebrow="Access"
       title="Choose the right VIVA entry point for operators and learners."
-      description="Tomorrow's launch should feel guided. Staff can open the secure operating surfaces, while students can move straight into the learner dashboard."
+      description="Staff can open the secure operating surfaces here, while students can move directly into the learner dashboard with their own account."
     >
       <AdminBootstrapPanel />
       <section className={styles.programGrid}>

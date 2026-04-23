@@ -53,6 +53,10 @@ export function AdminUserManagement() {
       setMessage("Admin session required.");
       return;
     }
+    if (!fullName.trim() || !email.trim() || password.trim().length < 8) {
+      setMessage("Enter a full name, valid email, and a password with at least 8 characters.");
+      return;
+    }
     setMessage("Creating user...");
     try {
       await apiRequest("/api/v1/academy/auth/users/secure", {
@@ -99,6 +103,10 @@ export function AdminUserManagement() {
         role: editRole,
       };
       if (editPassword.trim()) {
+        if (editPassword.trim().length < 8) {
+          setMessage("Reset passwords must be at least 8 characters.");
+          return;
+        }
         payload.password = editPassword;
       }
       const data = await apiRequest<{ item: { revoked_sessions?: number } }>("/api/v1/academy/auth/users/secure", {

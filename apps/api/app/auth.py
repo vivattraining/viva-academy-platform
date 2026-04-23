@@ -16,6 +16,7 @@ from app.models import AcademyAuthSession, AcademyUserCredential
 
 
 SESSION_TTL_HOURS = 12
+ALLOWED_ROLES = {"admin", "operations", "trainer", "student"}
 
 
 def now_utc() -> datetime:
@@ -150,6 +151,16 @@ def tenant_has_credentials(db: Session, tenant_name: str) -> bool:
 
 def create_credential(db: Session, tenant_name: str, *, email: str, full_name: str, role: str, password: str) -> AcademyUserCredential:
     normalized_email = email.strip().lower()
+    normalized_role = role.strip().lower()
+    cleaned_name = full_name.strip()
+    if "@" not in normalized_email:
+        raise HTTPException(status_code=422, detail="Enter a valid email address")
+    if len(cleaned_name) < 2:
+        raise HTTPException(status_code=422, detail="Full name must be at least 2 characters")
+    if normalized_role not in ALLOWED_ROLES:
+        raise HTTPException(status_code=422, detail="Invalid role")
+    if len(password.strip()) < 8:
+        raise HTTPException(status_code=422, detail="Password must be at least 8 characters")
     current = now_iso()
     existing = (
         db.query(AcademyUserCredential)
@@ -161,8 +172,8 @@ def create_credential(db: Session, tenant_name: str, *, email: str, full_name: s
     record = AcademyUserCredential(
         tenant_name=tenant_name,
         email=normalized_email,
-        full_name=full_name.strip(),
-        role=role.strip(),
+        full_name=cleaned_name,
+        role=normalized_role,
         password_hash=hash_password(password),
         created_at=current,
         updated_at=current,
@@ -183,6 +194,8 @@ def update_credential(
     password: Optional[str] = None,
 ) -> AcademyUserCredential:
     normalized_email = email.strip().lower()
+    if "@" not in normalized_email:
+        raise HTTPException(status_code=422, detail="Enter a valid email address")
     record = (
         db.query(AcademyUserCredential)
         .filter(AcademyUserCredential.tenant_name == tenant_name, AcademyUserCredential.email == normalized_email)
@@ -191,10 +204,18 @@ def update_credential(
     if record is None:
         raise HTTPException(status_code=404, detail="User not found")
     if full_name is not None:
-        record.full_name = full_name.strip()
+        cleaned_name = full_name.strip()
+        if len(cleaned_name) < 2:
+            raise HTTPException(status_code=422, detail="Full name must be at least 2 characters")
+        record.full_name = cleaned_name
     if role is not None:
-        record.role = role.strip()
+        normalized_role = role.strip().lower()
+        if normalized_role not in ALLOWED_ROLES:
+            raise HTTPException(status_code=422, detail="Invalid role")
+        record.role = normalized_role
     if password is not None:
+        if len(password.strip()) < 8:
+            raise HTTPException(status_code=422, detail="Password must be at least 8 characters")
         record.password_hash = hash_password(password)
     record.updated_at = now_iso()
     db.add(record)

@@ -61,6 +61,13 @@ pip install -e .
 uvicorn app.main:app --reload --port 8000
 ```
 
+## Launch Notes
+
+- Keep `ALLOW_DEMO_AUTH=false` for production.
+- Set `NEXT_PUBLIC_API_URL` to the live API origin before production frontend deployment.
+- Use `/login` once to create the founding admin if the tenant has no credentials yet.
+- After that, create staff and learner accounts from `/admin`.
+
 ## Notes
 
 - The scaffold is intentionally production-shaped, not a throwaway prototype.

@@ -40,7 +40,7 @@ export function PaymentSuccessPanel({
           setStatus("paid");
           setMessage(
             data.item.payment_mode === "mock"
-              ? "Mock payment confirmed. This keeps the launch demo flow working when live Razorpay keys are absent."
+              ? "Payment recorded in fallback mode. Connect live Razorpay credentials to switch this flow to gateway-confirmed production capture."
               : "Payment verified with Razorpay. Enrollment is now ready to continue."
           );
           return;
