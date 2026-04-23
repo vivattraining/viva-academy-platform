@@ -4,7 +4,7 @@
 
 Each tenant should run on its own domain or subdomain, for example:
 
-- `academy.vivacareeracademy.com`
+- `www.vivacareeracademy.com`
 - `learn.brandname.com`
 
 The platform should resolve tenant context from the incoming host.

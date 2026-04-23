@@ -543,7 +543,7 @@ Mitigation:
 
 ## Open Questions
 
-- final production domain choice: `academy.vivacareeracademy.com` vs `learn.vivacareeracademy.com`
+- final production domain choice: `www.vivacareeracademy.com` vs `learn.vivacareeracademy.com`
 - final transactional email sender identity
 - final WhatsApp provider account and approved templates
 - real payment fee amount and commercial rules

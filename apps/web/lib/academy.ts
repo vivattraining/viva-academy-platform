@@ -23,7 +23,7 @@ export const ACADEMY_THEME = {
   background: "#F7F9FB",
   surface: "#FFFFFF",
   surfaceLow: "#F2F4F6",
-  domain: "academy.vivacareeracademy.com"
+  domain: "www.vivacareeracademy.com"
 };
 
 export const ACADEMY_METRICS = [

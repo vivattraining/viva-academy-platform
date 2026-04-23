@@ -14,7 +14,7 @@ export default function WhiteLabelPage() {
       <section className="grid grid-2">
         <article className="card" style={{ background: ACADEMY_THEME.primary, color: "white" }}>
           <div className="eyebrow" style={{ color: "#F4D77B" }}>VIVA first tenant</div>
-          <div style={{ marginTop: 14, fontSize: 28, fontWeight: 900, letterSpacing: "-0.05em" }}>academy.vivacareeracademy.com</div>
+          <div style={{ marginTop: 14, fontSize: 28, fontWeight: 900, letterSpacing: "-0.05em" }}>www.vivacareeracademy.com</div>
           <p style={{ marginTop: 12, color: "#D7E4F6", lineHeight: 1.7 }}>
             Students should see VIVA branding, VIVA messaging, and VIVA certificates. Platform identity should stay behind the scenes unless you intentionally expose it.
           </p>

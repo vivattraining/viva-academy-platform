@@ -13,7 +13,7 @@ class TenantBranding(BaseModel):
     support_email: str = "support@vivacareeracademy.com"
     certificate_name: str = "Professional Certification in Travel & Tourism"
     classroom_provider: str = "zoom"
-    zoom_host_email: str = "faculty@vivacareeracademy.com"
+    zoom_host_email: str = "tech@vivacareeracademy.com"
     zoom_default_timezone: str = "Asia/Kolkata"
 
 

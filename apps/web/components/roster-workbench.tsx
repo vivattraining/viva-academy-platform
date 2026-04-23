@@ -51,7 +51,7 @@ export function RosterWorkbench() {
         tenant_name: DEFAULT_TENANT,
         application_stage: "certificate_issued",
         enrollment_stage: "completed",
-        certificate_url: `https://academy.vivacareeracademy.com/certificates/${item.id}`
+        certificate_url: `https://www.vivacareeracademy.com/certificates/${item.id}`
       })
     });
     await load();

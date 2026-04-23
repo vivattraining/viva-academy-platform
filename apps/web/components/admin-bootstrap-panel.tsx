@@ -68,7 +68,7 @@ export function AdminBootstrapPanel() {
         </label>
         <label className="editorial-form-field">
           <span>Admin email</span>
-          <input value={email} onChange={(event) => setEmail(event.target.value)} className="editorial-input" placeholder="admin@vivacareeracademy.com" />
+          <input value={email} onChange={(event) => setEmail(event.target.value)} className="editorial-input" placeholder="tech@vivacareeracademy.com" />
         </label>
         <label className="editorial-form-field">
           <span>Password</span>
