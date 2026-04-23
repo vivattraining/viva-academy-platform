@@ -1,6 +1,6 @@
 "use client";
 
-import { getAuthHeaders, readSession, type AcademySession } from "./auth";
+import { getAuthHeaders, readSession, writeSession, type AcademySession } from "./auth";
 
 export const DEFAULT_TENANT = "Viva Career Academy";
 
@@ -41,6 +41,9 @@ export async function apiRequest<T>(
   });
   const data = (await response.json().catch(() => ({}))) as { detail?: string };
   if (!response.ok) {
+    if (response.status === 401) {
+      writeSession(null);
+    }
     throw new Error(data.detail || `Request failed: ${response.status}`);
   }
   return data as T;
