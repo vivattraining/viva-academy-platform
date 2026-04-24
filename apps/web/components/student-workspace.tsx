@@ -83,17 +83,19 @@ export function StudentWorkspace() {
   const [payload, setPayload] = useState<StudentPayload | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const session = readSession();
-    if (!session?.session_token) {
-      setError("Sign in with a student account to open the learner workspace.");
-      setLoading(false);
-      return;
-    }
-    const sessionToken = session.session_token;
+    setSessionToken(readSession()?.session_token || null);
+  }, []);
 
+  useEffect(() => {
     async function load() {
+      if (!sessionToken) {
+        setError("Sign in with a student account to open the learner workspace.");
+        setLoading(false);
+        return;
+      }
       try {
         const data = await apiRequest<StudentPayload>(`/api/v1/academy/students/me?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`, {
           sessionToken,
@@ -107,7 +109,7 @@ export function StudentWorkspace() {
     }
 
     void load();
-  }, []);
+  }, [sessionToken]);
 
   if (loading) {
     return <section className="editorial-workbench-card">Loading student workspace...</section>;

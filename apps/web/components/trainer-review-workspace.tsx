@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
+import { readSession } from "../lib/auth";
 
 type QueueItem = {
   submission_id: string;
@@ -23,13 +24,21 @@ export function TrainerReviewWorkspace() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [reviewerName, setReviewerName] = useState("Trainer");
+  const [loading, setLoading] = useState(true);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
 
-  async function load() {
+  useEffect(() => {
+    setSessionToken(readSession()?.session_token || null);
+  }, []);
+
+  async function loadQueue(token: string) {
     try {
       const data = await apiRequest<{ queue: QueueItem[] }>(
-        `/api/v1/academy/reviews/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`
+        `/api/v1/academy/reviews/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
+        { sessionToken: token }
       );
       setItems(data.queue || []);
+      setError("");
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Unable to load trainer review queue.");
     }
@@ -37,22 +46,34 @@ export function TrainerReviewWorkspace() {
 
   useEffect(() => {
     async function hydrate() {
+      if (!sessionToken) {
+        setError("Trainer session required to open the review queue.");
+        setLoading(false);
+        return;
+      }
       try {
         const me = await apiRequest<{ session: { full_name: string } }>(
-          `/api/v1/academy/auth/me?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`
+          `/api/v1/academy/auth/me?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
+          { sessionToken }
         );
         setReviewerName(me.session.full_name);
       } catch {}
-      await load();
+      await loadQueue(sessionToken);
+      setLoading(false);
     }
     void hydrate();
-  }, []);
+  }, [sessionToken]);
 
   async function reviewSubmission(submissionId: string, outcome: "pass" | "resubmit" | "fail") {
+    if (!sessionToken) {
+      setMessage("Trainer session required.");
+      return;
+    }
     setMessage("Saving trainer review...");
     try {
       await apiRequest("/api/v1/academy/reviews/secure", {
         method: "POST",
+        sessionToken,
         body: JSON.stringify({
           tenant_name: DEFAULT_TENANT,
           submission_id: submissionId,
@@ -70,14 +91,18 @@ export function TrainerReviewWorkspace() {
         }),
       });
       setMessage(`Review saved as ${outcome}.`);
-      await load();
+      await loadQueue(sessionToken);
     } catch (reviewError) {
       setMessage(reviewError instanceof Error ? reviewError.message : "Unable to save trainer review.");
     }
   }
 
+  if (loading) {
+    return <section className="editorial-workbench-card">Loading trainer review queue...</section>;
+  }
+
   if (error) {
-    return <section className="card">{error}</section>;
+    return <section className="editorial-workbench-card">{error}</section>;
   }
 
   return (

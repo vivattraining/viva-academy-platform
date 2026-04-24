@@ -24,6 +24,8 @@ export function AdmissionsWorkbench() {
   const [items, setItems] = useState<Application[]>([]);
   const [message, setMessage] = useState("");
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     setSessionToken(readSession()?.session_token || null);
@@ -31,15 +33,27 @@ export function AdmissionsWorkbench() {
 
   async function load() {
     if (!sessionToken) return;
-    const data = await apiRequest<{ items: Application[] }>(
-      `/api/v1/academy/applications/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
-      { sessionToken }
-    );
-    setItems(data.items || []);
+    try {
+      const data = await apiRequest<{ items: Application[] }>(
+        `/api/v1/academy/applications/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
+        { sessionToken }
+      );
+      setItems(data.items || []);
+      setError("");
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Unable to load admissions queue.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
     async function hydrate() {
+      if (!sessionToken) {
+        setError("Operations session required.");
+        setLoading(false);
+        return;
+      }
       await load();
     }
     void hydrate();
@@ -48,25 +62,48 @@ export function AdmissionsWorkbench() {
   }, [sessionToken]);
 
   async function issuePaymentLink(id: string) {
-    await apiRequest(`/api/v1/academy/applications/${id}/payment-link`, {
-      method: "POST",
-      body: JSON.stringify({ tenant_name: DEFAULT_TENANT })
-    });
-    await load();
+    if (!sessionToken) return;
+    setMessage("Generating payment link...");
+    try {
+      await apiRequest(`/api/v1/academy/applications/${id}/payment-link`, {
+        method: "POST",
+        sessionToken,
+        body: JSON.stringify({ tenant_name: DEFAULT_TENANT })
+      });
+      setMessage("Payment link issued.");
+      await load();
+    } catch (issueError) {
+      setMessage(issueError instanceof Error ? issueError.message : "Unable to issue payment link.");
+    }
   }
 
   async function markEnrolled(id: string) {
-    await apiRequest(`/api/v1/academy/applications/${id}/status/secure`, {
-      method: "POST",
-      sessionToken,
-      body: JSON.stringify({
-        tenant_name: DEFAULT_TENANT,
-        application_stage: "enrolled",
-        payment_stage: "paid",
-        enrollment_stage: "active"
-      })
-    });
-    await load();
+    if (!sessionToken) return;
+    setMessage("Marking learner as enrolled...");
+    try {
+      await apiRequest(`/api/v1/academy/applications/${id}/status/secure`, {
+        method: "POST",
+        sessionToken,
+        body: JSON.stringify({
+          tenant_name: DEFAULT_TENANT,
+          application_stage: "enrolled",
+          payment_stage: "paid",
+          enrollment_stage: "active"
+        })
+      });
+      setMessage("Learner marked as enrolled.");
+      await load();
+    } catch (markError) {
+      setMessage(markError instanceof Error ? markError.message : "Unable to update enrollment.");
+    }
+  }
+
+  if (loading) {
+    return <section className="editorial-workbench-card">Loading admissions queue...</section>;
+  }
+
+  if (error) {
+    return <section className="editorial-workbench-card">{error}</section>;
   }
 
   return (
@@ -86,6 +123,12 @@ export function AdmissionsWorkbench() {
       </section>
 
       <section className="editorial-workbench-grid">
+        {!items.length ? (
+          <article className="editorial-workbench-card">
+            <div className="eyebrow">Admissions queue</div>
+            <p className="muted" style={{ marginTop: 12 }}>No applications are waiting in the queue right now.</p>
+          </article>
+        ) : null}
         {items.map((item) => (
           <article key={item.id} className="editorial-workbench-card">
             <div className="eyebrow">{item.course_name}</div>

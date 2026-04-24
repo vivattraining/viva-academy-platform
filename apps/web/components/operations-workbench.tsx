@@ -19,6 +19,8 @@ export function OperationsWorkbench() {
   const [selectedSessionId, setSelectedSessionId] = useState("");
   const [message, setMessage] = useState("");
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     setSessionToken(readSession()?.session_token || null);
@@ -26,17 +28,29 @@ export function OperationsWorkbench() {
 
   async function loadBase() {
     if (!sessionToken) return;
-    const [batchData, appData] = await Promise.all([
-      apiRequest<{ items: Batch[] }>(`/api/v1/academy/batches/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`, { sessionToken }),
-      apiRequest<{ items: Application[] }>(`/api/v1/academy/applications/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`, { sessionToken }),
-    ]);
-    setBatches(batchData.items || []);
-    setApplications(appData.items || []);
-    setSelectedBatchId((current) => current || batchData.items?.[0]?.id || "");
+    try {
+      const [batchData, appData] = await Promise.all([
+        apiRequest<{ items: Batch[] }>(`/api/v1/academy/batches/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`, { sessionToken }),
+        apiRequest<{ items: Application[] }>(`/api/v1/academy/applications/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`, { sessionToken }),
+      ]);
+      setBatches(batchData.items || []);
+      setApplications(appData.items || []);
+      setSelectedBatchId((current) => current || batchData.items?.[0]?.id || "");
+      setError("");
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Unable to load operations data.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
     async function hydrate() {
+      if (!sessionToken) {
+        setError("Operations session required.");
+        setLoading(false);
+        return;
+      }
       await loadBase();
     }
     void hydrate();
@@ -46,25 +60,33 @@ export function OperationsWorkbench() {
 
   useEffect(() => {
     async function loadSessions() {
-      if (!selectedBatchId) return;
-      const data = await apiRequest<{ items: Session[] }>(
-        `/api/v1/academy/sessions/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}&batch_id=${encodeURIComponent(selectedBatchId)}`,
-        { sessionToken }
-      );
-      setSessions(data.items || []);
-      setSelectedSessionId((current) => current || data.items?.[0]?.id || "");
+      if (!selectedBatchId || !sessionToken) return;
+      try {
+        const data = await apiRequest<{ items: Session[] }>(
+          `/api/v1/academy/sessions/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}&batch_id=${encodeURIComponent(selectedBatchId)}`,
+          { sessionToken }
+        );
+        setSessions(data.items || []);
+        setSelectedSessionId((current) => current || data.items?.[0]?.id || "");
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : "Unable to load batch sessions.");
+      }
     }
     void loadSessions();
   }, [selectedBatchId, sessionToken]);
 
   useEffect(() => {
     async function loadAttendance() {
-      if (!selectedSessionId) return;
-      const data = await apiRequest<{ items: Attendance[] }>(
-        `/api/v1/academy/sessions/${selectedSessionId}/attendance/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
-        { sessionToken }
-      );
-      setAttendance(data.items || []);
+      if (!selectedSessionId || !sessionToken) return;
+      try {
+        const data = await apiRequest<{ items: Attendance[] }>(
+          `/api/v1/academy/sessions/${selectedSessionId}/attendance/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
+          { sessionToken }
+        );
+        setAttendance(data.items || []);
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : "Unable to load attendance.");
+      }
     }
     void loadAttendance();
   }, [selectedSessionId, sessionToken]);
@@ -73,7 +95,7 @@ export function OperationsWorkbench() {
   const batchStudents = useMemo(() => applications.filter((item) => item.batch_id === selectedBatchId && (item.enrollment_stage === "active" || item.enrollment_stage === "completed")), [applications, selectedBatchId]);
 
   async function provisionZoom() {
-    if (!selectedSessionId) return;
+    if (!selectedSessionId || !sessionToken) return;
     setMessage("Provisioning Zoom meeting...");
     await apiRequest(`/api/v1/academy/sessions/${selectedSessionId}/zoom/provision/secure`, {
       method: "POST",
@@ -85,7 +107,7 @@ export function OperationsWorkbench() {
   }
 
   async function markAttendance(applicationId: string, status: string) {
-    if (!selectedSessionId) return;
+    if (!selectedSessionId || !sessionToken) return;
     await apiRequest(`/api/v1/academy/sessions/${selectedSessionId}/attendance/secure`, {
       method: "POST",
       sessionToken,
@@ -102,6 +124,14 @@ export function OperationsWorkbench() {
     setAttendance(data.items || []);
   }
 
+  if (loading) {
+    return <section className="editorial-workbench-card">Loading classroom operations...</section>;
+  }
+
+  if (error) {
+    return <section className="editorial-workbench-card">{error}</section>;
+  }
+
   return (
     <div className="editorial-workbench">
       <section className="editorial-workbench-grid compact">
@@ -110,6 +140,7 @@ export function OperationsWorkbench() {
           <select value={selectedBatchId} onChange={(event) => { setSelectedBatchId(event.target.value); setSelectedSessionId(""); }} className="editorial-select" style={{ marginTop: 16 }}>
             {batches.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
+          {!batches.length ? <p className="muted" style={{ marginTop: 16 }}>No active batches are available yet.</p> : null}
         </article>
         <article className="editorial-workbench-card">
           <div className="eyebrow">Session</div>
@@ -128,6 +159,12 @@ export function OperationsWorkbench() {
       </section>
 
       <section className="editorial-workbench-grid">
+        {!batchStudents.length ? (
+          <article className="editorial-workbench-card">
+            <div className="eyebrow">Attendance board</div>
+            <p className="muted" style={{ marginTop: 12 }}>Select a batch with enrolled learners to start attendance marking.</p>
+          </article>
+        ) : null}
         {batchStudents.map((student) => {
           const record = attendance.find((item) => item.application_id === student.id);
           return (
