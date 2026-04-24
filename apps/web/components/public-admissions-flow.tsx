@@ -255,8 +255,14 @@ export function PublicAdmissionsFlow() {
           </Link>
         ) : null}
       </div>
+      <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>
+        <strong>What the fee unlocks</strong>
+        <p className="muted" style={{ marginTop: 8 }}>
+          Application screening, admissions review, counselor guidance, and reserved processing toward your VIVA intake.
+        </p>
+      </div>
       <p className="editorial-form-note">
-        Secured by institutional payment gateway • non-refundable processing fee • launch fee: Rs 30,000
+        Secured by institutional payment gateway • non-refundable processing fee • current intake processing fee: Rs 30,000
         {paymentMode ? ` • mode: ${paymentMode}` : ""}
       </p>
       {message ? <div className="editorial-form-message">{message}</div> : null}

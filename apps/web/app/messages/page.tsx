@@ -1,5 +1,5 @@
 import { MessagingCenter } from "../../components/messaging-center";
-import { OperatorGate } from "../../components/operator-gate";
+import { InternalRouteGate } from "../../components/internal-route-gate";
 import { SiteShell } from "../../components/site-shell";
 
 export default function MessagesPage() {
@@ -12,9 +12,9 @@ export default function MessagesPage() {
       primaryCta={{ label: "Open admissions", href: "/admissions" }}
       secondaryCta={{ label: "Open operations", href: "/operations" }}
     >
-      <OperatorGate title="Messaging control" allowedRoles={["admin", "operations", "trainer"]}>
+      <InternalRouteGate allowedRoles={["admin", "operations", "trainer"]}>
         <MessagingCenter />
-      </OperatorGate>
+      </InternalRouteGate>
     </SiteShell>
   );
 }

@@ -3,7 +3,7 @@ import { AdminBrandingStudio } from "../../components/admin-branding-studio";
 import { AdminLaunchReadiness } from "../../components/admin-launch-readiness";
 import { AdminLmsConsole } from "../../components/admin-lms-console";
 import { AdminUserManagement } from "../../components/admin-user-management";
-import { OperatorGate } from "../../components/operator-gate";
+import { InternalRouteGate } from "../../components/internal-route-gate";
 import { INTERNAL_ADMIN } from "../../lib/public-site-content";
 
 export default function AdminPage() {
@@ -16,6 +16,7 @@ export default function AdminPage() {
       primaryCta={{ label: "Open messaging center", href: "/messages" }}
       secondaryCta={{ label: "Open operations", href: "/operations" }}
     >
+      <InternalRouteGate allowedRoles={["admin"]}>
       <section className="split">
         <article className="editorial-workbench-card editorial-workbench-contrast">
           <div className="eyebrow">Control tower</div>
@@ -46,12 +47,11 @@ export default function AdminPage() {
         ))}
       </section>
 
-      <OperatorGate title="Admin branding and tenant controls" allowedRoles={["admin"]}>
         <AdminLaunchReadiness />
         <AdminUserManagement />
         <AdminLmsConsole />
         <AdminBrandingStudio />
-      </OperatorGate>
+      </InternalRouteGate>
     </SiteShell>
   );
 }

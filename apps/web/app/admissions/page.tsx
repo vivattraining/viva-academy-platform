@@ -1,6 +1,6 @@
 import { SiteShell } from "../../components/site-shell";
 import { AdmissionsWorkbench } from "../../components/admissions-workbench";
-import { OperatorGate } from "../../components/operator-gate";
+import { InternalRouteGate } from "../../components/internal-route-gate";
 
 const admissionsCards = [
   {
@@ -49,6 +49,7 @@ export default function AdmissionsPage() {
       primaryCta={{ label: "Open admin CMS", href: "/admin" }}
       secondaryCta={{ label: "Open public apply page", href: "/apply" }}
     >
+      <InternalRouteGate allowedRoles={["admin", "operations"]}>
       <section className="split">
         <article className="editorial-workbench-card editorial-workbench-contrast">
           <div className="eyebrow" style={{ color: "#F4D77B" }}>Internal only</div>
@@ -119,10 +120,9 @@ export default function AdmissionsPage() {
       </section>
 
       <div id="ops">
-        <OperatorGate title="Admissions workbench" allowedRoles={["admin", "operations"]}>
-          <AdmissionsWorkbench />
-        </OperatorGate>
+        <AdmissionsWorkbench />
       </div>
+      </InternalRouteGate>
     </SiteShell>
   );
 }

@@ -1,5 +1,5 @@
 import { SiteShell } from "../../components/site-shell";
-import { OperatorGate } from "../../components/operator-gate";
+import { InternalRouteGate } from "../../components/internal-route-gate";
 import { OperationsWorkbench } from "../../components/operations-workbench";
 
 const opsCards = [
@@ -19,6 +19,7 @@ export default function OperationsPage() {
       primaryCta={{ label: "Open roster", href: "/roster" }}
       secondaryCta={{ label: "Open admissions", href: "/admissions" }}
     >
+      <InternalRouteGate allowedRoles={["admin", "operations", "trainer"]}>
       <section className="split">
         <article className="editorial-workbench-card editorial-workbench-contrast">
           <div className="eyebrow">Operations theatre</div>
@@ -49,9 +50,8 @@ export default function OperationsPage() {
         ))}
       </section>
 
-      <OperatorGate title="Live classroom operations" allowedRoles={["admin", "operations", "trainer"]}>
         <OperationsWorkbench />
-      </OperatorGate>
+      </InternalRouteGate>
     </SiteShell>
   );
 }

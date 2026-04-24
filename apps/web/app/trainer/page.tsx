@@ -1,5 +1,5 @@
 import { SiteShell } from "../../components/site-shell";
-import { OperatorGate } from "../../components/operator-gate";
+import { InternalRouteGate } from "../../components/internal-route-gate";
 import { TrainerReviewWorkspace } from "../../components/trainer-review-workspace";
 
 export default function TrainerPage() {
@@ -12,9 +12,9 @@ export default function TrainerPage() {
       primaryCta={{ label: "Open operations", href: "/operations" }}
       secondaryCta={{ label: "Open admin CMS", href: "/admin" }}
     >
-      <OperatorGate title="Trainer sign-in" allowedRoles={["trainer", "admin", "operations"]}>
+      <InternalRouteGate allowedRoles={["trainer", "admin", "operations"]}>
         <TrainerReviewWorkspace />
-      </OperatorGate>
+      </InternalRouteGate>
     </SiteShell>
   );
 }

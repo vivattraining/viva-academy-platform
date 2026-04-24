@@ -1,4 +1,3 @@
-import { AdminBootstrapPanel } from "../../../components/admin-bootstrap-panel";
 import { SiteShell } from "../../../components/site-shell";
 import { OperatorGate } from "../../../components/operator-gate";
 import styles from "../../../components/claude-home.module.css";
@@ -13,7 +12,6 @@ export default function InternalLoginPage() {
       description="This route is reserved for the internal team managing admissions, curriculum, classrooms, and academy operations."
     >
       <CurrentSessionPanel />
-      <AdminBootstrapPanel />
       <section className="editorial-workbench-card editorial-workbench-contrast">
         <div className="eyebrow">Internal route</div>
         <h2 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2rem" }}>
@@ -21,6 +19,9 @@ export default function InternalLoginPage() {
         </h2>
         <p className="editorial-workbench-subtitle">
           Student access is intentionally handled separately so the public site stays clean and the team has a dedicated operational entry point.
+        </p>
+        <p className="muted" style={{ marginTop: 12 }}>
+          Initial admin creation is no longer exposed on this public route. Founding access should be handled privately by the VIVA team.
         </p>
       </section>
       <section className={styles.programGrid}>

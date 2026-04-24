@@ -11,7 +11,7 @@ export default function ApplyPage() {
             <div className={`${styles.eyebrow} ${styles.eyebrowDark}`}>§ 07 — Admissions</div>
             <h1 className={styles.admissionsTitle} style={{ marginTop: 20 }}>Your <em>career</em> begins with one application.</h1>
             <p className={styles.lead}>
-              The admissions page now follows the restored homepage style: high-trust, academic, and sharply guided into payment and enrollment.
+              Submit your application, speak with admissions, and move into payment and enrollment through one guided flow.
             </p>
             <div className={styles.steps} style={{ marginTop: 28 }}>
               {[
@@ -25,6 +25,11 @@ export default function ApplyPage() {
                   <div className={styles.stepWhen}>{when}</div>
                 </div>
               ))}
+            </div>
+            <div className={styles.footerSocial} style={{ marginTop: 18 }}>
+              <span className={styles.chip}>12-week flagship curriculum</span>
+              <span className={styles.chip}>Live faculty review</span>
+              <span className={styles.chip}>Placement-focused training</span>
             </div>
           </div>
           <div>

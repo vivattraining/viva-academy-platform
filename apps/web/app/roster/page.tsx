@@ -1,5 +1,5 @@
 import { SiteShell } from "../../components/site-shell";
-import { OperatorGate } from "../../components/operator-gate";
+import { InternalRouteGate } from "../../components/internal-route-gate";
 import { RosterWorkbench } from "../../components/roster-workbench";
 
 const rosterActions = [
@@ -19,6 +19,7 @@ export default function RosterPage() {
       primaryCta={{ label: "Open operations", href: "/operations" }}
       secondaryCta={{ label: "Open student view", href: "/student" }}
     >
+      <InternalRouteGate allowedRoles={["admin", "operations", "trainer"]}>
       <section className="split">
         <article className="editorial-workbench-card editorial-workbench-contrast">
           <div className="eyebrow">Roster discipline</div>
@@ -40,9 +41,8 @@ export default function RosterPage() {
         ))}
       </section>
 
-      <OperatorGate title="Roster and certification workspace" allowedRoles={["admin", "operations", "trainer"]}>
         <RosterWorkbench />
-      </OperatorGate>
+      </InternalRouteGate>
     </SiteShell>
   );
 }
