@@ -23,6 +23,7 @@ export function MessagingCenter() {
   const [error, setError] = useState("");
   const [activeId, setActiveId] = useState<string | null>(null);
   const [flash, setFlash] = useState("");
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
 
   async function loadMessages(sessionToken: string) {
     const data = await apiRequest<{ items: MessageItem[] }>(
@@ -33,17 +34,19 @@ export function MessagingCenter() {
   }
 
   useEffect(() => {
-    const session = readSession();
-    if (!session?.session_token) {
-      setError("Sign in as an operator to review messaging queues.");
-      setLoading(false);
-      return;
-    }
-    const sessionToken = session.session_token;
+    setSessionToken(readSession()?.session_token || null);
+  }, []);
 
+  useEffect(() => {
     async function load() {
+      if (!sessionToken) {
+        setError("Sign in as an operator to review messaging queues.");
+        setLoading(false);
+        return;
+      }
       try {
         await loadMessages(sessionToken);
+        setError("");
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : "Unable to load message recommendations.");
       } finally {
@@ -52,7 +55,7 @@ export function MessagingCenter() {
     }
 
     void load();
-  }, []);
+  }, [sessionToken]);
 
   const counts = useMemo(() => {
     return {
@@ -63,8 +66,7 @@ export function MessagingCenter() {
   }, [items]);
 
   async function dispatch(item: MessageItem) {
-    const session = readSession();
-    if (!session?.session_token) {
+    if (!sessionToken) {
       setError("Session expired. Please sign in again.");
       return;
     }
@@ -74,7 +76,7 @@ export function MessagingCenter() {
     try {
       await apiRequest(`/api/v1/academy/messages/dispatch/secure`, {
         method: "POST",
-        sessionToken: session.session_token,
+        sessionToken,
         body: JSON.stringify({
           tenant_name: DEFAULT_TENANT,
           message_id: item.id,
@@ -84,7 +86,7 @@ export function MessagingCenter() {
           template: item.template,
         }),
       });
-      await loadMessages(session.session_token);
+      await loadMessages(sessionToken);
       setFlash(`${item.channel.toUpperCase()} dispatch recorded for ${item.audience}.`);
     } catch (dispatchError) {
       setError(dispatchError instanceof Error ? dispatchError.message : "Unable to dispatch the message.");
@@ -94,11 +96,11 @@ export function MessagingCenter() {
   }
 
   if (loading) {
-    return <section className="card">Loading messaging center...</section>;
+    return <section className="editorial-workbench-card">Loading messaging center...</section>;
   }
 
   if (error) {
-    return <section className="card">{error}</section>;
+    return <section className="editorial-workbench-card">{error}</section>;
   }
 
   return (
@@ -128,6 +130,12 @@ export function MessagingCenter() {
       </section>
 
       <section className="editorial-workbench-grid">
+        {!items.length ? (
+          <article className="editorial-workbench-card">
+            <div className="eyebrow">Message queue</div>
+            <p className="muted" style={{ marginTop: 12 }}>No messaging actions are waiting right now.</p>
+          </article>
+        ) : null}
         {items.map((item) => (
           <article key={item.id} className="editorial-workbench-card">
             <div className="badge-row">

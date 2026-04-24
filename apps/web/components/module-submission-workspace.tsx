@@ -30,26 +30,43 @@ export function ModuleSubmissionWorkspace({ moduleId }: { moduleId: string }) {
   const [payload, setPayload] = useState<StudentLmsPayload | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSessionToken(readSession()?.session_token || null);
+  }, []);
 
   useEffect(() => {
     async function load() {
-      const session = readSession();
-      if (!session) return;
-      const data = await apiRequest<StudentLmsPayload>(
-        `/api/v1/academy/students/me/lms?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
-        { session }
-      );
-      setPayload(data);
-      const nextAnswers: Record<string, string> = {};
-      for (const moduleItem of data.lms.modules) {
-        for (const chapter of moduleItem.chapters) {
-          nextAnswers[chapter.id] = chapter.submission?.answer_text || "";
-        }
+      if (!sessionToken) {
+        setError("Student session required to open the module workspace.");
+        setLoading(false);
+        return;
       }
-      setAnswers(nextAnswers);
+      try {
+        const data = await apiRequest<StudentLmsPayload>(
+          `/api/v1/academy/students/me/lms?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
+          { sessionToken }
+        );
+        setPayload(data);
+        const nextAnswers: Record<string, string> = {};
+        for (const moduleItem of data.lms.modules) {
+          for (const chapter of moduleItem.chapters) {
+            nextAnswers[chapter.id] = chapter.submission?.answer_text || "";
+          }
+        }
+        setAnswers(nextAnswers);
+        setError("");
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : "Unable to load module workspace.");
+      } finally {
+        setLoading(false);
+      }
     }
     void load();
-  }, []);
+  }, [sessionToken]);
 
   const activeModule = useMemo(
     () => payload?.lms.modules.find((item) => item.id === moduleId || item.id.endsWith(moduleId)) || payload?.lms.modules[0],
@@ -57,12 +74,12 @@ export function ModuleSubmissionWorkspace({ moduleId }: { moduleId: string }) {
   );
 
   async function submitChapter(chapterId: string) {
-    if (!payload || !activeModule) return;
+    if (!payload || !activeModule || !sessionToken) return;
     setMessage("Submitting answer...");
     try {
       await apiRequest("/api/v1/academy/submissions/secure", {
         method: "POST",
-        session: readSession(),
+        sessionToken,
         body: JSON.stringify({
           tenant_name: DEFAULT_TENANT,
           application_id: payload.application.id,
@@ -79,8 +96,16 @@ export function ModuleSubmissionWorkspace({ moduleId }: { moduleId: string }) {
     }
   }
 
+  if (loading) {
+    return <section className="editorial-workbench-card">Loading module workspace...</section>;
+  }
+
+  if (error) {
+    return <section className="editorial-workbench-card">{error}</section>;
+  }
+
   if (!payload || !activeModule) {
-    return <section className="card">Loading module workspace...</section>;
+    return <section className="editorial-workbench-card">Module workspace is unavailable.</section>;
   }
 
   return (
