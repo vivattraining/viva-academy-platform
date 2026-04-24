@@ -7,7 +7,7 @@
 - Status: Launch-ready PRD
 - Date: 2026-04-08
 - Owner: VIVA / Academy Platform Team
-- Repository: `/Users/radhika/Documents/New project/viva-academy-platform`
+- Repository: `/Users/radhika/-viva-academy-platform`
 
 ## Executive Summary
 
