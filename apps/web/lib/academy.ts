@@ -7,8 +7,6 @@ export const ACADEMY_NAV = [
   { label: "Trainer", href: "/trainer" },
   { label: "Admin CMS", href: "/admin" },
   { label: "Simulation", href: "/simulation" },
-  { label: "White Label", href: "/white-label" },
-  { label: "Strategy", href: "/strategy" },
   { label: "Login", href: "/login" }
 ] as const;
 

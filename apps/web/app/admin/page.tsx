@@ -13,7 +13,7 @@ export default function AdminPage() {
       eyebrow="Academy CMS and operations"
       title="This is the control tower for curriculum, classrooms, attendance, certifications, and launch control."
       description="The admin surface is now being brought into the same editorial premium system while preserving the new LMS and branding controls underneath."
-      primaryCta={{ label: "Open white-label controls", href: "/white-label" }}
+      primaryCta={{ label: "Open messaging center", href: "/messages" }}
       secondaryCta={{ label: "Open operations", href: "/operations" }}
     >
       <section className="split">

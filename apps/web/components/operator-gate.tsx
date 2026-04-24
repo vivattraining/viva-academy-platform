@@ -19,7 +19,7 @@ const ROLE_ROUTES = [
   { role: "trainer", href: "/trainer", label: "Trainer studio" },
   { role: "student", href: "/student", label: "Student workspace" },
   { role: "operations", href: "/admissions", label: "Admissions pipeline" },
-  { role: "admin", href: "/white-label", label: "White-label controls" },
+  { role: "admin", href: "/messages", label: "Messaging center" },
   { role: "trainer", href: "/messages", label: "Messaging center" },
   { role: "operations", href: "/roster", label: "Roster desk" },
 ];

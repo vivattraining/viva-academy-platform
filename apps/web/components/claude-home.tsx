@@ -835,7 +835,7 @@ export function ClaudeHome() {
               <a href="#faculty">Faculty</a>
               <a href="#curriculum">Curriculum</a>
               <a href="#outcomes">Outcomes & Alumni</a>
-              <Link href="/strategy">Research</Link>
+              <Link href="/apply">Admissions</Link>
               <Link href="/contact">Press</Link>
             </div>
 
