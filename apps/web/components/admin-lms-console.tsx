@@ -24,21 +24,24 @@ export function AdminLmsConsole() {
     setSessionToken(readSession()?.session_token || null);
   }, []);
 
-  async function load() {
-    if (!sessionToken) return;
-    try {
-      const data = await apiRequest<{ items: CourseOutline[] }>(
-        `/api/v1/academy/courses/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
-        { sessionToken }
-      );
-      setItems(data.items || []);
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Unable to load LMS catalog.");
-    }
-  }
-
   useEffect(() => {
-    void load();
+    if (!sessionToken) {
+      return;
+    }
+
+    async function loadCatalog() {
+      try {
+        const data = await apiRequest<{ items: CourseOutline[] }>(
+          `/api/v1/academy/courses/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
+          { sessionToken }
+        );
+        setItems(data.items || []);
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : "Unable to load LMS catalog.");
+      }
+    }
+
+    void loadCatalog();
   }, [sessionToken]);
 
   async function createCourse() {
@@ -74,7 +77,11 @@ export function AdminLmsConsole() {
       setSlug("");
       setCode("");
       setMessage("Course created.");
-      await load();
+      const data = await apiRequest<{ items: CourseOutline[] }>(
+        `/api/v1/academy/courses/secure?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
+        { sessionToken }
+      );
+      setItems(data.items || []);
     } catch (createError) {
       setMessage(createError instanceof Error ? createError.message : "Unable to create course.");
     }
