@@ -1,8 +1,11 @@
 import { MessagingCenter } from "../../components/messaging-center";
 import { InternalRouteGate } from "../../components/internal-route-gate";
 import { SiteShell } from "../../components/site-shell";
+import { requireInternalPageAccess } from "../../lib/internal-access";
 
-export default function MessagesPage() {
+export default async function MessagesPage() {
+  await requireInternalPageAccess(["admin", "operations", "trainer"]);
+
   return (
     <SiteShell
       activeHref="/messages"

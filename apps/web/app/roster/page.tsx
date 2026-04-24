@@ -1,6 +1,7 @@
 import { SiteShell } from "../../components/site-shell";
 import { InternalRouteGate } from "../../components/internal-route-gate";
 import { RosterWorkbench } from "../../components/roster-workbench";
+import { requireInternalPageAccess } from "../../lib/internal-access";
 
 const rosterActions = [
   "Track attendance completion per learner",
@@ -9,7 +10,9 @@ const rosterActions = [
   "Keep certificates and roster progress tied to the same record"
 ];
 
-export default function RosterPage() {
+export default async function RosterPage() {
+  await requireInternalPageAccess(["admin", "operations", "trainer"]);
+
   return (
     <SiteShell
       activeHref="/roster"

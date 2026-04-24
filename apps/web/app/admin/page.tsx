@@ -4,9 +4,12 @@ import { AdminLaunchReadiness } from "../../components/admin-launch-readiness";
 import { AdminLmsConsole } from "../../components/admin-lms-console";
 import { AdminUserManagement } from "../../components/admin-user-management";
 import { InternalRouteGate } from "../../components/internal-route-gate";
+import { requireInternalPageAccess } from "../../lib/internal-access";
 import { INTERNAL_ADMIN } from "../../lib/public-site-content";
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  await requireInternalPageAccess(["admin"]);
+
   return (
     <SiteShell
       activeHref="/admin"

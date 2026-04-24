@@ -1,8 +1,11 @@
 import { SiteShell } from "../../components/site-shell";
 import { InternalRouteGate } from "../../components/internal-route-gate";
 import { TrainerReviewWorkspace } from "../../components/trainer-review-workspace";
+import { requireInternalPageAccess } from "../../lib/internal-access";
 
-export default function TrainerPage() {
+export default async function TrainerPage() {
+  await requireInternalPageAccess(["trainer", "admin", "operations"]);
+
   return (
     <SiteShell
       activeHref="/trainer"

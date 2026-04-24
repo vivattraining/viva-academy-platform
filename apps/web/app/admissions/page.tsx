@@ -1,6 +1,7 @@
 import { SiteShell } from "../../components/site-shell";
 import { AdmissionsWorkbench } from "../../components/admissions-workbench";
 import { InternalRouteGate } from "../../components/internal-route-gate";
+import { requireInternalPageAccess } from "../../lib/internal-access";
 
 const admissionsCards = [
   {
@@ -39,7 +40,9 @@ const launchTestimonials = [
   }
 ];
 
-export default function AdmissionsPage() {
+export default async function AdmissionsPage() {
+  await requireInternalPageAccess(["admin", "operations"]);
+
   return (
     <SiteShell
       activeHref="/admissions"

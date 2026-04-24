@@ -1,6 +1,7 @@
 import { SiteShell } from "../../components/site-shell";
 import { InternalRouteGate } from "../../components/internal-route-gate";
 import { OperationsWorkbench } from "../../components/operations-workbench";
+import { requireInternalPageAccess } from "../../lib/internal-access";
 
 const opsCards = [
   ["Batch creation", "Create VIVA and future tenant batches with trainer, seat capacity, and live-class model."],
@@ -9,7 +10,9 @@ const opsCards = [
   ["Attendance", "Capture trainer marks plus Zoom join-tracked presence on a session-by-session basis."]
 ];
 
-export default function OperationsPage() {
+export default async function OperationsPage() {
+  await requireInternalPageAccess(["admin", "operations", "trainer"]);
+
   return (
     <SiteShell
       activeHref="/operations"
