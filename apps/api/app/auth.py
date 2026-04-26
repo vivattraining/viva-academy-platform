@@ -28,7 +28,32 @@ def now_iso() -> str:
 
 
 def _jwt_secret() -> str:
-    return settings.razorpay_webhook_secret or settings.zoom_client_secret or f"{settings.tenant_name}:{settings.app_env}:academy-auth"
+    """Resolve the symmetric secret used to sign academy JWTs.
+
+    Priority order:
+      1. ACADEMY_JWT_SECRET (dedicated, recommended).
+      2. RAZORPAY_WEBHOOK_SECRET (legacy fallback for backward compatibility).
+      3. ZOOM_CLIENT_SECRET (additional legacy fallback).
+
+    In production we refuse to fall through to a guessable string. If neither
+    a dedicated secret nor a long enough legacy secret is configured the API
+    raises 500 instead of issuing tokens that anyone could forge.
+    """
+    candidates = [
+        settings.academy_jwt_secret,
+        settings.razorpay_webhook_secret,
+        settings.zoom_client_secret,
+    ]
+    for candidate in candidates:
+        if candidate and len(candidate) >= 16:
+            return candidate
+    if settings.app_env == "production":
+        raise HTTPException(
+            status_code=500,
+            detail="Academy JWT secret is not configured. Set ACADEMY_JWT_SECRET.",
+        )
+    # Non-production fallback so local dev still works without secret setup.
+    return f"{settings.tenant_name}:{settings.app_env}:academy-auth"
 
 
 def _b64url_encode(value: bytes) -> str:

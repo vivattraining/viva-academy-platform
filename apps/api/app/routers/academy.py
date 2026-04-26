@@ -272,7 +272,36 @@ def academy_auth_status(tenant_name: str, db: Session = Depends(get_db)):
 
 
 @router.post("/auth/bootstrap-admin")
-def academy_bootstrap_admin(payload: BootstrapAdminRequest, db: Session = Depends(get_db)):
+def academy_bootstrap_admin(
+    payload: BootstrapAdminRequest,
+    x_bootstrap_token: Optional[str] = Header(default=None, alias="X-Bootstrap-Token"),
+    db: Session = Depends(get_db),
+):
+    """Bootstrap the first admin for a tenant.
+
+    Hardened:
+      - Requires the X-Bootstrap-Token header to match ACADEMY_BOOTSTRAP_TOKEN.
+        Without that env var configured, the endpoint is disabled outright in
+        any environment that isn't local development.
+      - Constant-time comparison via hmac.compare_digest.
+      - bootstrap_admin_user already raises 409 if the tenant already has any
+        credential, providing a second layer of protection.
+    """
+    expected_token = settings.academy_bootstrap_token
+    if not expected_token:
+        if settings.app_env == "production":
+            raise HTTPException(
+                status_code=403,
+                detail="Bootstrap is disabled. Set ACADEMY_BOOTSTRAP_TOKEN to enable.",
+            )
+        # Allow open bootstrap in local/dev only when no token is configured.
+    else:
+        if not x_bootstrap_token or not hmac.compare_digest(
+            x_bootstrap_token.encode("utf-8"),
+            expected_token.encode("utf-8"),
+        ):
+            raise HTTPException(status_code=403, detail="Invalid bootstrap token")
+
     return {
         "ok": True,
         "session": bootstrap_admin_user(

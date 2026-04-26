@@ -31,5 +31,16 @@ class Settings:
     whatsapp_api_token: str = os.getenv("WHATSAPP_API_TOKEN", "")
     whatsapp_phone_id: str = os.getenv("WHATSAPP_PHONE_ID", "")
 
+    # Dedicated secret for signing academy auth JWTs. If unset in production
+    # the API refuses to issue tokens (see app.auth._jwt_secret).
+    academy_jwt_secret: str = os.getenv("ACADEMY_JWT_SECRET", "")
+    # Required header value for POST /auth/bootstrap-admin. Without it, the
+    # endpoint returns 403 even when the tenant has no admin yet, eliminating
+    # the public race-condition where the first caller becomes admin.
+    academy_bootstrap_token: str = os.getenv("ACADEMY_BOOTSTRAP_TOKEN", "")
+    # Comma-separated allowlist of frontend origins for CORS. When unset the
+    # API falls back to the production domain only.
+    cors_allowed_origins: str = os.getenv("CORS_ALLOWED_ORIGINS", "")
+
 
 settings = Settings()

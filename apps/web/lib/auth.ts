@@ -26,15 +26,21 @@ export function parseSessionCookie(value?: string | null) {
   }
 }
 
+function isSecureContext() {
+  if (typeof window === "undefined") return false;
+  return window.location.protocol === "https:";
+}
+
 function writeSessionCookie(session: AcademySession | null) {
   if (typeof document === "undefined") return;
+  const secureFlag = isSecureContext() ? "; Secure" : "";
   if (!session) {
-    document.cookie = `${SESSION_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`;
+    document.cookie = `${SESSION_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax${secureFlag}`;
     return;
   }
   const expiresAt = Date.parse(session.expires_at);
   const expires = Number.isNaN(expiresAt) ? "" : `; Expires=${new Date(expiresAt).toUTCString()}`;
-  document.cookie = `${SESSION_COOKIE}=${cookieValue(session)}; Path=/; SameSite=Lax${expires}`;
+  document.cookie = `${SESSION_COOKIE}=${cookieValue(session)}; Path=/; SameSite=Lax${secureFlag}${expires}`;
 }
 
 export function readSession() {
