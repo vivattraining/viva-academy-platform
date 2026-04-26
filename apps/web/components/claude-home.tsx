@@ -24,24 +24,22 @@ type FacultyMember = {
 };
 
 const tickerItems = [
-  "Hospitality Management",
-  "Travel Operations",
-  "Airline & Airport Services",
-  "Culinary Arts",
-  "Event Design",
-  "Cruise Line Operations",
-  "Luxury Brand Services",
+  "Travel Agency Management",
+  "Travel & Tour Operations",
+  "Event & MICE Design",
+  "Inbound · Outbound · Domestic",
+  "Hybrid · Live + Studio",
 ];
 
 const programs = [
   {
     code: "P · 01",
-    title: "Hospitality",
-    emphasis: "Management",
+    title: "Travel Agency",
+    emphasis: "Management (Sales & Marketing)",
     description:
-      "From front office to food & beverage. A full operational grounding for careers in luxury hotels, resorts and boutique properties.",
+      "Master the commercial side of travel. Build expertise in client acquisition, product positioning, pricing strategy, and relationship management. Learn how to sell experiences, not just packages, while understanding consumer behaviour and digital channels. Designed to prepare you for high-performance roles in travel sales and business development.",
     meta: [
-      ["Duration", "18 months"],
+      ["Duration", "16 weeks"],
       ["Format", "Hybrid"],
       ["Next cohort", "Aug 2026"],
     ],
@@ -51,83 +49,23 @@ const programs = [
     title: "Travel &",
     emphasis: "Tour Operations",
     description:
-      "Itinerary design, GDS systems, destination expertise and the business of moving travellers around the world.",
+      "Develop core operational expertise in global travel management. Itinerary design, GDS fundamentals, destination knowledge, and end-to-end tour execution. Learn to plan, coordinate, and deliver seamless travel experiences across geographies — preparing you for roles in tour operations, product planning, and travel logistics.",
     meta: [
-      ["Duration", "12 months"],
+      ["Duration", "16 weeks"],
       ["Format", "Hybrid"],
       ["Next cohort", "Aug 2026"],
     ],
   },
   {
     code: "P · 03",
-    title: "Airline &",
-    emphasis: "Airport Services",
-    description:
-      "Ground operations, cabin crew preparation, terminal services and the protocols of international aviation.",
-    meta: [
-      ["Duration", "9 months"],
-      ["Format", "Hybrid"],
-      ["Next cohort", "Aug 2026"],
-    ],
-  },
-  {
-    code: "P · 04",
-    title: "Culinary",
-    emphasis: "Arts",
-    description:
-      "Classical technique, modern technique, kitchen leadership. In partnership with three five-star kitchens and two culinary academies abroad.",
-    meta: [
-      ["Duration", "15 months"],
-      ["Format", "Residential + Live"],
-      ["Next cohort", "Sep 2026"],
-    ],
-  },
-  {
-    code: "P · 05",
     title: "Event &",
     emphasis: "MICE Design",
     description:
-      "From destination weddings to corporate summits. A specialist track for the fastest-growing segment in Indian tourism.",
+      "Step into the world of high-impact events. Corporate meetings, incentives, conferences, exhibitions, and destination weddings. Learn event conceptualisation, vendor coordination, budgeting, and on-ground execution — designed for those aiming to build careers in the rapidly growing MICE and experiential events segment.",
     meta: [
-      ["Duration", "9 months"],
+      ["Duration", "16 weeks"],
       ["Format", "Hybrid"],
-      ["Next cohort", "Oct 2026"],
-    ],
-  },
-  {
-    code: "P · 06",
-    title: "Cruise Line",
-    emphasis: "Operations",
-    description:
-      "Maritime hospitality for the next generation of sea-going careers. Partnered with three global cruise operators.",
-    meta: [
-      ["Duration", "12 months"],
-      ["Format", "Hybrid + Sea rotation"],
-      ["Next cohort", "Sep 2026"],
-    ],
-  },
-  {
-    code: "P · 07",
-    title: "Luxury Brand",
-    emphasis: "Services",
-    description:
-      "For those drawn to concierge, private aviation, yacht crew and ultra-high-net-worth hospitality.",
-    meta: [
-      ["Duration", "9 months"],
-      ["Format", "Hybrid"],
-      ["Next cohort", "Oct 2026"],
-    ],
-  },
-  {
-    code: "P · 08",
-    title: "Foundation",
-    emphasis: "Semester",
-    description:
-      "For fresh graduates still choosing their path. A 12-week immersion across every track, ending in specialisation.",
-    meta: [
-      ["Duration", "3 months"],
-      ["Format", "Live + Self-paced"],
-      ["Next cohort", "Rolling"],
+      ["Next cohort", "Aug 2026"],
     ],
   },
 ];
@@ -138,57 +76,14 @@ const curriculum = [
     title: "Foundations of",
     emphasis: "Service & Hospitality",
     summary:
-      "The first semester grounds every cohort in the shared vocabulary of the industry: service standards, front-of-house operations, communication, and the ethics of a guest-facing career.",
+      "The first semester establishes a strong foundation in the core principles of the travel industry. Students develop a shared understanding of service standards, travel operations, worldwide travel scenarios, what an ideal travel company looks like, professional communication, and the ethics required for guest-facing roles.",
     modules: [
-      ["M · 01", "Introduction to the Hospitality Industry", "40 hrs"],
-      ["M · 02", "Front Office Management & Guest Relations", "60 hrs"],
-      ["M · 03", "Food & Beverage Service Foundations", "50 hrs"],
+      ["M · 01", "Introduction to the Travel Industry", "40 hrs"],
+      ["M · 02", "Various departments — how each function works", "40 hrs"],
+      ["M · 03", "Inbound, Outbound, Domestic & MICE tourism", "60 hrs"],
       ["M · 04", "Professional Communication & Etiquette", "30 hrs"],
-      ["M · 05", "World Geography & Destination Studies I", "40 hrs"],
+      ["M · 05", "World Geography, Destination Studies, Rail Tourism & OTA workflow", "40 hrs"],
       ["M · 06", "Studio: Service Simulation & Role-Play Labs", "25 hrs"],
-    ],
-  },
-  {
-    label: "Semester II — Operations",
-    title: "Operations &",
-    emphasis: "Applied Systems",
-    summary:
-      "The second semester moves into systems: reservation platforms, global distribution, revenue strategy and the operational cadence of real properties.",
-    modules: [
-      ["M · 07", "Amadeus & Sabre — GDS Certification", "70 hrs"],
-      ["M · 08", "Revenue Management & Pricing Strategy", "45 hrs"],
-      ["M · 09", "Housekeeping & Operational Excellence", "40 hrs"],
-      ["M · 10", "Travel Law & International Regulation", "35 hrs"],
-      ["M · 11", "Finance for Hospitality Professionals", "40 hrs"],
-      ["M · 12", "Studio: End-to-End Property Simulation", "30 hrs"],
-    ],
-  },
-  {
-    label: "Semester III — Specialisation",
-    title: "Your",
-    emphasis: "Specialisation",
-    summary:
-      "In the third semester, students choose one of six specialisation tracks — taught by faculty drawn directly from that part of the industry.",
-    modules: [
-      ["S · 01", "Luxury Hospitality & Concierge", "Elective"],
-      ["S · 02", "Airline Cabin Services & Ground Ops", "Elective"],
-      ["S · 03", "Culinary & Kitchen Management", "Elective"],
-      ["S · 04", "Event & MICE Design", "Elective"],
-      ["S · 05", "Cruise Line Operations", "Elective"],
-      ["S · 06", "Destination & Tourism Marketing", "Elective"],
-    ],
-  },
-  {
-    label: "Semester IV — Industry",
-    title: "Paid",
-    emphasis: "Industry Rotation",
-    summary:
-      "The programme closes with a paid placement at a partner employer — typically six months, across at least two operational departments, under a named mentor.",
-    modules: [
-      ["R · 01", "Placement Readiness & Employer Matching", "3 wks"],
-      ["R · 02", "On-property Rotation · Department A", "12 wks"],
-      ["R · 03", "On-property Rotation · Department B", "12 wks"],
-      ["R · 04", "Capstone Review & Convocation", "2 wks"],
     ],
   },
 ];
@@ -202,89 +97,94 @@ const faculty: FacultyMember[] = [
     label: "Faculty Head, Co-Founder",
     role: "Travel Entrepreneur · Hospitality Studies",
     description:
-      "Thirty years with large travel companies. Leads VIVA institute's flagship Hospitality Management programme.",
+      "Thirty years with large travel companies. Leads VIVA Career Academy's flagship Travel Management programme.",
     creds: ["Cox & Kings", "Kuoni", "SOTC"],
-  },
-  {
-    code: "F · 02",
-    name: "Dr Ashish Gautam",
-    image: "/faculty/ashish-bhaiya-home.jpg",
-    imageAlt: "Dr Ashish Gautam",
-    label: "Guiding Mentor",
-    role: "Fondly known as Ashish Bhaiya",
-    imageClassName: styles.facultyPhotoAshish,
-    description:
-      "He has dedicated some of the best years of his life serving the untouched, needy and the poor.",
-    creds: ["DivyaPrem"],
-    href: "/guiding-mentor/ashish-bhaiya",
-  },
-  {
-    code: "F · 03",
-    name: "Chef Marco Tessier",
-    role: "Director · Culinary Arts",
-    description:
-      "Former Executive Sous Chef at two Michelin-starred kitchens in Lyon. Founding chair of the VIVA culinary track and curator of the institute's visiting-chef series.",
-    creds: ["Michelin", "Le Cordon Bleu", "ICCA"],
-  },
-  {
-    code: "F · 04",
-    name: "Priya Menon",
-    role: "Lead · Travel & Operations",
-    description:
-      "Fifteen years in tour operations across Kerala, Sri Lanka and the Maldives. Designs the institute's GDS and destination studies modules.",
-    creds: ["Thomas Cook", "Amadeus Cert."],
-  },
-  {
-    code: "F · 05",
-    name: "Daniyal Kapoor",
-    role: "Lead · Events & MICE",
-    description:
-      "Produced over 400 luxury destination weddings and corporate summits. Leads the institute's event-production studio and industry showcases.",
-    creds: ["WeddingSutra", "IIFA"],
-  },
-  {
-    code: "F · 06",
-    name: "Narayan Mallapur",
-    image: "/faculty/vikas-khanduri-updated.png",
-    imageAlt: "Narayan Mallapur",
-    label: "Leadership",
-    role: "Operations & Growth",
-    description:
-      "Supports Viva Career Academy across operations, growth, and launch execution as the platform scales into its next chapter.",
-    creds: ["Admissions", "Operations", "Growth"],
   },
 ];
 
 const faqs = [
   {
-    question: "Do I need a background in travel or hospitality to apply?",
+    question: "Do I need a background in travel or tourism to apply?",
     answer:
-      "No. Most of our incoming cohort are fresh college graduates with no prior industry exposure. The Foundation Semester is designed precisely for students choosing their path — we start at first principles and move quickly.",
+      "No. Most of our students begin without prior industry experience. The programme is designed to build fundamentals in travel management, starting from core concepts and progressing to advanced operational and commercial skills.",
   },
   {
-    question: "How does the hybrid format actually work?",
+    question: "How does the hybrid format work?",
     answer:
-      "Live cohorts meet on Zoom and in regional VIVA studios in Mumbai, Bangalore, Delhi and Goa three evenings a week. Self-paced students follow the same syllabus on demand and can join any live session. You can switch modes mid-programme.",
+      "Live cohorts attend sessions via Zoom and at VIVA regional studios across key cities. Self-paced learners access the same curriculum on demand, with the flexibility to join live sessions anytime and switch learning modes during the programme.",
   },
   {
-    question: "Is the paid industry rotation guaranteed?",
+    question: "Is industry exposure or internship included?",
     answer:
-      "Yes. Every full programme concludes with a paid rotation at a partner employer. Our placement desk has worked with more than 240 employers across 26 countries. Rotations are matched, not applied for.",
+      "Yes. Every programme includes structured industry exposure or project-based assignments with travel companies, tour operators, and corporate travel teams — ensuring practical, real-world experience.",
   },
   {
-    question: "What does a semester cost, and are scholarships available?",
+    question: "What is the programme fee, and are scholarships available?",
     answer:
-      "Live cohort fees start at ₹1,85,000 per semester; self-paced at ₹98,000. Roughly 38% of incoming students receive merit or need-based scholarships ranging from 15% to full tuition.",
+      "Fees vary by programme format. Merit-based and need-based scholarships are available for eligible candidates, offering partial to significant fee support based on performance and profile.",
   },
   {
-    question: "What's the admissions timeline for Monsoon 2026?",
+    question: "What is the admissions timeline?",
     answer:
-      "Applications close 14 May 2026. Admissions conversations happen on a rolling basis. Offers are issued within 14 days of interview. The cohort begins 11 August 2026.",
+      "Admissions are conducted on a rolling basis. Applications are reviewed individually, followed by a personal interaction. Offers are typically released within a short evaluation window prior to the cohort start date.",
   },
   {
     question: "Will I receive a recognised certification?",
     answer:
-      "All programmes conclude in a VIVA Diploma, co-signed by our industry advisory board. Several tracks carry additional certifications from IATA, Amadeus and partner culinary academies.",
+      "Yes. Upon successful completion, students receive a VIVA Certification in Travel Management. Select modules may also include certifications aligned with global travel systems and industry standards.",
+  },
+  {
+    question: "What roles can I expect after completing the programme?",
+    answer:
+      "Graduates typically step into roles across travel agencies, tour operations, airlines, and corporate travel teams — such as Travel Consultant, Itinerary Planner, Operations Executive, and MICE Coordinator, depending on their chosen specialisation.",
+  },
+  {
+    question: "What kind of salary can I expect after completion?",
+    answer:
+      "Entry-level salaries vary by role and organisation, typically ranging from ₹2–5 LPA in India, with higher potential in international placements and performance-based sales roles within the travel industry.",
+  },
+  {
+    question: "Does the programme support international career opportunities?",
+    answer:
+      "Yes. With global exposure, destination knowledge, and industry-aligned training, graduates are prepared for opportunities with international tour operators, cruise companies, and destination management firms.",
+  },
+  {
+    question: "How strong is the placement support?",
+    answer:
+      "Our placement team works closely with students to match them with suitable roles across our industry network — offering guidance, interview preparation, and access to hiring partners in travel and tourism.",
+  },
+  {
+    question: "What outcomes can I realistically expect after 16 weeks?",
+    answer:
+      "By the end of the programme, you will have practical skills in travel planning, operations, and customer handling — along with industry exposure and the confidence to step into professional roles.",
+  },
+  {
+    question: "Can I switch roles within the travel industry later?",
+    answer:
+      "Yes. The programme builds transferable skills, allowing you to move across functions such as sales, operations, MICE, or product development as your career progresses.",
+  },
+];
+
+const recruiters = [
+  {
+    label: "Travel & Tour Operators",
+    body:
+      "Thomas Cook India · SOTC · MakeMyTrip · Yatra · Flight Centre Travel Group · TBO · Rezlive · Rayna Travel · Cleartrip · and more.",
+  },
+  {
+    label: "Destination Management Companies (DMCs)",
+    body:
+      "Global and regional DMC partners across Europe, the Middle East, and Southeast Asia.",
+  },
+  {
+    label: "MICE & Corporate Travel",
+    body:
+      "Leading event agencies and corporate travel firms managing conferences, incentives, and global movements.",
+  },
+  {
+    label: "Hotels & Hospitality",
+    body:
+      "National and international hotel groups, local Indian hotel chains, leading restaurant brands, and online travel companies.",
   },
 ];
 
@@ -294,7 +194,7 @@ export function ClaudeHome() {
   return (
     <main className={styles.page}>
       <div className={styles.topBanner}>
-        Admissions Open · Travel Careers 2026 <b>·</b> Applications close 14 May <b>·</b> Live + Self-paced
+        Admissions Open · Travel Careers 2026 <b>·</b> Rolling intake <b>·</b> Hybrid · Live + Studio
       </div>
 
       <nav className={styles.nav}>
@@ -385,13 +285,13 @@ export function ClaudeHome() {
                   <div className={styles.miniStatValue}>
                     14<sup>yr</sup>
                   </div>
-                  <div className={styles.miniStatLabel}>Shaping hospitality careers across five continents.</div>
+                  <div className={styles.miniStatLabel}>Shaping travel and hospitality careers across India and beyond.</div>
                 </div>
                 <div className={styles.miniStat}>
                   <div className={styles.miniStatValue}>
-                    92<sup>%</sup>
+                    90<sup>%</sup>
                   </div>
-                  <div className={styles.miniStatLabel}>Graduates placed within 90 days of convocation.</div>
+                  <div className={styles.miniStatLabel}>Students placed within 60 days of convocation.</div>
                 </div>
               </div>
             </div>
@@ -419,28 +319,31 @@ export function ClaudeHome() {
           <div className={styles.promiseBody}>
             <div className={styles.bodyStack}>
               <p className={styles.bodyText}>
-                For more than a decade, VIVA has built a curriculum rooted in the belief that service is an art, operations are a science, and careers in travel demand both. Our graduates run lobbies in Luzern, run kitchens in Colombo, and run tour desks on cruise ships that never stop moving.
+                VIVA has built a curriculum grounded in a simple belief: service is an art, operations are a science — and careers in travel demand mastery of both, and more.
               </p>
               <p className={styles.bodyText}>
-                The institute operates across three continents, in partnership with hotel groups, airlines and tourism boards — so what you learn on Monday, you apply on Friday.
+                Our graduates go on to manage outbound tours, inbound tours, conferences, MICE operations, lead guest experiences, and drive travel services across global markets.
+              </p>
+              <p className={styles.bodyText}>
+                We operate across India in collaboration with leading travel companies, OTAs, travel representation companies and tourism boards — ensuring that what you learn is always aligned with real industry practice.
               </p>
             </div>
             <div className={styles.pillarList}>
               {[
                 [
                   "i",
-                  "Industry-embedded faculty",
-                  "Former GMs, cabin leads, sommeliers and destination directors — not career academics. Every instructor has operated a floor you've walked across.",
+                  "Industry-Embedded Faculty",
+                  "Our faculty comprises seasoned professionals — former general managers, airline crew leaders, and destination specialists — who bring real-world experience into every session.",
                 ],
                 [
                   "ii",
-                  "Hybrid by design, not accident",
-                  "Live cohorts meet three evenings a week over Zoom and in regional studios. Self-paced labs sit alongside — so working students and first-years move at the pace that suits them.",
+                  "Hybrid Learning, Designed for Flexibility",
+                  "Live, instructor-led sessions are complemented by self-paced modules, enabling both students and working professionals to learn effectively.",
                 ],
                 [
                   "iii",
-                  "Placement as a promise",
-                  "Every programme ends in a paid industry rotation. Our placement desk has seated graduates at more than 240 employers across 26 countries.",
+                  "Placement as a Commitment",
+                  "Every programme concludes with an industry placement opportunity, supported by our dedicated placement team and global employer network.",
                 ],
               ].map(([roman, title, copy]) => (
                 <div className={styles.pillar} key={title}>
@@ -461,7 +364,7 @@ export function ClaudeHome() {
           <div className={styles.secHead}>
             <div className={styles.kicker}>§ 02 — Programs</div>
             <h2 className={styles.sectionTitle}>
-              Six career tracks. <em>One</em> unwavering standard.
+              Three career tracks. <em>One</em> unwavering standard.
             </h2>
           </div>
 
@@ -497,30 +400,30 @@ export function ClaudeHome() {
           <div className={styles.secHead}>
             <div className={styles.kicker}>§ 03 — Format</div>
             <h2 className={styles.sectionTitle}>
-              Learn the way <em>professionals</em> actually train.
+              Two evenings. One <em>room</em>. Your cohort of 24 students.
             </h2>
+            <p className={styles.bodyText} style={{ marginTop: 14, maxWidth: 760 }}>
+              Limited to 24 students. Maximum attention. Real outcomes. Train in a focused, small-group environment where every session is interactive, practical, and industry-led — delivered live over video and in VIVA regional studios, designed to mirror real-world collaboration.
+            </p>
           </div>
 
           <div className={styles.formatGrid}>
             <article className={styles.formatCard}>
               <div className={styles.tag}>
-                <span className={styles.dot} /> Live Cohort
+                <span className={styles.dot} /> Live Cohort · Hybrid
               </div>
               <h3>
-                Three evenings. One <em>room</em>. Your cohort of 24.
+                What makes this <em>programme</em> different.
               </h3>
-              <p>
-                Small-group classes taught live over video and in VIVA regional studios. Faculty know your name, critique your work in real time and introduce you to their networks.
-              </p>
               <ul>
-                <li>24-student cohorts · Monday, Wednesday, Friday evenings</li>
-                <li>Guest masterclasses from hotel GMs and destination leaders</li>
-                <li>Industry site visits every month of the programme</li>
-                <li>Dedicated career mentor from week one</li>
+                <li><strong>Small Cohorts, Big Impact.</strong> Just 24 learners per batch — personalised feedback, active participation, direct faculty access.</li>
+                <li><strong>Twice a Week Commitment.</strong> Friday &amp; Saturday evenings · 2 hours per session — designed for both students and working professionals.</li>
+                <li><strong>Learn From Industry Leaders.</strong> Guest masterclasses by senior professionals — hotel GMs, travel leaders, and destination experts.</li>
+                <li><strong>Mentorship That Matters.</strong> A dedicated career mentor guides you from week one — helping you navigate skills, roles, and opportunities.</li>
               </ul>
               <div className={styles.formatFoot}>
                 <div className={styles.price}>
-                  ₹ 1,85,000 <small>/ semester</small>
+                  ₹ 40,000 <small>/ semester</small>
                 </div>
                 <a className={`${styles.button} ${styles.buttonAccent}`} href="#admissions">
                   Cohort Details <span className={styles.arrow}>↗</span>
@@ -530,26 +433,23 @@ export function ClaudeHome() {
 
             <article className={`${styles.formatCard} ${styles.formatCardSecondary}`}>
               <div className={styles.tag}>
-                <span className={styles.dot} /> Self-paced Track
+                <span className={styles.dot} /> Programme Details
               </div>
               <h3>
-                At your rhythm. <em>Same</em> standard, same credential.
+                Built for <em>capability</em>, not just attendance.
               </h3>
               <p>
-                Purpose-built video modules, written casework and simulator labs you can complete around work or family. Join live sessions as you&apos;re able and graduate on your timeline.
+                Because you don&apos;t just attend classes — you build capability, confidence, and connections that translate into careers.
               </p>
               <ul>
-                <li>120+ hours of studio-produced coursework</li>
-                <li>Weekly office hours with programme faculty</li>
-                <li>Peer study groups across 14 Indian cities</li>
-                <li>Upgrade to a live cohort at any point</li>
+                <li>Duration: 16 weeks</li>
+                <li>Format: Hybrid (Live + Studio Learning)</li>
+                <li>Schedule: Friday &amp; Saturday evenings · 2 hours</li>
+                <li>Fee: ₹40,000 per semester</li>
               </ul>
               <div className={styles.formatFoot}>
-                <div className={styles.price}>
-                  ₹ 98,000 <small>/ semester</small>
-                </div>
                 <a className={styles.buttonGhostLight} href="#admissions">
-                  Self-paced Details <span className={styles.arrow}>↗</span>
+                  Begin Application <span className={styles.arrow}>↗</span>
                 </a>
               </div>
             </article>
@@ -561,41 +461,27 @@ export function ClaudeHome() {
         <div className={styles.wrap}>
           <div className={styles.outcomesHead}>
             <h2 className={styles.outcomesTitle}>
-              The institute&apos;s real résumé is its <em>graduates</em>.
+              Outcomes that lead to <em>real</em> careers.
             </h2>
             <div className={styles.outcomesSide}>
-              Independently audited outcomes from the Class of 2024. Methodology and source roster available on request from the placements office.
+              VIVA is built around placement opportunity — supported by a dedicated placement team and an industry network spanning travel, tourism, MICE, and hospitality across India.
             </div>
           </div>
 
           <div className={styles.statGrid}>
-            {[
-              ["92", "%", "Placed in a paid role within 90 days of graduation."],
-              ["₹ 4.8L", "", "Median first-year compensation (domestic track)."],
-              ["26", "", "Countries where VIVA alumni are currently employed."],
-              ["240", "+", "Partner employers, from boutique resorts to flag carriers."],
-            ].map(([value, suffix, label]) => (
-              <div className={styles.stat} key={label}>
-                <div className={styles.statValue}>
-                  {value}
-                  {suffix ? <sup>{suffix}</sup> : null}
-                </div>
-                <div className={styles.statLabel}>{label}</div>
+            <div className={styles.stat}>
+              <div className={styles.statValue}>
+                90<sup>%</sup>
               </div>
-            ))}
-          </div>
-
-          <div className={styles.employerStrip}>
-            <div className={styles.employerLabel}>Placement partners include</div>
-            <div className={styles.logos}>
-              <span>Taj Hotels</span>
-              <span>Oberoi</span>
-              <span>Marriott</span>
-              <span>Accor</span>
-              <span>Thomas Cook</span>
-              <span>Emirates</span>
-              <span>MakeMyTrip</span>
-              <span>+ 232 more</span>
+              <div className={styles.statLabel}>Placement opportunity for committed graduates.</div>
+            </div>
+            <div className={styles.stat}>
+              <div className={styles.statValue}>Best in class</div>
+              <div className={styles.statLabel}>Industry-aligned salaries for entry-level travel roles.</div>
+            </div>
+            <div className={styles.stat}>
+              <div className={styles.statValue}>Pan-India</div>
+              <div className={styles.statLabel}>Placement opportunity across the travel industry, all over India.</div>
             </div>
           </div>
         </div>
@@ -702,27 +588,29 @@ export function ClaudeHome() {
         </div>
       </section>
 
-      <section className={styles.testimonial}>
-        <div className={`${styles.wrap} ${styles.testimonialBody}`}>
-          <div className={styles.testimonialImg}>
-            <div className={styles.alumniCard}>
-              <div className={styles.alumniGlow} />
-              <div className={styles.alumniStamp}>Alumni Story</div>
-              <div className={styles.alumniLocation}>Muscat · Guest Relations Track</div>
-            </div>
+      <section className={styles.section} id="recruiters">
+        <div className={styles.wrap}>
+          <div className={styles.secHead}>
+            <div className={styles.kicker}>§ 06 — Where Our Graduates Go</div>
+            <h2 className={styles.sectionTitle}>
+              Careers across leading travel, MICE, and <em>hospitality</em> companies.
+            </h2>
           </div>
-          <div>
-            <div className={styles.eyebrow}>§ 06 — Voices from the field</div>
-            <p className={styles.quote} style={{ marginTop: 24 }}>
-              VIVA didn&apos;t just teach me how to run a lobby. It taught me how to read a room — and after two years with a five-star group in Muscat, I can tell you: that&apos;s the job.
-            </p>
-            <div className={styles.quoteAttrib}>
-              <div className={styles.quoteWho}>
-                Riya Thomas
-                <small>Front Office Manager · Jumeirah Group · Class of 2023</small>
+          <p className={styles.bodyText} style={{ maxWidth: 760 }}>
+            Our students build careers across leading travel companies, global hotel groups, airlines, and destination management firms.
+          </p>
+          <div className={styles.pillarList} style={{ marginTop: 28 }}>
+            {recruiters.map((item, index) => (
+              <div className={styles.pillar} key={item.label}>
+                <div className={styles.roman}>
+                  {(index + 1).toString().padStart(2, "0")}
+                </div>
+                <div>
+                  <h4>{item.label}</h4>
+                  <p>{item.body}</p>
+                </div>
               </div>
-              <div className={styles.quoteOutcome}>Placed via VIVA Mumbai</div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -730,19 +618,22 @@ export function ClaudeHome() {
       <section className={styles.admissions} id="admissions">
         <div className={`${styles.wrap} ${styles.admissionsBody}`}>
           <div>
-            <div className={`${styles.eyebrow} ${styles.eyebrowDark}`}>§ 07 — Admissions 2026</div>
+            <div className={`${styles.eyebrow} ${styles.eyebrowDark}`}>§ 07 — Admissions</div>
             <h2 className={styles.admissionsTitle} style={{ marginTop: 20 }}>
               Your <em>career</em> begins with one application.
             </h2>
             <p className={styles.lead}>
-              The Monsoon 2026 cohort closes applications on 14 May. We review every file personally — no aptitude test, no ranked entrance exam. We&apos;re looking for character, curiosity and commitment.
+              No entrance exams. No rankings. Every application is evaluated individually — focusing on mindset, potential, and commitment, because careers in travel and hospitality are built on people, not just performance on paper.
+            </p>
+            <p className={styles.lead} style={{ marginTop: 14 }}>
+              Each application is reviewed personally — no standardised tests or rankings. We look beyond scores to identify individuals with curiosity, discipline, and the intent to build meaningful careers in travel and hospitality.
             </p>
             <div className={styles.ctaRow} style={{ marginTop: 28 }}>
               <Link className={`${styles.button} ${styles.buttonAccent}`} href="/apply">
                 Begin Application <span className={styles.arrow}>↗</span>
               </Link>
               <Link className={styles.buttonGhostLight} href="/brochure">
-                Download Prospectus
+                Talk to Admissions
               </Link>
               <a className={styles.buttonGhostLight} href="mailto:admission@vivacareeracademy.com">
                 Book a Call
@@ -821,12 +712,10 @@ export function ClaudeHome() {
 
             <div className={styles.footerColumn}>
               <h6 className={styles.footerHeading}>Programs</h6>
-              <a href="#programs">Hospitality Management</a>
-              <a href="#programs">Travel Operations</a>
-              <a href="#programs">Airline & Airport</a>
-              <a href="#programs">Culinary Arts</a>
-              <a href="#programs">Event & MICE</a>
-              <a href="#programs">Cruise Line Ops</a>
+              <a href="#programs">Travel Agency Management</a>
+              <a href="#programs">Travel &amp; Tour Operations</a>
+              <a href="#programs">Event &amp; MICE Design</a>
+              <Link href="/courses">All programmes</Link>
             </div>
 
             <div className={styles.footerColumn}>
@@ -834,19 +723,18 @@ export function ClaudeHome() {
               <a href="#about">About VIVA</a>
               <a href="#faculty">Faculty</a>
               <a href="#curriculum">Curriculum</a>
-              <a href="#outcomes">Outcomes & Alumni</a>
+              <a href="#outcomes">Outcomes</a>
               <Link href="/apply">Admissions</Link>
-              <Link href="/contact">Press</Link>
+              <Link href="/contact">Contact</Link>
             </div>
 
             <div className={styles.footerColumn}>
               <h6 className={styles.footerHeading}>Admissions</h6>
               <Link href="/apply">How to Apply</Link>
-              <a href="#admissions">Fees & Financing</a>
-              <a href="#admissions">Scholarships</a>
-              <Link href="/brochure">Prospectus</Link>
+              <a href="#admissions">Fees &amp; Scholarships</a>
+              <Link href="/brochure">Talk to Admissions</Link>
               <a href="mailto:admission@vivacareeracademy.com">Book a Call</a>
-              <Link href="/login">Application Login</Link>
+              <Link href="/login">Student Login</Link>
             </div>
 
             <div className={styles.footerColumn}>

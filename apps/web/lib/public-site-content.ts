@@ -14,7 +14,7 @@ export const PUBLIC_CONTACT = {
 };
 
 export const LIVE_SITE_HERO = {
-  eyebrow: "Admissions Open · Monsoon Cohort 2026 · Applications close 14 May",
+  eyebrow: "Admissions Open · Travel Careers 2026 · Rolling intake",
   title: "A training institute for the world's most hospitable careers.",
   body:
     "VIVA prepares the next generation of travel, tourism and hospitality professionals through a hybrid programme of live cohorts, industry mentorship and global placement pathways.",
@@ -45,20 +45,28 @@ export const LIVE_SITE_PHILOSOPHY = [
   },
 ];
 
-export const LIVE_SITE_PROGRAMS = [
+export const LIVE_SITE_PROGRAMS: ReadonlyArray<{
+  code: string;
+  title: string;
+  body: string;
+  duration: string;
+  format: string;
+  cohort: string;
+  comingSoon?: boolean;
+}> = [
   {
     code: "P · 01",
     title: "Hospitality Management",
     body: "Front office, food and beverage, guest relations, and luxury hotel operations.",
-    duration: "18 months",
+    duration: "16 weeks",
     format: "Hybrid",
     cohort: "Aug 2026",
   },
   {
     code: "P · 02",
-    title: "Travel & Tour Operations",
+    title: "Travel Operations",
     body: "Itinerary design, GDS systems, destination expertise, and modern travel business workflows.",
-    duration: "12 months",
+    duration: "16 weeks",
     format: "Hybrid",
     cohort: "Aug 2026",
   },
@@ -66,17 +74,36 @@ export const LIVE_SITE_PROGRAMS = [
     code: "P · 03",
     title: "Airline & Airport Services",
     body: "Ground operations, cabin preparation, terminal services, and aviation protocols.",
-    duration: "9 months",
+    duration: "16 weeks",
+    format: "Hybrid",
+    cohort: "Coming Soon",
+    comingSoon: true,
+  },
+  {
+    code: "P · 04",
+    title: "Culinary Arts",
+    body: "Classical and modern technique, kitchen leadership, and partner-academy training.",
+    duration: "TBA",
+    format: "Hybrid",
+    cohort: "Coming Soon",
+    comingSoon: true,
+  },
+  {
+    code: "P · 05",
+    title: "Event & MICE Design",
+    body: "Corporate meetings, incentives, conferences, exhibitions, and destination weddings — vendor coordination, budgeting, and on-ground execution.",
+    duration: "16 weeks",
     format: "Hybrid",
     cohort: "Aug 2026",
   },
   {
-    code: "P · 04",
-    title: "Foundation Semester",
-    body: "A 12-week immersion for fresh graduates choosing their track before specialisation.",
-    duration: "3 months",
-    format: "Live + Self-paced",
-    cohort: "Rolling",
+    code: "P · 06",
+    title: "Cruise Line Operations",
+    body: "Maritime hospitality and the operational standards of global cruise lines.",
+    duration: "TBA",
+    format: "Hybrid",
+    cohort: "Coming Soon",
+    comingSoon: true,
   },
 ];
 
@@ -130,24 +157,9 @@ export const VIVA_12_MODULES = Array.from({ length: 12 }, (_, index) => ({
 
 export const LIVE_SITE_FACULTY = [
   {
-    name: "Ayesha Rao",
-    role: "Dean · Hospitality Studies",
-    bio: "Twenty-two years with Taj and Oberoi, including GM leadership at Taj Falaknuma Palace.",
-  },
-  {
-    name: "Captain Nikhil Sharma",
-    role: "Chair · Aviation & Cruise",
-    bio: "Former cabin services director and certified IATA/ICAO instructor with cruise operations depth.",
-  },
-  {
-    name: "Priya Menon",
-    role: "Lead · Travel & Operations",
-    bio: "Designs GDS, itinerary, and destination modules from fifteen years in tour operations.",
-  },
-  {
-    name: "Dr. Lakshmi Iyer",
-    role: "Lead · Research & Ethics",
-    bio: "Tourism policy specialist guiding ethics, sustainability, and systems thinking across the curriculum.",
+    name: "Vikas Khanduri",
+    role: "Faculty Head · Co-Founder",
+    bio: "Thirty years with large travel companies — including Cox & Kings, Kuoni and SOTC. Leads VIVA Career Academy's flagship Travel Management programme.",
   },
 ];
 

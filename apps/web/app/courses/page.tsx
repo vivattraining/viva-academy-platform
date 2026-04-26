@@ -14,7 +14,7 @@ export default function CoursesPage() {
             <h1 className={styles.sectionTitle}>Career tracks built for <em>modern</em> travel and hospitality careers.</h1>
           </div>
           <p className={styles.bodyText} style={{ maxWidth: 760, marginBottom: 28 }}>
-            The programmes page now follows the restored landing language: academic, editorial, premium, and placement-oriented.
+            Three programmes are accepting applications now. Three more are being readied for upcoming intakes.
           </p>
           <div className={styles.programGrid}>
             {LIVE_SITE_PROGRAMS.map((item) => (
@@ -22,7 +22,12 @@ export default function CoursesPage() {
                 <div className={styles.programInner}>
                   <div className={styles.programArrow}>↗</div>
                   <div className={styles.programNumber}>{item.code}</div>
-                  <h3 className={styles.programTitle}>{item.title}</h3>
+                  <h3 className={styles.programTitle}>
+                    {item.title}
+                    {item.comingSoon ? (
+                      <span style={{ display: "inline-block", marginLeft: 10, padding: "3px 10px", fontSize: "0.62em", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", borderRadius: 999, background: "#F4B400", color: "#0B1F3A", verticalAlign: "middle" }}>Coming Soon</span>
+                    ) : null}
+                  </h3>
                   <div className={styles.programDescription}>{item.body}</div>
                   <div className={styles.programMeta}>
                     <div className={styles.metaRow}><span>Duration</span><span>{item.duration}</span></div>
@@ -32,18 +37,6 @@ export default function CoursesPage() {
                 </div>
               </article>
             ))}
-          </div>
-          <div className={styles.formatGrid} style={{ marginTop: 32 }}>
-            <article className={styles.formatCard}>
-              <div className={styles.tag}><span className={styles.dot} /> Payment options</div>
-              <h3>Flexible fee structures for a <em>serious</em> cohort.</h3>
-              <p>Support full-fee enrollment, deposit-based admissions, and Razorpay-driven collection once live keys are connected.</p>
-            </article>
-            <article className={`${styles.formatCard} ${styles.formatCardSecondary}`}>
-              <div className={styles.tag}><span className={styles.dot} /> Upsell ladder</div>
-              <h3>Specialisations unlock after the <em>flagship</em> track.</h3>
-              <p>MICE, Luxury Travel, Ticketing, and DMC-focused tracks sit on top of the core academy journey.</p>
-            </article>
           </div>
         </div>
       </section>
