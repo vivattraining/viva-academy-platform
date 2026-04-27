@@ -18,6 +18,10 @@ from app.models import AcademyAuthSession, AcademyUserCredential
 SESSION_TTL_HOURS = 12
 ALLOWED_ROLES = {"admin", "operations", "trainer", "student"}
 
+# Payment stages that count as "fully paid" for the purposes of student
+# login enforcement. Mirrors VALID_PAYMENT_STAGES in routers/academy.py.
+PAID_PAYMENT_STAGES = {"paid"}
+
 
 def now_utc() -> datetime:
     return datetime.now(timezone.utc)
@@ -358,6 +362,28 @@ def login_user(db: Session, tenant_name: str, email: str, password: str, expecte
             status_code=403,
             detail=f"This account is registered as {credential.role}. Please use the correct workspace for that role.",
         )
+
+    # Payment-gated student login. Policy: a student credential exists only
+    # for learners who have completed admissions + payment. We re-verify here
+    # at the login boundary so a student credential created prematurely (or a
+    # student whose payment was later refunded) cannot reach /student. Demo
+    # mode (ALLOW_DEMO_AUTH) skips the check so local development with seeded
+    # demo users still works.
+    if credential.role == "student" and not settings.allow_demo_auth:
+        # Local import to avoid a circular dependency between auth.py and store.py.
+        from app.store import find_application_by_email  # noqa: WPS433
+
+        application = find_application_by_email(db, tenant_name, credential.email)
+        payment_stage = (application or {}).get("payment_stage")
+        if payment_stage not in PAID_PAYMENT_STAGES:
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "Your application payment has not been confirmed yet. "
+                    "Please complete payment via the admissions link, then sign in."
+                ),
+            )
+
     return create_session(db, tenant_name, credential)
 
 

@@ -21,3 +21,4 @@ coverage
 *.db-wal
 *.db-shm
 academy_os.db
+.env*.local

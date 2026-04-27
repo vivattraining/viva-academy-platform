@@ -104,3 +104,71 @@ export async function requireInternalPageAccess(allowedRoles: string[]) {
 
   return { ...session, role: trustedRole };
 }
+
+/**
+ * Stronger gate for the /student workspace.
+ *
+ * Layers (defense in depth — every check is independently sufficient):
+ *   1. requireInternalPageAccess(["student"]) — auth + role on the JWT.
+ *   2. Server-side re-verification against /api/v1/academy/students/me —
+ *      reads the application linked to this student's email and confirms
+ *      payment_stage === "paid". This catches the case where a credential
+ *      was issued, the student logged in, and payment was later refunded
+ *      or reversed.
+ *
+ * Unpaid students are redirected to /apply with a query hint so the
+ * admissions page can show a "complete payment" CTA. They never see the
+ * student workspace shell.
+ */
+export async function requirePaidStudentAccess() {
+  const session = await requireInternalPageAccess(["student"]);
+
+  const apiBaseUrl = (
+    process.env.NEXT_PUBLIC_API_URL ||
+    process.env.ACADEMY_API_URL ||
+    "http://localhost:8000"
+  ).replace(/\/+$/, "");
+  const tenantName = encodeURIComponent(session.tenant_name);
+  const url = `${apiBaseUrl}/api/v1/academy/students/me?tenant_name=${tenantName}`;
+
+  type StudentMeResponse = {
+    application?: { payment_stage?: string; id?: string } | null;
+  };
+
+  let body: StudentMeResponse | null = null;
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "x-academy-session": session.session_token,
+        "Content-Type": "application/json",
+      },
+      // Server fetches must not be cached — payment state changes per request.
+      cache: "no-store",
+    });
+    if (response.status === 401) {
+      redirect("/internal/login");
+    }
+    if (response.status === 404) {
+      // No application row yet → the student credential exists but admissions
+      // never linked them. Send them to /apply to start the flow.
+      redirect("/apply?reason=no-application");
+    }
+    if (!response.ok) {
+      // Don't fail open on other errors — better to bounce the user to a
+      // safe surface than render a workspace we can't verify they own.
+      redirect("/apply?reason=verification-unavailable");
+    }
+    body = (await response.json()) as StudentMeResponse;
+  } catch {
+    redirect("/apply?reason=verification-error");
+  }
+
+  const paymentStage = body?.application?.payment_stage;
+  if (paymentStage !== "paid") {
+    redirect("/apply?reason=payment-pending");
+  }
+
+  return session;
+}
