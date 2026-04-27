@@ -1,0 +1,130 @@
+name: QA Audit (pre-release gate)
+
+# Triggers:
+#   - On every PR targeting main (catch issues before merge).
+#   - On pushes to main (post-merge sanity).
+#   - On release candidate tags (vX.Y.Z-rc*) — this is the gate that must pass
+#     before a production release tag is cut.
+#   - Manually via "Run workflow".
+#
+# The QA suite itself lives in tests/qa-audit/. It runs against the live URL
+# given by VIVA_BASE_URL (defaults to production), so it does not require
+# the application to be built or deployed by this workflow.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'tests/qa-audit/**'
+      - '.github/workflows/qa-release.yml'
+  push:
+    branches: [main]
+    tags:
+      - 'v*-rc*'
+      - 'v*-beta*'
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL to audit (default: production)'
+        required: false
+        default: 'https://www.vivacareeracademy.com'
+
+concurrency:
+  group: qa-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Run QA audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: tests/qa-audit
+    env:
+      VIVA_BASE_URL: ${{ github.event.inputs.base_url || 'https://www.vivacareeracademy.com' }}
+      VIVA_FAIL_ON_CRITICAL: '1'
+      VIVA_PERF_BUDGET_MS: '3000'
+      # Auth flows run only if creds are configured. Add these as repo secrets
+      # to enable full login coverage in CI.
+      VIVA_PUBLIC_USER: ${{ secrets.VIVA_PUBLIC_USER }}
+      VIVA_PUBLIC_PASS: ${{ secrets.VIVA_PUBLIC_PASS }}
+      VIVA_INTERNAL_USER: ${{ secrets.VIVA_INTERNAL_USER }}
+      VIVA_INTERNAL_PASS: ${{ secrets.VIVA_INTERNAL_PASS }}
+      # Role-isolation contract (tests/qa-audit/tests/role-isolation.spec.ts).
+      # Each scenario skips silently until its env vars are set.
+      VIVA_UNPAID_USER: ${{ secrets.VIVA_UNPAID_USER }}
+      VIVA_UNPAID_PASS: ${{ secrets.VIVA_UNPAID_PASS }}
+      VIVA_PAID_USER: ${{ secrets.VIVA_PAID_USER }}
+      VIVA_PAID_PASS: ${{ secrets.VIVA_PAID_PASS }}
+      VIVA_PAID_COURSE_PATH: ${{ secrets.VIVA_PAID_COURSE_PATH }}
+      VIVA_PAID_FORBIDDEN_COURSE_PATH: ${{ secrets.VIVA_PAID_FORBIDDEN_COURSE_PATH }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: tests/qa-audit/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Run QA audit
+        run: npm run audit:ci
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report
+          path: tests/qa-audit/reports/html
+          retention-days: 14
+
+      - name: Upload audit artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-audit-artefacts
+          path: |
+            tests/qa-audit/reports/summary.md
+            tests/qa-audit/reports/summary.json
+            tests/qa-audit/reports/issue-log.json
+            tests/qa-audit/reports/console-errors.json
+            tests/qa-audit/reports/viva_links.html
+            tests/qa-audit/reports/artifacts
+          retention-days: 30
+
+      - name: Post summary to job page
+        if: always()
+        run: |
+          if [ -f reports/summary.md ]; then
+            cat reports/summary.md >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Comment summary on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: tests/qa-audit/reports/summary.md
+          header: qa-audit-summary
+
+  # Release-gate job: blocks creating a production tag if the audit didn't
+  # pass on the rc tag. Wire your release workflow to `needs: gate` so a tag
+  # like v1.2.0 cannot be cut unless v1.2.0-rc1's audit is green.
+  gate:
+    name: Release gate
+    needs: audit
+    if: startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-rc')
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "QA audit passed for ${{ github.ref_name }} — release gate open."

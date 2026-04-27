@@ -1,0 +1,27 @@
+{
+  "name": "viva-qa-suite",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Automated QA + UX audit suite for vivacareeracademy.com (Playwright).",
+  "scripts": {
+    "install:browsers": "playwright install --with-deps chromium webkit",
+    "test": "playwright test",
+    "test:desktop": "playwright test --project=desktop-chromium",
+    "test:mobile": "playwright test --project=mobile-iphone",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report reports/html",
+    "audit": "npm run test && node scripts/generate-summary.js && node scripts/generate-links-html.js",
+    "audit:ci": "npm run test -- --reporter=list,json,html && node scripts/generate-summary.js && node scripts/generate-links-html.js",
+    "links:html": "node scripts/generate-links-html.js",
+    "summary": "node scripts/generate-summary.js",
+    "prerelease": "npm run audit:ci"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

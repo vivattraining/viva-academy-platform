@@ -22,3 +22,15 @@ coverage
 *.db-shm
 academy_os.db
 .env*.local
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# QA audit runtime output (suite source under tests/qa-audit/ is committed; runs are not)
+tests/qa-audit/reports/
+tests/qa-audit/test-results/
+tests/qa-audit/playwright-report/
+# The QA suite was originally a standalone project; ignore the leftover
+# nested .github folder — the active workflow is at the repo root.
+tests/qa-audit/.github/

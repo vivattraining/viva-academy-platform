@@ -1,0 +1,15 @@
+node_modules
+test-results
+playwright-report
+reports/html
+reports/artifacts
+reports/results.json
+reports/summary.json
+reports/issue-log.json
+reports/console-errors.json
+reports/summary.md
+reports/viva_links.html
+.env
+.env.local
+.DS_Store
+dist
