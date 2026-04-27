@@ -14,6 +14,7 @@ export default async function MessagesPage() {
       description="VIVA should not rely on scattered reminders. This view brings together email confirmations, WhatsApp nudges, and Zoom-class reminder triggers."
       primaryCta={{ label: "Open admissions", href: "/admissions" }}
       secondaryCta={{ label: "Open operations", href: "/operations" }}
+      navVariant="internal"
     >
       <InternalRouteGate allowedRoles={["admin", "operations", "trainer"]}>
         <MessagingCenter />

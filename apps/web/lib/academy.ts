@@ -1,14 +1,42 @@
-export const ACADEMY_NAV = [
+/**
+ * Navigation by audience.
+ *
+ * Three persona-specific navs so the public site never exposes internal
+ * routes, and the student workspace never exposes admin/trainer/operations
+ * deep-links. SiteShell picks one of these via its `navVariant` prop.
+ *
+ * Rule of thumb:
+ *   - PUBLIC:   anonymous visitors, marketing pages, /apply, /login,
+ *               /internal/login. Show only what a prospect needs.
+ *   - INTERNAL: signed-in staff workspaces (/admin, /admissions,
+ *               /operations, /roster, /messages, /trainer). Cross-link
+ *               between operator surfaces only.
+ *   - STUDENT:  signed-in student workspace (/student). No internal links.
+ */
+export const PUBLIC_NAV = [
+  { label: "Admissions", href: "/apply" },
+  { label: "Login", href: "/login" },
+] as const;
+
+export const INTERNAL_NAV = [
+  { label: "Admin CMS", href: "/admin" },
   { label: "Admissions", href: "/admissions" },
-  { label: "Messages", href: "/messages" },
   { label: "Operations", href: "/operations" },
   { label: "Roster", href: "/roster" },
-  { label: "Student", href: "/student" },
+  { label: "Messages", href: "/messages" },
   { label: "Trainer", href: "/trainer" },
-  { label: "Admin CMS", href: "/admin" },
-  { label: "Simulation", href: "/simulation" },
-  { label: "Login", href: "/login" }
 ] as const;
+
+export const STUDENT_NAV = [
+  { label: "My workspace", href: "/student" },
+] as const;
+
+/**
+ * Backwards-compatible alias. New code should pass `navVariant` to SiteShell
+ * instead of consuming this. Kept so existing imports don't break in a single
+ * commit; safe to remove once no callers remain.
+ */
+export const ACADEMY_NAV = PUBLIC_NAV;
 
 export const ACADEMY_THEME = {
   name: "Viva Career Academy",

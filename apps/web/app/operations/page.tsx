@@ -21,6 +21,7 @@ export default async function OperationsPage() {
       description="This is the academy operations layer for real class delivery: batch mapping, session-wise attendance by date, trainer actions, and Zoom-linked presence."
       primaryCta={{ label: "Open roster", href: "/roster" }}
       secondaryCta={{ label: "Open admissions", href: "/admissions" }}
+      navVariant="internal"
     >
       <InternalRouteGate allowedRoles={["admin", "operations", "trainer"]}>
       <section className="split">

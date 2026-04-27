@@ -26,8 +26,7 @@ export default async function StudentPage() {
       eyebrow="Student dashboard"
       title="Track progress, live classes, deadlines, and certification readiness."
       description="The learner experience now reflects batch state, attendance progression, and upcoming live interaction in a more polished dashboard view."
-      primaryCta={{ label: "Open simulation lab", href: "/simulation" }}
-      secondaryCta={{ label: "View roster", href: "/roster" }}
+      navVariant="student"
     >
       <InternalRouteGate allowedRoles={["student"]}>
         <StudentWorkspace />

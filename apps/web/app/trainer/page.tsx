@@ -14,6 +14,7 @@ export default async function TrainerPage() {
       description="The trainer workspace now follows the homepage language too: premium surfaces, clearer hierarchy, and a more deliberate review flow."
       primaryCta={{ label: "Open operations", href: "/operations" }}
       secondaryCta={{ label: "Open admin CMS", href: "/admin" }}
+      navVariant="internal"
     >
       <InternalRouteGate allowedRoles={["trainer", "admin", "operations"]}>
         <TrainerReviewWorkspace />

@@ -4,7 +4,15 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 
-import { ACADEMY_NAV, ACADEMY_THEME } from "../lib/academy";
+import { ACADEMY_THEME, INTERNAL_NAV, PUBLIC_NAV, STUDENT_NAV } from "../lib/academy";
+
+type NavVariant = "public" | "internal" | "student";
+
+const NAV_BY_VARIANT: Record<NavVariant, ReadonlyArray<{ label: string; href: string }>> = {
+  public: PUBLIC_NAV,
+  internal: INTERNAL_NAV,
+  student: STUDENT_NAV,
+};
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
 import styles from "./claude-home.module.css";
 
@@ -33,7 +41,8 @@ export function SiteShell({
   description,
   children,
   primaryCta,
-  secondaryCta
+  secondaryCta,
+  navVariant = "public",
 }: {
   activeHref: string;
   eyebrow: string;
@@ -42,7 +51,15 @@ export function SiteShell({
   children: ReactNode;
   primaryCta?: { label: string; href: string };
   secondaryCta?: { label: string; href: string };
+  /**
+   * Which audience the page is for. Picks the nav links shown in the top bar:
+   *   - "public":   anonymous / login / apply / internal-login  (default)
+   *   - "internal": signed-in staff workspaces
+   *   - "student":  signed-in student workspace
+   */
+  navVariant?: NavVariant;
 }) {
+  const navItems = NAV_BY_VARIANT[navVariant];
   const [branding, setBranding] = useState<BrandingState>(DEFAULT_BRANDING);
 
   useEffect(() => {
@@ -97,7 +114,7 @@ export function SiteShell({
             </span>
           </Link>
           <div className={styles.navLinks}>
-              {ACADEMY_NAV.map((item) => (
+              {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -138,8 +155,14 @@ export function SiteShell({
           <div className={styles.footerBottom}>
             <div>© 2026 Viva Career Academy. Secure workspace.</div>
             <div className={styles.footerSocial}>
-              <Link href="/login">Login</Link>
-              <Link href="/apply">Admissions</Link>
+              {navVariant === "public" ? (
+                <>
+                  <Link href="/login">Login</Link>
+                  <Link href="/apply">Admissions</Link>
+                </>
+              ) : null}
+              {navVariant === "internal" ? <Link href="/internal/login">Internal sign-in</Link> : null}
+              {navVariant === "student" ? <Link href="/login">Student sign-in</Link> : null}
             </div>
           </div>
         </div>

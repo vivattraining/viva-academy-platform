@@ -18,6 +18,7 @@ export default async function AdminPage() {
       description="The admin surface is now being brought into the same editorial premium system while preserving the new LMS and branding controls underneath."
       primaryCta={{ label: "Open messaging center", href: "/messages" }}
       secondaryCta={{ label: "Open operations", href: "/operations" }}
+      navVariant="internal"
     >
       <InternalRouteGate allowedRoles={["admin"]}>
       <section className="split">

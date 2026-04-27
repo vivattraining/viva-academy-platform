@@ -21,6 +21,7 @@ export default async function RosterPage() {
       description="The roster should become the operating surface for academic coordinators once learners are enrolled and placed into a live batch."
       primaryCta={{ label: "Open operations", href: "/operations" }}
       secondaryCta={{ label: "Open student view", href: "/student" }}
+      navVariant="internal"
     >
       <InternalRouteGate allowedRoles={["admin", "operations", "trainer"]}>
       <section className="split">

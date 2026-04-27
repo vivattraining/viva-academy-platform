@@ -51,6 +51,7 @@ export default async function AdmissionsPage() {
       description="This route is reserved for the VIVA team. The public student application journey now belongs on /apply, while this surface handles internal admissions operations."
       primaryCta={{ label: "Open admin CMS", href: "/admin" }}
       secondaryCta={{ label: "Open public apply page", href: "/apply" }}
+      navVariant="internal"
     >
       <InternalRouteGate allowedRoles={["admin", "operations"]}>
       <section className="split">
