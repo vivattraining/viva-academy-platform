@@ -517,6 +517,31 @@
   color: var(--navy);
 }
 
+/* Internal + student workspaces are operational tools — not marketing
+   surfaces — so the editorial-sized hero takes too much screen real
+   estate (flagged on the Roster page in the 2026-04-27 review). Compact
+   the hero title for non-public variants of SiteShell. */
+[data-nav-variant="internal"] .sectionTitle,
+[data-nav-variant="student"] .sectionTitle,
+[data-nav-variant="internal"] .outcomesTitle,
+[data-nav-variant="student"] .outcomesTitle,
+[data-nav-variant="internal"] .admissionsTitle,
+[data-nav-variant="student"] .admissionsTitle {
+  font-size: clamp(24px, 2.6vw, 38px);
+  line-height: 1.1;
+}
+
+[data-nav-variant="internal"] .section,
+[data-nav-variant="student"] .section {
+  padding-top: clamp(28px, 4vw, 48px);
+  padding-bottom: clamp(28px, 4vw, 48px);
+}
+
+[data-nav-variant="internal"] .kicker,
+[data-nav-variant="student"] .kicker {
+  font-size: 11px;
+}
+
 .promiseBody,
 .faqGrid,
 .admissionsBody {

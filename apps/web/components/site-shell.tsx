@@ -100,7 +100,7 @@ export function SiteShell({
   }, []);
 
   return (
-    <main className={styles.page}>
+    <main className={styles.page} data-nav-variant={navVariant}>
       <div className={styles.topBanner}>
         Secure Academy Workspace <b>·</b> Viva Career Academy <b>·</b> Operator + Learner Access
       </div>

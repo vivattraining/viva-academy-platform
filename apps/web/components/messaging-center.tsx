@@ -17,6 +17,37 @@ type MessageItem = {
   note?: string;
 };
 
+/**
+ * Render an ISO timestamp as a human-readable label like
+ * "24 Apr, 10:30 AM" — the operator-review doc flagged the raw ISO
+ * string as "too technical". Falls back to the raw value if the input
+ * isn't parseable, so we never accidentally strip useful info.
+ */
+function formatTimestamp(value?: string): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+/**
+ * Title-case a channel string ("email" → "Email", "whatsapp" → "WhatsApp").
+ * The raw status / channel strings come from the API in lowercase and were
+ * being shown as-is in badges, which read as inconsistent styling.
+ */
+function prettyChannel(value: string): string {
+  if (!value) return value;
+  if (value.toLowerCase() === "whatsapp") return "WhatsApp";
+  if (value.toLowerCase() === "sms") return "SMS";
+  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+}
+
 export function MessagingCenter() {
   const [items, setItems] = useState<MessageItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,9 +153,9 @@ export function MessagingCenter() {
             <div className="editorial-workbench-title" style={{ fontSize: "2rem" }}>{items.length} recommended actions</div>
           </div>
           <div className="badge-row">
-            <div className="badge">{counts.email} Email</div>
-            <div className="badge">{counts.whatsapp} WhatsApp</div>
-            <div className="badge">{counts.zoom} Zoom</div>
+            <div className="badge">Email · {counts.email}</div>
+            <div className="badge">WhatsApp · {counts.whatsapp}</div>
+            <div className="badge">Zoom · {counts.zoom}</div>
           </div>
         </article>
       </section>
@@ -139,18 +170,42 @@ export function MessagingCenter() {
         {items.map((item) => (
           <article key={item.id} className="editorial-workbench-card">
             <div className="badge-row">
-              <div className="badge">{item.channel}</div>
-              <div className="badge">{item.status}</div>
+              <div className="badge">{prettyChannel(item.channel)}</div>
+              <div className="badge">{prettyChannel(item.status)}</div>
             </div>
-            <div className="editorial-workbench-title" style={{ marginTop: 14, fontSize: "1.8rem" }}>{item.purpose}</div>
-            <p className="muted" style={{ marginTop: 12 }}>Audience: {item.audience}</p>
-            <p className="muted" style={{ marginTop: 8 }}>Trigger: {item.trigger}</p>
-            <p className="muted" style={{ marginTop: 8 }}>Template: {item.template}</p>
-            {item.last_sent_at ? <p className="muted" style={{ marginTop: 8 }}>Last sent: {item.last_sent_at}</p> : null}
-            {item.note ? <p className="muted" style={{ marginTop: 8 }}>{item.note}</p> : null}
-            <div className="button-row">
+            <div className="editorial-workbench-title" style={{ marginTop: 14, fontSize: "1.6rem" }}>{item.purpose}</div>
+            <dl
+              style={{
+                margin: "14px 0 0",
+                display: "grid",
+                gridTemplateColumns: "auto 1fr",
+                gap: "6px 14px",
+                fontSize: 14,
+                color: "var(--muted)",
+              }}
+            >
+              <dt style={{ fontWeight: 600 }}>Audience</dt>
+              <dd style={{ margin: 0 }}>{item.audience}</dd>
+              <dt style={{ fontWeight: 600 }}>Trigger</dt>
+              <dd style={{ margin: 0 }}>{item.trigger}</dd>
+              <dt style={{ fontWeight: 600 }}>Template</dt>
+              <dd style={{ margin: 0 }}>{item.template}</dd>
+              {item.last_sent_at ? (
+                <>
+                  <dt style={{ fontWeight: 600 }}>Last sent</dt>
+                  <dd style={{ margin: 0 }}>{formatTimestamp(item.last_sent_at)}</dd>
+                </>
+              ) : null}
+              {item.note ? (
+                <>
+                  <dt style={{ fontWeight: 600 }}>Note</dt>
+                  <dd style={{ margin: 0 }}>{item.note}</dd>
+                </>
+              ) : null}
+            </dl>
+            <div className="button-row" style={{ marginTop: 18 }}>
               <button className="button-primary" onClick={() => void dispatch(item)} disabled={activeId === item.id}>
-                {activeId === item.id ? "Sending..." : `Send ${item.channel}`}
+                {activeId === item.id ? "Sending…" : `Send via ${prettyChannel(item.channel)}`}
               </button>
             </div>
           </article>
