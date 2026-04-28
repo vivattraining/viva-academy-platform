@@ -49,7 +49,7 @@ const programs = [
     title: "Travel &",
     emphasis: "Tour Operations",
     description:
-      "Develop core operational expertise in global travel management. Itinerary design, GDS fundamentals, destination knowledge, and end-to-end tour execution. Learn to plan, coordinate, and deliver seamless travel experiences across geographies — preparing you for roles in tour operations, product planning, and travel logistics.",
+      "Develop core operational expertise in global travel management. Itinerary design, GDS fundamentals, destination knowledge, and end-to-end tour execution. Learn how to plan, coordinate, and deliver seamless travel experiences across geographies — designed to prepare you for roles in tour operations, product planning, and travel logistics.",
     meta: [
       ["Duration", "16 weeks"],
       ["Format", "Hybrid"],
@@ -77,13 +77,52 @@ const curriculum = [
     emphasis: "Service & Hospitality",
     summary:
       "The first semester establishes a strong foundation in the core principles of the travel industry. Students develop a shared understanding of service standards, travel operations, worldwide travel scenarios, what an ideal travel company looks like, professional communication, and the ethics required for guest-facing roles.",
+    whyItWorks:
+      "Why it works — every module is designed to build practical capability through structured study, simulations, and industry-grade assignments, so students graduate with both the knowledge and the confidence to step into real travel roles.",
     modules: [
-      ["M · 01", "Introduction to the Travel Industry", "40 hrs"],
-      ["M · 02", "Various departments — how each function works", "40 hrs"],
-      ["M · 03", "Inbound, Outbound, Domestic & MICE tourism", "60 hrs"],
-      ["M · 04", "Professional Communication & Etiquette", "30 hrs"],
-      ["M · 05", "World Geography, Destination Studies, Rail Tourism & OTA workflow", "40 hrs"],
-      ["M · 06", "Studio: Service Simulation & Role-Play Labs", "25 hrs"],
+      {
+        code: "M · 01",
+        title: "Introduction to the Travel Industry",
+        duration: "40 hrs",
+        description:
+          "An overview of the global hospitality and travel landscape, key sectors, career pathways, and industry expectations.",
+      },
+      {
+        code: "M · 02",
+        title: "Various departments — how each function works",
+        duration: "40 hrs",
+        description:
+          "Core concepts of front office operations, guest handling, service recovery, and delivering exceptional customer experiences.",
+      },
+      {
+        code: "M · 03",
+        title: "Inbound, Outbound, Domestic & MICE tourism",
+        duration: "60 hrs",
+        description:
+          "Fundamentals of travel service, service styles, operations, and guest engagement techniques.",
+      },
+      {
+        code: "M · 04",
+        title: "Professional Communication & Etiquette",
+        duration: "30 hrs",
+        description:
+          "Business communication, grooming standards, interpersonal skills, and workplace etiquette for hospitality and travel professionals.",
+      },
+      {
+        code: "M · 05",
+        title:
+          "World Geography & Destination Studies · Rail Tourism & OTA (Online Travel Agents) workflow",
+        duration: "40 hrs",
+        description:
+          "Introduction to global destinations, travel patterns, and foundational geographic knowledge for the travel industry.",
+      },
+      {
+        code: "M · 06",
+        title: "Studio: Service Simulation & Role-Play Labs",
+        duration: "25 hrs",
+        description:
+          "Hands-on learning through simulations and role-play exercises, designed to build confidence and real-world service skills. Includes costings and real-time event projects.",
+      },
     ],
   },
 ];
@@ -169,7 +208,7 @@ const recruiters = [
   {
     label: "Travel & Tour Operators",
     body:
-      "Thomas Cook India · SOTC · MakeMyTrip · Yatra · Flight Centre Travel Group · TBO · Rezlive · Rayna Travel · Cleartrip · and more.",
+      "Thomas Cook India · SOTC · MakeMyTrip · Yatra · Flight Centre Travel Group · TBO · Rezlive · Rayna Travel · Cleartrip · and more…",
   },
   {
     label: "Destination Management Companies (DMCs)",
@@ -184,7 +223,7 @@ const recruiters = [
   {
     label: "Hotels & Hospitality",
     body:
-      "National and international hotel groups, local Indian hotel chains, leading restaurant brands, and online travel companies.",
+      "National & international hotel groups, local Indian hotel chains, leading restaurant brands, and online travel companies.",
   },
 ];
 
@@ -402,10 +441,13 @@ export function ClaudeHome() {
             <h2 className={styles.sectionTitle}>
               Two evenings. One <em>room</em>. Your cohort of 24 students.
             </h2>
-            <p className={styles.bodyText} style={{ marginTop: 14, maxWidth: 760 }}>
-              Limited to 24 students. Maximum attention. Real outcomes. Train in a focused, small-group environment where every session is interactive, practical, and industry-led — delivered live over video and in VIVA regional studios, designed to mirror real-world collaboration.
-            </p>
           </div>
+          <p
+            className={styles.bodyText}
+            style={{ marginTop: -16, marginBottom: 32, maxWidth: 960 }}
+          >
+            Limited to 24 students. Maximum attention. Real outcomes. Train in a focused, small-group environment where every session is interactive, practical, and industry-led — delivered live over video and in VIVA regional studios, designed to mirror real-world collaboration.
+          </p>
 
           <div className={styles.formatGrid}>
             <article className={styles.formatCard}>
@@ -517,12 +559,20 @@ export function ClaudeHome() {
                   {curriculum[activeTab].title} <em>{curriculum[activeTab].emphasis}</em>
                 </h3>
                 <p className={styles.curricSummary}>{curriculum[activeTab].summary}</p>
+                {curriculum[activeTab].whyItWorks ? (
+                  <p className={styles.curricSummary}>{curriculum[activeTab].whyItWorks}</p>
+                ) : null}
                 <div className={styles.modules}>
-                  {curriculum[activeTab].modules.map(([code, title, duration]) => (
-                    <div className={styles.module} key={code}>
-                      <div className={styles.moduleCode}>{code}</div>
-                      <div className={styles.moduleTitle}>{title}</div>
-                      <div className={styles.moduleDuration}>{duration}</div>
+                  {curriculum[activeTab].modules.map((module) => (
+                    <div className={styles.module} key={module.code}>
+                      <div className={styles.moduleCode}>{module.code}</div>
+                      <div className={styles.moduleTitle}>
+                        {module.title}
+                        {module.description ? (
+                          <span className={styles.moduleDescription}>{module.description}</span>
+                        ) : null}
+                      </div>
+                      <div className={styles.moduleDuration}>{module.duration}</div>
                     </div>
                   ))}
                 </div>
@@ -591,7 +641,7 @@ export function ClaudeHome() {
       <section className={styles.section} id="recruiters">
         <div className={styles.wrap}>
           <div className={styles.secHead}>
-            <div className={styles.kicker}>§ 06 — Where Our Graduates Go</div>
+            <div className={styles.kicker}>§ 06 — Top Recruiters &amp; Hiring Partners</div>
             <h2 className={styles.sectionTitle}>
               Careers across leading travel, MICE, and <em>hospitality</em> companies.
             </h2>
@@ -706,7 +756,7 @@ export function ClaudeHome() {
                 </span>
               </Link>
               <p>
-                A training institute for the world&apos;s most hospitable careers. Studios in Mumbai, Bangalore, Delhi and Goa. Online, everywhere.
+                A training institute for the world&apos;s most hospitable careers.
               </p>
             </div>
 

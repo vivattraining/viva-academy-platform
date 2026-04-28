@@ -782,13 +782,23 @@
   gap: 12px;
   padding: 18px 20px;
   border: 1px solid var(--rule-soft);
-  background: transparent;
+  /* Explicit paper background instead of transparent — guarantees the
+     navy text on inactive tabs stays readable regardless of what colour
+     the parent section happens to be (was rendering white-on-white on
+     some viewports). */
+  background: var(--paper);
   color: var(--navy);
   text-align: left;
   cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
 }
 
-.curricTabActive {
+.curricTab:hover {
+  background: var(--cream-2);
+}
+
+.curricTabActive,
+.curricTabActive:hover {
   background: var(--navy);
   color: var(--cream);
 }
@@ -836,6 +846,18 @@
   color: var(--muted);
   font-size: 14px;
   text-align: right;
+}
+
+.moduleDescription {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .facultyCard {
