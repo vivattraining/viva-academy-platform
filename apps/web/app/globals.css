@@ -162,6 +162,20 @@ main {
   box-shadow: 0 4px 14px rgba(31, 78, 216, 0.32);
 }
 
+/*
+ * When `.button-active` represents a state that's already been reached
+ * (e.g. "Enrolled", "Payment received"), disable + dim slightly so it
+ * reads as a status indicator rather than a clickable action.
+ */
+.button-active[disabled],
+.button-active:disabled {
+  background: #2952c8;
+  border-color: #2952c8;
+  cursor: default;
+  box-shadow: none;
+  opacity: 0.92;
+}
+
 .button-primary {
   background: var(--deep-blue);
   color: white;
@@ -271,6 +285,25 @@ main {
 
 .editorial-workbench-card {
   padding: 28px;
+  /*
+   * Flex column so action rows can pin to the card's bottom edge with
+   * `margin-top: auto`. This makes every card in a grid row stretch to
+   * the row's height (the grid default) AND keeps the action buttons
+   * aligned across cards regardless of body-content length — fixes the
+   * uneven Messages page cards flagged in the 2026-04-27 owner review.
+   */
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * Pin the action row to the bottom of the card. Applies to all cards
+ * site-wide so any card whose last child is a `.button-row` gets a
+ * consistent bottom-edge alignment.
+ */
+.editorial-workbench-card > .button-row {
+  margin-top: auto;
+  padding-top: 14px;
 }
 
 .editorial-workbench-panel {

@@ -130,23 +130,46 @@ export function AdmissionsWorkbench() {
             <p className="muted" style={{ marginTop: 12 }}>No applications are waiting in the queue right now.</p>
           </article>
         ) : null}
-        {items.map((item) => (
-          <article key={item.id} className="editorial-workbench-card">
-            <div className="eyebrow">{item.course_name}</div>
-            <h3 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2rem" }}>{item.student_name}</h3>
-            <p className="editorial-workbench-subtitle" style={{ marginTop: 8 }}>{item.student_email}</p>
-            <div className="editorial-workbench-meta">
-              <span className="editorial-workbench-chip">{humanize(item.application_stage)}</span>
-              <span className="editorial-workbench-chip">{humanize(item.payment_stage)}</span>
-              <span className="editorial-workbench-chip">{humanize(item.enrollment_stage)}</span>
-            </div>
-            <div className="button-row">
-              <button className="button-secondary" onClick={() => void issuePaymentLink(item.id)}>Issue payment link</button>
-              <button className="button-primary" onClick={() => void markEnrolled(item.id)}>Mark enrolled</button>
-              {item.payment_url ? <a className="button-secondary" href={item.payment_url} target="_blank" rel="noopener noreferrer">Open checkout</a> : null}
-            </div>
-          </article>
-        ))}
+        {items.map((item) => {
+          // Each button reflects whether the action it represents is the
+          // current state of the application. When that's true, we use the
+          // shared `.button-active` class (clear blue + white text) so the
+          // operator can see at a glance what's already been done.
+          const isPaid = item.payment_stage === "paid";
+          const isEnrolled = item.enrollment_stage === "active" || item.application_stage === "enrolled";
+          return (
+            <article key={item.id} className="editorial-workbench-card">
+              <div className="eyebrow">{item.course_name}</div>
+              <h3 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2rem" }}>{item.student_name}</h3>
+              <p className="editorial-workbench-subtitle" style={{ marginTop: 8 }}>{item.student_email}</p>
+              <div className="editorial-workbench-meta">
+                <span className="editorial-workbench-chip">{humanize(item.application_stage)}</span>
+                <span className="editorial-workbench-chip">{humanize(item.payment_stage)}</span>
+                <span className="editorial-workbench-chip">{humanize(item.enrollment_stage)}</span>
+              </div>
+              <div className="button-row">
+                <button
+                  className={isPaid ? "button-active" : "button-secondary"}
+                  aria-pressed={isPaid}
+                  onClick={() => void issuePaymentLink(item.id)}
+                  title={isPaid ? "Payment already received" : "Issue a Razorpay payment link"}
+                >
+                  {isPaid ? "Payment received" : "Issue payment link"}
+                </button>
+                <button
+                  className={isEnrolled ? "button-active" : "button-primary"}
+                  aria-pressed={isEnrolled}
+                  onClick={() => void markEnrolled(item.id)}
+                  title={isEnrolled ? "Already enrolled" : "Move this learner into an active batch"}
+                  disabled={isEnrolled}
+                >
+                  {isEnrolled ? "Enrolled" : "Mark enrolled"}
+                </button>
+                {item.payment_url ? <a className="button-secondary" href={item.payment_url} target="_blank" rel="noopener noreferrer">Open checkout</a> : null}
+              </div>
+            </article>
+          );
+        })}
       </section>
     </div>
   );
