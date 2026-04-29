@@ -261,6 +261,31 @@ main {
   color: rgba(245, 239, 228, 0.74);
 }
 
+/*
+ * Counter-rule: editorial-workbench-panel has its own light background
+ * (cream paper). When a panel is nested inside a dark contrast card,
+ * the panel's `.muted` text was inheriting the cream-on-dark colour
+ * above and rendering cream-on-cream — invisible (flagged on the
+ * Trainer page in the 2026-04-27 review doc 3).
+ *
+ * Force panel-internal text back to the dark tokens regardless of the
+ * panel's parent. Higher specificity than the rule above so this wins.
+ */
+.editorial-workbench-panel .muted,
+.editorial-workbench-card .editorial-workbench-panel .muted {
+  color: var(--muted);
+}
+.editorial-workbench-panel .eyebrow,
+.editorial-workbench-card .editorial-workbench-panel .eyebrow {
+  color: var(--accent-deep, #5b6576);
+}
+.editorial-workbench-panel,
+.editorial-workbench-panel strong,
+.editorial-workbench-panel p:not(.muted),
+.editorial-workbench-card .editorial-workbench-panel strong {
+  color: var(--ink);
+}
+
 .editorial-workbench-title {
   margin: 0;
   font-family: "Libre Caslon Text", "Times New Roman", serif;
