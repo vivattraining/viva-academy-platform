@@ -4,6 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
 import { readSession } from "../lib/auth";
+import { humanize } from "../lib/humanize";
+
+const humanizedStatus = humanize;
 
 type Application = { id: string; student_name: string; student_email: string; batch_id: string | null; enrollment_stage: string };
 type Batch = { id: string; name: string; course_name: string; trainer_name: string; classroom_mode: string };
@@ -134,27 +137,27 @@ export function OperationsWorkbench() {
 
   return (
     <div className="editorial-workbench">
-      <section className="editorial-workbench-grid compact">
+      <section className="ops-top-row">
         <article className="editorial-workbench-card">
           <div className="eyebrow">Batch</div>
-          <select value={selectedBatchId} onChange={(event) => { setSelectedBatchId(event.target.value); setSelectedSessionId(""); }} className="editorial-select" style={{ marginTop: 16 }}>
+          <select value={selectedBatchId} onChange={(event) => { setSelectedBatchId(event.target.value); setSelectedSessionId(""); }} className="editorial-select" style={{ marginTop: 12 }}>
             {batches.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
-          {!batches.length ? <p className="muted" style={{ marginTop: 16 }}>No active batches are available yet.</p> : null}
+          {!batches.length ? <p className="muted" style={{ marginTop: 12 }}>No active batches are available yet.</p> : null}
         </article>
         <article className="editorial-workbench-card">
           <div className="eyebrow">Session</div>
-          <select value={selectedSessionId} onChange={(event) => setSelectedSessionId(event.target.value)} className="editorial-select" style={{ marginTop: 16 }}>
+          <select value={selectedSessionId} onChange={(event) => setSelectedSessionId(event.target.value)} className="editorial-select" style={{ marginTop: 12 }}>
             {sessions.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
           </select>
           {selectedSession ? (
-            <div className="button-row">
+            <div className="button-row" style={{ marginTop: 12 }}>
               <button className="button-primary" onClick={() => void provisionZoom()}>Provision Zoom</button>
               {selectedSession.zoom_join_url ? <a className="button-secondary" href={selectedSession.zoom_join_url} target="_blank" rel="noopener noreferrer">Student join</a> : null}
               {selectedSession.zoom_start_url ? <a className="button-secondary" href={selectedSession.zoom_start_url} target="_blank" rel="noopener noreferrer">Trainer start</a> : null}
             </div>
           ) : null}
-          {message ? <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>{message}</div> : null}
+          {message ? <div className="editorial-workbench-panel" style={{ marginTop: 12 }}>{message}</div> : null}
         </article>
       </section>
 
@@ -173,13 +176,31 @@ export function OperationsWorkbench() {
               <p className="editorial-workbench-subtitle" style={{ marginTop: 8 }}>{student.student_email}</p>
               <div style={{ marginTop: 12 }}>
                 <span className={`editorial-status ${record?.status === "present" ? "success" : record?.status === "late" ? "warning" : record?.status === "absent" ? "neutral" : "info"}`}>
-                  {record ? `${record.status} · ${record.marked_by}` : "Not marked yet"}
+                  {record ? `${humanizedStatus(record.status)} · ${record.marked_by}` : "Not marked yet"}
                 </span>
               </div>
               <div className="button-row">
-                <button className="button-primary" onClick={() => void markAttendance(student.id, "present")}>Present</button>
-                <button className="button-secondary" onClick={() => void markAttendance(student.id, "late")}>Late</button>
-                <button className="button-secondary" onClick={() => void markAttendance(student.id, "absent")}>Absent</button>
+                <button
+                  className={record?.status === "present" ? "button-active" : "button-toggle"}
+                  aria-pressed={record?.status === "present"}
+                  onClick={() => void markAttendance(student.id, "present")}
+                >
+                  Present
+                </button>
+                <button
+                  className={record?.status === "late" ? "button-active" : "button-toggle"}
+                  aria-pressed={record?.status === "late"}
+                  onClick={() => void markAttendance(student.id, "late")}
+                >
+                  Late
+                </button>
+                <button
+                  className={record?.status === "absent" ? "button-active" : "button-toggle"}
+                  aria-pressed={record?.status === "absent"}
+                  onClick={() => void markAttendance(student.id, "absent")}
+                >
+                  Absent
+                </button>
               </div>
             </article>
           );

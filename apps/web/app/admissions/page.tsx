@@ -48,7 +48,7 @@ export default async function AdmissionsPage() {
       activeHref="/admissions"
       eyebrow="Internal admissions operations"
       title="Run applicant screening, payment links, and enrollment conversion from one internal workbench."
-      description="This route is reserved for the VIVA team. The public student application journey now belongs on /apply, while this surface handles internal admissions operations."
+      description="This route is reserved for the VIVA team. The public student application journey lives on the public apply page, while this surface handles internal admissions operations."
       primaryCta={{ label: "Open admin CMS", href: "/admin" }}
       secondaryCta={{ label: "Open public apply page", href: "/apply" }}
       navVariant="internal"

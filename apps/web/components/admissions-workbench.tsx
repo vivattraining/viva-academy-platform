@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
 import { readSession } from "../lib/auth";
+import { humanize } from "../lib/humanize";
 
 type Application = {
   id: string;
@@ -135,9 +136,9 @@ export function AdmissionsWorkbench() {
             <h3 className="editorial-workbench-title" style={{ marginTop: 12, fontSize: "2rem" }}>{item.student_name}</h3>
             <p className="editorial-workbench-subtitle" style={{ marginTop: 8 }}>{item.student_email}</p>
             <div className="editorial-workbench-meta">
-              <span className="editorial-workbench-chip">{item.application_stage}</span>
-              <span className="editorial-workbench-chip">{item.payment_stage}</span>
-              <span className="editorial-workbench-chip">{item.enrollment_stage}</span>
+              <span className="editorial-workbench-chip">{humanize(item.application_stage)}</span>
+              <span className="editorial-workbench-chip">{humanize(item.payment_stage)}</span>
+              <span className="editorial-workbench-chip">{humanize(item.enrollment_stage)}</span>
             </div>
             <div className="button-row">
               <button className="button-secondary" onClick={() => void issuePaymentLink(item.id)}>Issue payment link</button>

@@ -122,7 +122,9 @@ main {
 }
 
 .button-primary,
-.button-secondary {
+.button-secondary,
+.button-toggle,
+.button-active {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -132,6 +134,32 @@ main {
   font-weight: 900;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+/*
+ * Toggle / active button pair — used for Present / Late / Absent
+ * attendance buttons (and any other selection-style control). The
+ * inactive state reads as a quiet outline; the active state lights up
+ * blue so the operator can see at a glance which option is currently
+ * applied.
+ */
+.button-toggle {
+  background: rgba(14, 27, 44, 0.04);
+  color: var(--ink);
+  border-color: rgba(14, 27, 44, 0.18);
+}
+.button-toggle:hover {
+  background: rgba(14, 27, 44, 0.08);
+  border-color: rgba(14, 27, 44, 0.28);
+}
+.button-active {
+  background: #1f4ed8; /* clear blue — the "this option is selected" cue */
+  color: #ffffff;
+  border-color: #1f4ed8;
+  box-shadow: 0 4px 14px rgba(31, 78, 216, 0.32);
 }
 
 .button-primary {
@@ -404,6 +432,23 @@ main {
   display: grid;
   gap: 24px;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+/*
+ * Operations-page top row (Batch / Session selectors). The original
+ * `.editorial-workbench-grid.compact` was over-spaced for these two
+ * selectors, leaving a wide gap that the doc 3 (1) review flagged.
+ * Tighter gap + tighter inner padding so the selectors sit close
+ * together and the actual attendance grid below has room to breathe.
+ */
+.ops-top-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.ops-top-row .editorial-workbench-card {
+  padding: 18px 20px;
 }
 
 .editorial-shell {
