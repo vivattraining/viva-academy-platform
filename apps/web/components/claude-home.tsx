@@ -951,6 +951,58 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
               <a href="#">YouTube</a>
             </div>
           </div>
+
+          <div
+            style={{
+              marginTop: 18,
+              paddingTop: 16,
+              borderTop: "1px solid rgba(245, 239, 228, 0.12)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 12,
+              color: "rgba(245, 239, 228, 0.65)",
+              letterSpacing: "0.04em",
+            }}
+          >
+            <span>Built by</span>
+            <a
+              href="https://www.linkedin.com/company/nama-ai/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                color: "rgba(245, 239, 228, 0.92)",
+                textDecoration: "none",
+                fontWeight: 500,
+              }}
+              aria-label="NAMA Technologies on LinkedIn (opens in a new tab)"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <rect x="0" y="0" width="16" height="16" rx="3.5" fill="#14B8A6" />
+                <text
+                  x="8"
+                  y="11.6"
+                  fontFamily="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif"
+                  fontSize="11"
+                  fontWeight="900"
+                  fill="#0F172A"
+                  textAnchor="middle"
+                >N</text>
+              </svg>
+              <span>NAMA Technologies</span>
+              <span aria-hidden="true" style={{ fontSize: 11, opacity: 0.7 }}>↗</span>
+            </a>
+          </div>
         </div>
       </footer>
     </main>

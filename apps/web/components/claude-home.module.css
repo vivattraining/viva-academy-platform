@@ -87,8 +87,23 @@
   justify-content: center;
   color: var(--navy);
   font-family: "Libre Caslon Text", "Times New Roman", serif;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
+  position: relative;
+  line-height: 1;
+}
+
+/* Editorial V signature — gold hairline underline beneath the V,
+   matches the Option 1 logo concept selected by the user. */
+.brandMark::after {
+  content: "";
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: 22%;
+  height: 1px;
+  background: var(--accent, #b8860b);
+  pointer-events: none;
 }
 
 .brandWord {
