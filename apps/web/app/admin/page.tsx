@@ -1,6 +1,7 @@
 import { SiteShell } from "../../components/site-shell";
 import { AdminBrandingStudio } from "../../components/admin-branding-studio";
 import { AdminCatalogHistory } from "../../components/admin-catalog-history";
+import { AdminCertificateManager } from "../../components/admin-certificate-manager";
 import { AdminTestEditor } from "../../components/admin-test-editor";
 import { AdminVideoChapters } from "../../components/admin-video-chapters";
 import { AdminLaunchReadiness } from "../../components/admin-launch-readiness";
@@ -59,6 +60,7 @@ export default async function AdminPage() {
         <AdminLmsConsole />
         <AdminVideoChapters />
         <AdminTestEditor />
+        <AdminCertificateManager />
         <AdminCatalogHistory />
         <AdminBrandingStudio />
       </InternalRouteGate>

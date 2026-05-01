@@ -1,6 +1,19 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
+import { Great_Vibes } from "next/font/google";
+
+// Cursive font for the certificate signatures + cert holder name.
+// Snell Roundhand / Apple Chancery are macOS-only — Great Vibes is a
+// Google webfont that renders the same on every OS. The font-family
+// chain in certificate-view.tsx falls back to OS cursive if this fails
+// to load (offline first paint, blocked DNS, etc.).
+const greatVibes = Great_Vibes({
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+  variable: "--font-great-vibes",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.vivacareeracademy.com"),
@@ -32,7 +45,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={greatVibes.variable}>
       <body>{children}</body>
     </html>
   );

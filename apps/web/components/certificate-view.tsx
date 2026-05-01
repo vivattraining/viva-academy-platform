@@ -142,7 +142,7 @@ export function CertificateView({ data }: { data: Verification }) {
         <text x="340" y="170" fontFamily="'Libre Caslon Text','Times New Roman',serif" fontSize="22" fill="#0B1F3A" textAnchor="middle" letterSpacing="8">CERTIFICATE OF COMPLETION</text>
         <text x="340" y="205" fontFamily="'Libre Caslon Text','Times New Roman',serif" fontSize="13" fontStyle="italic" fill="#2f3140" textAnchor="middle">This is to certify that</text>
 
-        <text x="340" y="263" fontFamily="'Snell Roundhand','Apple Chancery','Brush Script MT','Lucida Handwriting',cursive" fontSize="46" fill="#0B1F3A" textAnchor="middle">{studentName}</text>
+        <text x="340" y="263" fontFamily="var(--font-great-vibes), 'Great Vibes','Snell Roundhand','Apple Chancery','Brush Script MT','Lucida Handwriting',cursive" fontSize="46" fill="#0B1F3A" textAnchor="middle">{studentName}</text>
         <line x1="180" y1="278" x2="500" y2="278" stroke="#0B1F3A" strokeWidth="0.4" />
 
         <text x="340" y="304" fontFamily="'Libre Caslon Text','Times New Roman',serif" fontSize="13" fill="#2f3140" textAnchor="middle">has successfully completed the</text>
@@ -153,14 +153,14 @@ export function CertificateView({ data }: { data: Verification }) {
         <text x="340" y="378" fontFamily="'Libre Caslon Text','Times New Roman',serif" fontSize="11" fill="#5a5040" textAnchor="middle" fontStyle="italic">Awarded with merit on the recommendation of the academic council</text>
 
         <g transform="translate(120,440)">
-          <text x="50" y="-44" fontFamily="'Snell Roundhand','Apple Chancery','Brush Script MT','Lucida Handwriting',cursive" fontSize="22" fontStyle="italic" fill="#0B1F3A" textAnchor="middle">Vikas Khanduri</text>
+          <text x="50" y="-44" fontFamily="var(--font-great-vibes), 'Great Vibes','Snell Roundhand','Apple Chancery','Brush Script MT','Lucida Handwriting',cursive" fontSize="22" fontStyle="italic" fill="#0B1F3A" textAnchor="middle">Vikas Khanduri</text>
           <line x1="-10" y1="-22" x2="110" y2="-22" stroke="#0B1F3A" strokeWidth="0.5" />
           <text x="50" y="-7" fontFamily="'Libre Caslon Text','Times New Roman',serif" fontSize="11" fontWeight="700" fill="#0B1F3A" textAnchor="middle">Vikas Khanduri</text>
           <text x="50" y="6" fontFamily="'JetBrains Mono',ui-monospace,monospace" fontSize="8.5" fill="#5a5040" textAnchor="middle" letterSpacing="1.5">FACULTY HEAD · CO-FOUNDER</text>
         </g>
 
         <g transform="translate(510,440)">
-          <text x="50" y="-44" fontFamily="'Snell Roundhand','Apple Chancery','Brush Script MT','Lucida Handwriting',cursive" fontSize="22" fontStyle="italic" fill="#0B1F3A" textAnchor="middle">Aishwarya Singh</text>
+          <text x="50" y="-44" fontFamily="var(--font-great-vibes), 'Great Vibes','Snell Roundhand','Apple Chancery','Brush Script MT','Lucida Handwriting',cursive" fontSize="22" fontStyle="italic" fill="#0B1F3A" textAnchor="middle">Aishwarya Singh</text>
           <line x1="-10" y1="-22" x2="110" y2="-22" stroke="#0B1F3A" strokeWidth="0.5" />
           <text x="50" y="-7" fontFamily="'Libre Caslon Text','Times New Roman',serif" fontSize="11" fontWeight="700" fill="#0B1F3A" textAnchor="middle">Aishwarya Singh</text>
           <text x="50" y="6" fontFamily="'JetBrains Mono',ui-monospace,monospace" fontSize="8.5" fill="#5a5040" textAnchor="middle" letterSpacing="1.5">DIRECTOR · ACADEMICS</text>

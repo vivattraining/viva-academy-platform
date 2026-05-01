@@ -204,7 +204,101 @@ def detect_and_record(db: Session) -> dict[str, Any]:
         "catalog_audit: %d change events recorded for hash=%s commit=%s",
         len(events), current_hash[:12], (commit_sha or "")[:8],
     )
+
+    # Cohort-announce hook — for any course that flipped
+    # coming_soon: True → False in this deploy, find reservation-holders
+    # and trigger the balance-reminder flow. See _trigger_cohort_announce
+    # for the full side-effect chain.
+    for event in events:
+        if event.field != "coming_soon":
+            continue
+        if str(event.before_value).lower() == "true" and str(event.after_value).lower() == "false":
+            try:
+                _trigger_cohort_announce(db, event.course_code, current_snapshot.get(event.course_code, {}))
+            except Exception as announce_err:  # noqa: BLE001
+                _logger.error(
+                    "catalog_audit: cohort announce failed for course=%s err=%s",
+                    event.course_code, announce_err,
+                )
+
     return {"status": "changes_recorded", "events": len(events), "hash": current_hash}
+
+
+def _trigger_cohort_announce(db: Session, course_code: str, course_data: dict[str, Any]) -> None:
+    """When a coming-soon course is announced (coming_soon=True→False),
+    find every paid reservation for that course and:
+      1. Set balance_due_by = now + 14 days on the application row
+      2. Send a balance-reminder email
+
+    Failures on individual emails are logged but don't block other
+    students. The DB write happens regardless (so balance_due_by is
+    always correct even if Resend is down).
+    """
+    from datetime import datetime, timedelta, timezone
+    from app.models import AcademyTenantState
+    from app.integrations import render_balance_reminder_email, send_email
+
+    cohort_label = course_data.get("cohort_label", "")
+    course_name = course_data.get("name", course_code)
+
+    # Iterate all tenants. Single-tenant today (Viva Career Academy);
+    # the loop is cheap and forward-compatible with white-labeled multi-tenant.
+    rows = db.query(AcademyTenantState).all()
+    now = datetime.now(timezone.utc)
+    due_by = (now + timedelta(days=14)).isoformat()
+
+    notified = 0
+    for row in rows:
+        state = row.state or {}
+        applications = state.get("applications", [])
+        dirty = False
+        for app in applications:
+            if not app.get("is_reservation"):
+                continue
+            if app.get("course_code") != course_code:
+                continue
+            if not app.get("reservation_paid_at"):
+                continue
+            if app.get("balance_paid_at"):
+                continue
+            # Set balance_due_by (idempotent — overwrites any previous value).
+            app["balance_due_by"] = due_by
+            app["updated_at"] = now.isoformat()
+            dirty = True
+            # Send balance reminder.
+            try:
+                meta = render_balance_reminder_email(
+                    student_name=app.get("student_name", ""),
+                    course_name=course_name,
+                    cohort_label=cohort_label,
+                    balance_amount=float(app.get("balance_amount", 0) or 0),
+                    balance_due_by=due_by,
+                    application_id=app.get("id", ""),
+                    currency=app.get("currency", "INR"),
+                )
+                send_email(
+                    to=app.get("student_email", ""),
+                    subject=meta["subject"],
+                    html=meta["html"],
+                    text=meta["text"],
+                )
+                notified += 1
+            except Exception as email_err:  # noqa: BLE001
+                _logger.warning(
+                    "cohort_announce email failed for application=%s err=%s",
+                    app.get("id"), email_err,
+                )
+        if dirty:
+            row.state = state
+            from sqlalchemy.orm.attributes import flag_modified
+            flag_modified(row, "state")
+
+    if notified:
+        db.commit()
+        _logger.info(
+            "cohort_announce: course=%s notified=%d holders, balance_due_by=%s",
+            course_code, notified, due_by,
+        )
 
 
 def list_recent_changes(db: Session, limit: int = 100) -> list[dict[str, Any]]:
