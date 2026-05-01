@@ -45,7 +45,7 @@ COURSE_CATALOG: tuple[Course, ...] = (
     Course(
         code="P · 01",
         name="Foundation Program in Travel & Tourism Industry",
-        fee_inr=36999,
+        fee_inr=37000,
         duration_label="16 weeks",
         format_label="Hybrid",
         cohort_label="26 May 2026",
@@ -62,7 +62,7 @@ COURSE_CATALOG: tuple[Course, ...] = (
     Course(
         code="P · 02",
         name="Travel Career Accelerator Program",
-        fee_inr=36999,
+        fee_inr=37000,
         duration_label="16 weeks",
         format_label="Hybrid",
         cohort_label="6 Jun 2026",
@@ -80,7 +80,7 @@ COURSE_CATALOG: tuple[Course, ...] = (
     Course(
         code="P · 03",
         name="Event & MICE Career Accelerator (Specialisation)",
-        fee_inr=36999,
+        fee_inr=37000,
         duration_label="16 weeks",
         format_label="Hybrid",
         cohort_label="Aug 2026",
@@ -98,7 +98,7 @@ COURSE_CATALOG: tuple[Course, ...] = (
     Course(
         code="P · 04",
         name="Travel Operations & Tour Management Program",
-        fee_inr=36999,
+        fee_inr=37000,
         duration_label="16 weeks",
         format_label="Hybrid",
         cohort_label="Aug 2026",
@@ -115,7 +115,7 @@ COURSE_CATALOG: tuple[Course, ...] = (
     Course(
         code="P · 05",
         name="Food & Beverage Service Professional Program",
-        fee_inr=15999,
+        fee_inr=16000,
         duration_label="16 weeks",
         format_label="Hybrid",
         cohort_label="Aug 2026",

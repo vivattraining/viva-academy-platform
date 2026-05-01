@@ -549,6 +549,162 @@ def read_course_catalog(db: Session = Depends(get_db)):
     return {"items": items}
 
 
+@router.post("/courses/import/p01/secure")
+def import_p01_curriculum(
+    tenant_name: str,
+    force: bool = False,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """
+    One-shot import of the bundled P·01 Foundation Program curriculum.
+
+    Reads `apps/api/app/data/p01_curriculum.json` (16 weeks, ~65
+    chapters from Course.docx) and creates the Course + every Module
+    + every Chapter in tenant_state. Admin-only.
+
+    Idempotency:
+      - If a course with code "P · 01" already exists, this returns
+        409 with instructions.
+      - Pass `?force=true` to delete the existing course (plus all
+        its modules and chapters) and re-import from the JSON. Use
+        with care — this destroys learner progress against the old
+        course rows.
+
+    The bundled JSON file is the source of truth for the curriculum.
+    Faculty/admin: review the file in git first, edit titles or
+    summaries as needed, push, and only then call this endpoint.
+    """
+    auth_dependency(db, tenant_name, x_academy_session, authorization, {"admin"})
+
+    import json
+    from pathlib import Path
+
+    data_path = Path(__file__).resolve().parent.parent / "data" / "p01_curriculum.json"
+    if not data_path.exists():
+        raise HTTPException(status_code=500, detail=f"Curriculum file missing at {data_path}")
+
+    try:
+        payload = json.loads(data_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as parse_err:
+        raise HTTPException(status_code=500, detail=f"Curriculum JSON is invalid: {parse_err}")
+
+    course_payload = payload.get("course") or {}
+    modules_payload = payload.get("modules") or []
+    course_code = course_payload.get("code", "P · 01")
+
+    # Existence check
+    state = get_tenant_state(db, tenant_name)
+    existing = next(
+        (c for c in state.get("courses", []) if c.get("code") == course_code),
+        None,
+    )
+    if existing is not None:
+        if not force:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    f"Course {course_code} already exists (id={existing['id']}). "
+                    "Pass ?force=true to delete and re-import. WARNING: re-import "
+                    "destroys all module/chapter rows for this course; learner "
+                    "progress against those rows will be orphaned."
+                ),
+            )
+        # Force-delete path: remove the course + all its modules + chapters
+        old_course_id = existing["id"]
+        state["course_chapters"] = [
+            c for c in state.get("course_chapters", [])
+            if c.get("course_id") != old_course_id
+        ]
+        state["course_modules"] = [
+            m for m in state.get("course_modules", [])
+            if m.get("course_id") != old_course_id
+        ]
+        state["courses"] = [
+            c for c in state["courses"] if c["id"] != old_course_id
+        ]
+        from app.store import save_tenant_state
+        save_tenant_state(db, tenant_name, state)
+        logger.info("p01 import: force-deleted existing course %s prior to reimport", old_course_id)
+
+    # Create the course row
+    course_payload_clean = {
+        "title": course_payload.get("title", ""),
+        "slug": course_payload.get("slug", ""),
+        "code": course_code,
+        "description": course_payload.get("description", ""),
+        "duration_weeks": course_payload.get("duration_weeks", 16),
+        "weekly_unlock_days": course_payload.get("weekly_unlock_days", 7),
+        "penalty_fee_amount": course_payload.get("penalty_fee_amount", 2000),
+        "penalty_fee_currency": course_payload.get("penalty_fee_currency", "INR"),
+        "relock_grace_days": course_payload.get("relock_grace_days", 2),
+        "certificate_name": course_payload.get("certificate_name"),
+        "active": course_payload.get("active", True),
+    }
+    if not course_payload_clean["title"] or not course_payload_clean["slug"]:
+        raise HTTPException(status_code=422, detail="Course title and slug are required in the JSON.")
+
+    created_course = create_course(db, tenant_name, course_payload_clean)
+
+    # Create modules + chapters
+    summary: list[dict] = []
+    for module_data in modules_payload:
+        module_clean = {
+            "course_id": created_course["id"],
+            "title": module_data.get("title", ""),
+            "week_number": module_data.get("week_number", 1),
+            "summary": module_data.get("summary", ""),
+            "submission_required": module_data.get("submission_required", True),
+            "passing_score": module_data.get("passing_score", 70),
+        }
+        if not module_clean["title"]:
+            logger.warning("p01 import: skipping module with empty title (week=%s)", module_clean["week_number"])
+            continue
+        created_module = create_course_module(db, tenant_name, module_clean)
+
+        chapter_summary: list[str] = []
+        for chapter_data in module_data.get("chapters", []):
+            chapter_clean = {
+                "course_id": created_course["id"],
+                "module_id": created_module["id"],
+                "title": chapter_data.get("title", ""),
+                "position": chapter_data.get("position", 1),
+                "content_type": chapter_data.get("content_type", "lesson"),
+                "summary": chapter_data.get("summary", ""),
+                "estimated_minutes": chapter_data.get("estimated_minutes", 20),
+                "mandatory": chapter_data.get("mandatory", True),
+                "question_prompt": chapter_data.get("question_prompt", ""),
+            }
+            if not chapter_clean["title"]:
+                continue
+            created_chapter = create_course_chapter(db, tenant_name, chapter_clean)
+            chapter_summary.append(created_chapter["id"])
+
+        summary.append({
+            "module_id": created_module["id"],
+            "week": created_module["week_number"],
+            "title": created_module["title"],
+            "chapter_ids": chapter_summary,
+            "chapter_count": len(chapter_summary),
+        })
+
+    logger.info(
+        "p01 import: created course=%s modules=%d chapters=%d (force=%s)",
+        created_course["id"], len(summary),
+        sum(m["chapter_count"] for m in summary), force,
+    )
+    return {
+        "ok": True,
+        "course": {"id": created_course["id"], "code": created_course["code"], "title": created_course["title"]},
+        "modules": summary,
+        "totals": {
+            "modules": len(summary),
+            "chapters": sum(m["chapter_count"] for m in summary),
+        },
+    }
+
+
 @router.get("/courses/changes/secure")
 def read_catalog_changes(
     tenant_name: str,

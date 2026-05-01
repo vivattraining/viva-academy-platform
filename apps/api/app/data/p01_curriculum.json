@@ -1,0 +1,710 @@
+{
+  "_meta": {
+    "source": "Course.docx — Foundation Program in Travel & Tourism Industry (16 Weeks)",
+    "positioning_line": "Not just learning travel. We prepare you to sell, operate, and succeed in the travel industry.",
+    "review_notes": "Faculty/admin: review chapter titles + summaries before triggering import. Video chapters have content_type='video' but no embedded video URL yet — add the URL to the summary or replace later via the chapter edit endpoint. Guest-speaker chapters use content_type='guest_speaker' for the same reason."
+  },
+  "course": {
+    "code": "P · 01",
+    "title": "Foundation Program in Travel & Tourism Industry",
+    "slug": "foundation-program-travel-tourism",
+    "description": "The 16-week foundation programme. Sector orientation, customer journey, sales, operations, geography, MICE, costing, and business models — the disciplined first step into a real career in travel for committed beginners.",
+    "duration_weeks": 16,
+    "weekly_unlock_days": 7,
+    "penalty_fee_amount": 2000,
+    "penalty_fee_currency": "INR",
+    "relock_grace_days": 2,
+    "certificate_name": "VIVA Certification in Travel & Tourism (Foundation)",
+    "active": true
+  },
+  "modules": [
+    {
+      "week_number": 1,
+      "phase": "Phase 1 · Industry Foundation",
+      "title": "Week 1 · Introduction to Travel Industry",
+      "summary": "Sector orientation. Types of travel companies, how travel products move from supplier to customer, and the role of digital platforms. Outcome: student should understand the travel ecosystem.",
+      "passing_score": 70,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "Types of travel companies",
+          "content_type": "lesson",
+          "summary": "OTAs (Booking, Agoda, TripAdvisor), Tour Operators (Thomas Cook, SOTC, Cosmos, Trafalgar), and DMCs (SITA, LPTI, Creative). What each does and where each sits in the value chain.",
+          "estimated_minutes": 35,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "How travel products are sold",
+          "content_type": "lesson",
+          "summary": "Supplier (airline, hotel, DMC) → wholesaler/operator → retail agent → customer. The commission, markup, and net-rate flows that determine how products reach the traveller.",
+          "estimated_minutes": 30,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Role of digital platforms",
+          "content_type": "lesson",
+          "summary": "Google Maps, reviews (TripAdvisor, Google), social proof, OTA aggregation. How research and discovery happen online and why every modern travel business needs a digital presence.",
+          "estimated_minutes": 25,
+          "mandatory": true
+        },
+        {
+          "position": 4,
+          "title": "Reflection · The travel ecosystem",
+          "content_type": "assignment",
+          "summary": "Map the travel ecosystem you have learnt this week. Identify who pays whom, who promises what to the traveller, and where margin sits.",
+          "estimated_minutes": 60,
+          "mandatory": true,
+          "question_prompt": "In 200–300 words, describe how a single ₹50,000 holiday booking flows from a customer through OTAs, tour operators, DMCs, and on-ground suppliers. Who keeps how much, and why?"
+        }
+      ]
+    },
+    {
+      "week_number": 2,
+      "phase": "Phase 1 · Industry Foundation",
+      "title": "Week 2 · India Travel Ecosystem",
+      "summary": "India's domestic travel landscape: hotels, airlines, rail, cruises. Build a working knowledge of the suppliers students will sell.",
+      "passing_score": 70,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "Hotel chains (Indian + International)",
+          "content_type": "lesson",
+          "summary": "Indian groups (Taj, Oberoi, ITC, Lemon Tree, Leela) and international groups operating in India (Marriott, Hyatt, Accor, IHG, Radisson). Positioning, segments, average room rate logic.",
+          "estimated_minutes": 35,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "Airlines in India",
+          "content_type": "lesson",
+          "summary": "Indian carriers (IndiGo, Air India, Vistara, Akasa, SpiceJet) plus international carriers serving India. Hub structure, fleet mix, route philosophy.",
+          "estimated_minutes": 30,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Rail tourism & luxury trains",
+          "content_type": "lesson",
+          "summary": "IRCTC operations, IRCTC tourism products, and luxury trains (Maharajas' Express, Palace on Wheels, Deccan Odyssey). Pricing, seasonality, who buys these.",
+          "estimated_minutes": 25,
+          "mandatory": true
+        },
+        {
+          "position": 4,
+          "title": "Cruises (India + nearby + USA)",
+          "content_type": "lesson",
+          "summary": "Cordelia (India), regional cruises (Maldives, Singapore-Penang), and US-market context (Royal Caribbean, NCL, Carnival). What an Indian agent sells, and to whom.",
+          "estimated_minutes": 30,
+          "mandatory": true
+        },
+        {
+          "position": 5,
+          "title": "Case study · Building an India itinerary",
+          "content_type": "assignment",
+          "summary": "Apply the week's learning. Build a 6-night India itinerary using real hotels, real airline routes, and at least one rail or cruise component.",
+          "estimated_minutes": 90,
+          "mandatory": true,
+          "question_prompt": "Build a 6-night/7-day India itinerary for a couple celebrating their 10th anniversary, budget ₹2,50,000 inclusive. List specific hotels (with category), flights/trains, and a one-line rationale for each choice."
+        }
+      ]
+    },
+    {
+      "week_number": 3,
+      "phase": "Phase 1 · Industry Foundation",
+      "title": "Week 3 · Global Travel Overview",
+      "summary": "Inbound vs outbound vs domestic. Long-haul vs short-haul. The world's major travel regions. Outcome: global understanding of how the industry segments itself.",
+      "passing_score": 70,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "Inbound · Outbound · Domestic",
+          "content_type": "lesson",
+          "summary": "The three core flows of travel demand. Who books each, how each is priced, which suppliers serve each segment.",
+          "estimated_minutes": 25,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "Long-haul vs short-haul",
+          "content_type": "lesson",
+          "summary": "Flight-time thresholds, booking-window differences, traveller intent, ancillary spend patterns.",
+          "estimated_minutes": 20,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Major regions · Europe, Far East, Australia, USA, Africa",
+          "content_type": "lesson",
+          "summary": "Per-region overview: high-demand circuits, signature experiences, seasonality, average trip cost from India.",
+          "estimated_minutes": 45,
+          "mandatory": true
+        },
+        {
+          "position": 4,
+          "title": "Reflection · Global market positioning",
+          "content_type": "assignment",
+          "summary": "Pick two regions from this week and compare them as an Indian outbound seller would.",
+          "estimated_minutes": 60,
+          "mandatory": true,
+          "question_prompt": "Compare Europe and the Far East as outbound destinations from India. For each: typical traveller, peak season, average per-person cost (7-night package), and one risk you'd warn the customer about."
+        }
+      ]
+    },
+    {
+      "week_number": 4,
+      "phase": "Phase 2 · Destinations & Geography",
+      "title": "Week 4 · World Geography for Travel",
+      "summary": "Continents and major tourist circuits. Build the mental map a travel professional needs to think and sell at speed.",
+      "passing_score": 70,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "Continents · structure and key countries",
+          "content_type": "lesson",
+          "summary": "Walkthrough of each continent: signature countries, capital cities, time zones, currency. Focus on what an agent needs to recall on a sales call.",
+          "estimated_minutes": 50,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "Major tourist circuits",
+          "content_type": "lesson",
+          "summary": "Classic combinations sold as packages — Schengen Circle, Scandinavian Crown, Highlights of Italy, Best of South-East Asia, East-Africa Safari, USA-East-Coast/West-Coast, Australia & New Zealand twin-centre.",
+          "estimated_minutes": 45,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Geography assessment",
+          "content_type": "assignment",
+          "summary": "Map test. Identify capitals, currencies, and adjacent countries for the 30 countries Indian outbound agents sell most.",
+          "estimated_minutes": 45,
+          "mandatory": true,
+          "question_prompt": "List the capital, currency, and at least two neighbouring countries for: France, Italy, Switzerland, Austria, Germany, Spain, Portugal, UK, Greece, Turkey, UAE, Singapore, Thailand, Vietnam, Cambodia, Indonesia, Japan, South Korea, Australia, New Zealand."
+        }
+      ]
+    },
+    {
+      "week_number": 5,
+      "phase": "Phase 2 · Destinations & Geography",
+      "title": "Week 5 · Industry Terminology & Codes",
+      "summary": "The vocabulary the industry actually uses. Airline codes, airport codes, hotel terminology, travel jargon — what every supplier and customer expects you to know.",
+      "passing_score": 70,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "Airline two-letter codes",
+          "content_type": "lesson",
+          "summary": "BA (British Airways), AI (Air India), LH (Lufthansa), EK (Emirates), QR (Qatar), SQ (Singapore), AF (Air France), KL (KLM), CX (Cathay), TG (Thai). Plus the Indian carriers (6E, UK, AI, SG, QP).",
+          "estimated_minutes": 30,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "Airport three-letter codes",
+          "content_type": "lesson",
+          "summary": "Indian airports (DEL Delhi, BOM Mumbai, BLR Bengaluru, MAA Chennai, CCU Kolkata, HYD Hyderabad). Major global airports (JFK New York, LHR London, CDG Paris, FRA Frankfurt, DXB Dubai, SIN Singapore, BKK Bangkok, NRT Tokyo, SYD Sydney). Note: NYC = New York City code, distinct from JFK/LGA/EWR.",
+          "estimated_minutes": 35,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Hotel terminology",
+          "content_type": "lesson",
+          "summary": "Room categories (Standard, Deluxe, Suite, Club), meal plans (CP, MAP, AP, AI), occupancy (SGL, DBL, TPL), star ratings, brand-tier vocabulary (luxury, upscale, midscale, economy).",
+          "estimated_minutes": 30,
+          "mandatory": true
+        },
+        {
+          "position": 4,
+          "title": "Codes & terminology test",
+          "content_type": "assignment",
+          "summary": "Quick-recall test on this week's vocabulary. Designed to mimic supplier email shorthand.",
+          "estimated_minutes": 30,
+          "mandatory": true,
+          "question_prompt": "Decode the following supplier message: '6E 305 DEL-BLR 0815/1045, 2N BLR @ Taj West End DBL DLX MAP, 3N MAA @ Leela Palace SGL CLUB BB, ret AI 469 MAA-DEL 1530/1810.' Translate to a customer-facing itinerary description."
+        }
+      ]
+    },
+    {
+      "week_number": 6,
+      "phase": "Phase 3 · Core Travel Segments",
+      "title": "Week 6 · Outbound Tourism · Part 1",
+      "summary": "Deep dive into outbound. Europe, Australia, Far East coach tours. Visa basics. Sample itineraries. Forex handling. Part 1 of 2.",
+      "passing_score": 70,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "Europe coach tours",
+          "content_type": "lesson",
+          "summary": "Schengen circuits, multi-country itineraries (UK + Paris + Switzerland + Italy), the SOTC/Thomas Cook/Cosmos/Trafalgar product structure, what's included (and what isn't).",
+          "estimated_minutes": 45,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "Australia & Far East",
+          "content_type": "lesson",
+          "summary": "Australia twin-centre (Sydney + Cairns / Sydney + Gold Coast). Far East combinations (Singapore + Bali, Singapore + Malaysia + Thailand). Booking windows and seasonality.",
+          "estimated_minutes": 35,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Visa basics for outbound",
+          "content_type": "lesson",
+          "summary": "Schengen visa logic, UK visa, US B1/B2, Australia ETA, NZ ETA, Singapore-Malaysia-Thailand visa-on-arrival rules, document checklists, processing times.",
+          "estimated_minutes": 35,
+          "mandatory": true
+        },
+        {
+          "position": 4,
+          "title": "Sample itinerary · Europe 9N/10D",
+          "content_type": "assignment",
+          "summary": "Build a complete sellable Europe itinerary including air, hotels, transfers, and the visa pack the customer will need.",
+          "estimated_minutes": 90,
+          "mandatory": true,
+          "question_prompt": "Build a 9-night/10-day Europe itinerary covering Paris (3N), Switzerland (3N), Rome (3N) for a family of 4 (2 adults + 2 children aged 8 and 12). Budget ₹6,00,000 land+air. List flights, hotels (3-4★), inter-city transfers, and the visa documents needed."
+        }
+      ]
+    },
+    {
+      "week_number": 7,
+      "phase": "Phase 3 · Core Travel Segments",
+      "title": "Week 7 · Outbound Tourism · Part 2",
+      "summary": "Continuing outbound. Africa coach tours, forex handling, and a guest speaker session from a serving outbound professional. Part 2 of 2.",
+      "passing_score": 70,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "Africa coach tours",
+          "content_type": "lesson",
+          "summary": "South Africa twin-centre (Cape Town + Kruger), Kenya/Tanzania safari circuits, Mauritius beach extensions. Suppliers, seasonality, ground-handler ecosystems.",
+          "estimated_minutes": 35,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "Forex handling",
+          "content_type": "lesson",
+          "summary": "RBI Liberalised Remittance Scheme limits, forex card vs cash vs bank transfer, where customers lose money on bad rates, and how a good agent advises forex without breaking the law.",
+          "estimated_minutes": 30,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Guest speaker · Outbound tourism in practice",
+          "content_type": "guest_speaker",
+          "summary": "Live session with a senior outbound professional. To be scheduled. (Faculty: replace this summary with the speaker's name + bio + the recording URL once delivered.)",
+          "estimated_minutes": 90,
+          "mandatory": true
+        },
+        {
+          "position": 4,
+          "title": "Itinerary + costing exercise",
+          "content_type": "assignment",
+          "summary": "Combine destination knowledge with forex awareness. Build a full outbound proposal to be sent to a customer.",
+          "estimated_minutes": 90,
+          "mandatory": true,
+          "question_prompt": "Build a 7-night Mauritius honeymoon proposal for a couple, budget ₹3,50,000 land+air. Include flights, hotel, transfers, two excursions, and a forex recommendation specifying mode (forex card/cash/transfer) and amount."
+        }
+      ]
+    },
+    {
+      "week_number": 8,
+      "phase": "Phase 3 · Core Travel Segments",
+      "title": "Week 8 · Inbound Tourism",
+      "summary": "Selling India to the world. Foreign tourist expectations, price points, tour-operator structure, plus a guest-speaker session.",
+      "passing_score": 70,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "India as a destination",
+          "content_type": "lesson",
+          "summary": "What pulls foreign travellers to India: Golden Triangle, Kerala backwaters, Rajasthan palaces, Goa beaches, Himalayan trekking, wellness/yoga circuits, wildlife.",
+          "estimated_minutes": 45,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "Foreign tourist expectations",
+          "content_type": "lesson",
+          "summary": "How European, North American, East Asian, and Middle Eastern customers each behave differently. Service standards, food, communication style, payment expectations, refund norms.",
+          "estimated_minutes": 35,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Guest speaker · Inbound tourism in practice",
+          "content_type": "guest_speaker",
+          "summary": "Live session with a senior inbound professional. To be scheduled. (Faculty: replace this summary with the speaker's name + bio + the recording URL once delivered.)",
+          "estimated_minutes": 90,
+          "mandatory": true
+        },
+        {
+          "position": 4,
+          "title": "Inbound itinerary",
+          "content_type": "assignment",
+          "summary": "Build a 12-day Golden Triangle + Rajasthan itinerary for a foreign couple, priced and proposal-ready.",
+          "estimated_minutes": 90,
+          "mandatory": true,
+          "question_prompt": "Build a 12-night/13-day Golden Triangle + Rajasthan itinerary (Delhi, Agra, Jaipur, Jodhpur, Udaipur, end at Mumbai) for a UK couple, budget GBP 3,500 per person land-only. Specify hotels, transfers, two cultural inclusions per city, and one risk warning."
+        }
+      ]
+    },
+    {
+      "week_number": 9,
+      "phase": "Phase 3 · Core Travel Segments",
+      "title": "Week 9 · Domestic Tourism",
+      "summary": "The largest segment by volume. Popular Indian circuits, budget vs luxury, what shifts the buying decision.",
+      "passing_score": 70,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "Popular domestic circuits",
+          "content_type": "lesson",
+          "summary": "Goa, Kerala, Himachal (Shimla-Manali), Kashmir, North-East (Sikkim, Meghalaya, Arunachal), Andaman, Rajasthan, Gujarat (Rann + Statue of Unity), South temples (Madurai-Rameswaram).",
+          "estimated_minutes": 40,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "Budget vs luxury domestic travel",
+          "content_type": "lesson",
+          "summary": "Where the same destination splits across price points. ₹15K, ₹50K, and ₹2L versions of the same Goa or Kerala trip — and how each customer is acquired.",
+          "estimated_minutes": 30,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Guest speaker · Domestic travel in practice",
+          "content_type": "guest_speaker",
+          "summary": "Live session with a senior domestic-travel professional. To be scheduled. (Faculty: replace this summary with the speaker's name + bio + the recording URL once delivered.)",
+          "estimated_minutes": 90,
+          "mandatory": true
+        },
+        {
+          "position": 4,
+          "title": "Domestic itinerary",
+          "content_type": "assignment",
+          "summary": "Build a 6-night domestic package optimised against a tight budget.",
+          "estimated_minutes": 75,
+          "mandatory": true,
+          "question_prompt": "Build a 6-night/7-day Kerala itinerary (Cochin, Munnar, Thekkady, Alleppey, Cochin) for a family of 4, budget ₹80,000 land-only. Specify hotels (3★), transfers, one houseboat night, and how you'd up-sell the customer to ₹1,20,000."
+        }
+      ]
+    },
+    {
+      "week_number": 10,
+      "phase": "Phase 3 · Core Travel Segments",
+      "title": "Week 10 · MICE Tourism",
+      "summary": "Meetings, Incentives, Conferences, Exhibitions — the highest-margin, fastest-growing segment of Indian travel.",
+      "passing_score": 70,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "M-I-C-E breakdown",
+          "content_type": "lesson",
+          "summary": "What each letter actually means in practice. Corporate meetings (small groups, high-spec venues), incentives (rewards trips), conferences (large auditorium events), exhibitions (trade-show participation).",
+          "estimated_minutes": 30,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "Case study · Large group movement",
+          "content_type": "case_study",
+          "summary": "Walkthrough of a real 400-pax incentive trip: how the proposal was won, how the airline blocked seats, how the hotel held inventory, what went wrong on day two and how the operator recovered.",
+          "estimated_minutes": 45,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Guest speaker · MICE in practice",
+          "content_type": "guest_speaker",
+          "summary": "Live session with a senior MICE professional. To be scheduled. (Faculty: replace this summary with the speaker's name + bio + the recording URL once delivered.)",
+          "estimated_minutes": 90,
+          "mandatory": true
+        },
+        {
+          "position": 4,
+          "title": "MICE proposal",
+          "content_type": "assignment",
+          "summary": "Build a real MICE proposal end-to-end. This assignment mirrors what the team would send a corporate buyer.",
+          "estimated_minutes": 120,
+          "mandatory": true,
+          "question_prompt": "Build a 3-night incentive proposal for 80 employees of a Mumbai-based fintech to Phuket. Include airline (block-fare logic), 4★ resort, 2 group meals, 1 private beach event, transfers, and your fee structure (per-pax markup vs flat ops fee)."
+        }
+      ]
+    },
+    {
+      "week_number": 11,
+      "phase": "Phase 4 · Operations & Business Skills",
+      "title": "Week 11 · Airline & Routing Systems",
+      "summary": "How flights actually connect. FIT/GIT/SOTO fare logic. Online plugs (TBO, Cleartrip) for inventory and ticketing.",
+      "passing_score": 70,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "Flight connections",
+          "content_type": "lesson",
+          "summary": "Hub-and-spoke vs point-to-point. Layover logic, minimum connecting time, code-share understanding, why some routes go via the Gulf or Singapore even when Europe seems closer.",
+          "estimated_minutes": 35,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "Costings · FIT vs GIT vs SOTO",
+          "content_type": "lesson",
+          "summary": "FIT (Free Independent Traveller) tickets, GIT (Group Inclusive Tour) tickets, SOTO (Sold Outside Ticketed Outside) fares. When each is cheaper, what the conditions are, when to use which.",
+          "estimated_minutes": 40,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Online plugs · TBO and Cleartrip",
+          "content_type": "lesson",
+          "summary": "How agents use B2B platforms (tbo.com) and online travel companies (cleartrip.com) for inventory, ticketing, and rate comparison. Practical tour through the booking flow.",
+          "estimated_minutes": 40,
+          "mandatory": true
+        },
+        {
+          "position": 4,
+          "title": "Routing exercise",
+          "content_type": "assignment",
+          "summary": "Find the best routing across realistic constraints — price, layover length, and customer preferences.",
+          "estimated_minutes": 75,
+          "mandatory": true,
+          "question_prompt": "A customer wants to fly DEL → ZRH (Zurich) for a Switzerland trip starting 14 July. Find three routings: (a) cheapest, (b) shortest total travel time, (c) preferred carrier (single-stop on a 5★ Gulf carrier). For each, state route, total time, and price range."
+        }
+      ]
+    },
+    {
+      "week_number": 12,
+      "phase": "Phase 4 · Operations & Business Skills",
+      "title": "Week 12 · Costing & Pricing (CRITICAL)",
+      "summary": "The week that separates a junior agent from a real travel professional. How to build a package, work in margins, and protect the operator while still winning the customer.",
+      "passing_score": 75,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "Building a package",
+          "content_type": "lesson",
+          "summary": "The components: air + land + transfers + meals + sightseeing + insurance. How each line is sourced and stitched into a single sell-rate.",
+          "estimated_minutes": 35,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "Margins, markups, commissions",
+          "content_type": "lesson",
+          "summary": "Markup vs margin (the maths matters), supplier commission structures, override commissions, when to discount, when not to, and how to protect minimum margin discipline on a competitive deal.",
+          "estimated_minutes": 40,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Practical · Outbound costing",
+          "content_type": "lesson",
+          "summary": "Worked example: building an Europe FIT package from scratch. Net rates, markup, GST, final sell price.",
+          "estimated_minutes": 50,
+          "mandatory": true
+        },
+        {
+          "position": 4,
+          "title": "Practical · Inbound costing",
+          "content_type": "lesson",
+          "summary": "Worked example: pricing an India inbound package for a UK customer. Currency conversion logic, payment-flow risks, how to quote in two currencies.",
+          "estimated_minutes": 40,
+          "mandatory": true
+        },
+        {
+          "position": 5,
+          "title": "Costing assignment · OBT / IBT / Domestic",
+          "content_type": "assignment",
+          "summary": "Three costing exercises. The student builds, prices, and defends each.",
+          "estimated_minutes": 150,
+          "mandatory": true,
+          "question_prompt": "Cost three packages from scratch with full breakdown (air, land, transfers, meals, sightseeing, markup, GST, sell): (1) outbound 7N Bali for a couple, (2) inbound 6N Golden Triangle for a US family of 4, (3) domestic 5N Kerala for an Indian family of 5. State your minimum margin and walk-away price for each."
+        }
+      ]
+    },
+    {
+      "week_number": 13,
+      "phase": "Phase 4 · Operations & Business Skills",
+      "title": "Week 13 · Industry Business Models",
+      "summary": "How the major players actually make money. OTAs, B2B wholesalers, tour operators, cruise companies. Plus: the CV-submission window opens this week.",
+      "passing_score": 70,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "OTA model · MakeMyTrip",
+          "content_type": "lesson",
+          "summary": "Inventory aggregation, take-rates, customer-acquisition cost economics, why Indian OTAs lose money on flights but make it on hotels and packages.",
+          "estimated_minutes": 30,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "B2B wholesalers · TBO",
+          "content_type": "lesson",
+          "summary": "How TBO sits between suppliers and retail agents. Net-rate distribution, the agent-onboarding funnel, why scale is the moat.",
+          "estimated_minutes": 25,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Tour operators · SOTC, Thomas Cook",
+          "content_type": "lesson",
+          "summary": "Brand-led group tours, fixed-departure economics, the cost of carrying empty seats, how operators hedge with last-minute load.",
+          "estimated_minutes": 30,
+          "mandatory": true
+        },
+        {
+          "position": 4,
+          "title": "Cruise companies · Star, Genting, NCL",
+          "content_type": "lesson",
+          "summary": "Cabin-rate pricing, the on-board spend that subsidises the cabin, how Indian agents earn from cruises and what the gotchas are.",
+          "estimated_minutes": 30,
+          "mandatory": true
+        },
+        {
+          "position": 5,
+          "title": "Compare-models assignment + CV submission",
+          "content_type": "assignment",
+          "summary": "Compare two models head-to-head and submit your CV — this week's submission also kicks off the placement track.",
+          "estimated_minutes": 90,
+          "mandatory": true,
+          "question_prompt": "Pick two business models from this week (OTA / B2B wholesaler / tour operator / cruise). For each: (a) primary revenue source, (b) main cost driver, (c) defensibility, (d) one risk to the model. Then attach your latest CV (PDF, max 2 pages) — VIVA's placement team reviews CVs starting this week and routes to hiring partners."
+        }
+      ]
+    },
+    {
+      "week_number": 14,
+      "phase": "Phase 5 · Practical + Career",
+      "title": "Week 14 · Live Project",
+      "summary": "Apply everything. Build a complete itinerary + costing for a real prompt and present it to a panel.",
+      "passing_score": 70,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "Project brief",
+          "content_type": "lesson",
+          "summary": "The project prompt is released this week. Format, judging criteria, deliverables, and timeline.",
+          "estimated_minutes": 30,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "Build · Itinerary + costing",
+          "content_type": "lesson",
+          "summary": "Independent build time. Faculty consultation slots open. Treat the brief like a real customer enquiry — ask the same questions you would on a sales call.",
+          "estimated_minutes": 240,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Panel presentation",
+          "content_type": "assignment",
+          "summary": "Present your project to a panel of faculty + industry guests. Defence + Q&A.",
+          "estimated_minutes": 60,
+          "mandatory": true,
+          "question_prompt": "Submit your final project deliverable as a single PDF: (a) customer brief in your own words, (b) day-by-day itinerary, (c) full costing with margin, (d) one-page sales pitch summarising why this is the right answer for the customer. The panel will grade on commercial accuracy, customer empathy, and presentation polish."
+        }
+      ]
+    },
+    {
+      "week_number": 15,
+      "phase": "Phase 5 · Practical + Career",
+      "title": "Week 15 · Revision & Certification Test",
+      "summary": "Final revision, mock interviews, and the online certification test (75% to pass; if not, retake within 2 weeks; if you still don't clear 75%, the certificate is awarded but placement guarantee is forfeit).",
+      "passing_score": 75,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "Doubt-clearing & revision",
+          "content_type": "lesson",
+          "summary": "Faculty walkthrough of weak areas, group Q&A, last revision pass.",
+          "estimated_minutes": 90,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "Mock interviews",
+          "content_type": "lesson",
+          "summary": "1-on-1 mock interviews with industry-aligned interviewers. Verbal feedback + written notes you can use to prep your real interviews.",
+          "estimated_minutes": 60,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Certification test",
+          "content_type": "assignment",
+          "summary": "Online test, Y/N marking. 75% required to pass. Retake available within 2 weeks if needed. Certificate is awarded regardless — but the placement guarantee requires a 75% score.",
+          "estimated_minutes": 90,
+          "mandatory": true,
+          "question_prompt": "Take the online certification test. (Note: this assignment is a placeholder — the auto-graded online test ships in v2 LMS phase 2; until then, treat this as a written exam administered by faculty.)"
+        }
+      ]
+    },
+    {
+      "week_number": 16,
+      "phase": "Phase 5 · Practical + Career",
+      "title": "Week 16 · Placement & Career Readiness",
+      "summary": "CV polish, interview discipline, industry connections, and your online certificate.",
+      "passing_score": 70,
+      "submission_required": true,
+      "chapters": [
+        {
+          "position": 1,
+          "title": "CV building",
+          "content_type": "lesson",
+          "summary": "What hiring managers in travel actually look for. Format, content, the one-page rule, the verbs to use, the things to leave out.",
+          "estimated_minutes": 45,
+          "mandatory": true
+        },
+        {
+          "position": 2,
+          "title": "Interview skills",
+          "content_type": "lesson",
+          "summary": "Behavioural questions, technical-knowledge questions, scenario questions. How to answer with structure (situation → action → result). Dress code, follow-up etiquette.",
+          "estimated_minutes": 45,
+          "mandatory": true
+        },
+        {
+          "position": 3,
+          "title": "Industry connections",
+          "content_type": "lesson",
+          "summary": "How to keep the network alive after the programme. LinkedIn discipline, useful industry events (ITM, OTM, SATTE), VIVA alumni network access.",
+          "estimated_minutes": 30,
+          "mandatory": true
+        },
+        {
+          "position": 4,
+          "title": "Online certificate",
+          "content_type": "assignment",
+          "summary": "Final completion checkpoint. Once submitted (and the Week-15 test cleared at 75%+), VIVA issues your verifiable online certificate.",
+          "estimated_minutes": 30,
+          "mandatory": true,
+          "question_prompt": "Confirm your final details for the certificate: full name as it should appear, date of birth, programme batch, preferred LinkedIn URL. Submit a brief 200-word reflection on the most important thing you'll take from the 16 weeks. VIVA issues the certificate within 5 working days of confirmation."
+        }
+      ]
+    }
+  ]
+}

@@ -475,7 +475,7 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
               </ul>
               <div className={styles.formatFoot}>
                 <div className={styles.price}>
-                  ₹ 36,999 <small>/ semester</small>
+                  ₹ 37,000 <small>/ semester</small>
                 </div>
                 <a className={`${styles.button} ${styles.buttonAccent}`} href="#admissions">
                   Cohort Details <span className={styles.arrow}>↗</span>
@@ -497,7 +497,7 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
                 <li>Duration: 16 weeks</li>
                 <li>Format: Hybrid (Live + Studio Learning)</li>
                 <li>Schedule: Friday &amp; Saturday evenings · 2 hours</li>
-                <li>Fee: ₹36,999 per semester</li>
+                <li>Fee: ₹37,000 per semester</li>
               </ul>
               <div className={styles.formatFoot}>
                 <a className={styles.buttonGhostLight} href="#admissions">
