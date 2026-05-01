@@ -475,6 +475,62 @@ def save_branding_secure(
     }
 
 
+@router.get("/courses/catalog")
+def read_course_catalog():
+    """
+    Public, unauthenticated read of the course catalog.
+
+    This is the SINGLE SOURCE OF TRUTH for ALL course data — name,
+    price, cohort, duration, marketing copy, title splits, and
+    reservation fee. The homepage cards, the /courses page, and the
+    application form all fetch from here so that any change in
+    `apps/api/app/course_catalog.py` propagates to every surface
+    automatically — there is no second file to keep in sync.
+
+    Returns:
+      items: [
+        {
+          code, name,
+          fee_inr, fee_display,
+          reservation_fee_inr, reservation_fee_display,
+          duration_label, format_label, cohort_label,
+          coming_soon,
+          title_lead, title_emphasis, description
+        },
+        ...
+      ]
+    """
+    from app.course_catalog import COURSE_CATALOG
+
+    items = []
+    for course in COURSE_CATALOG:
+        # Python's f-string ',' grouping is US-style (24,999) which
+        # happens to match Indian style for amounts under 1 lakh.
+        # For ≥ 1 lakh we'd want "1,00,000"; not relevant here yet.
+        fee_display = f"₹{course.fee_inr:,}*"
+        reservation_fee_display = (
+            f"₹{course.reservation_fee_inr:,}" if course.reservation_fee_inr else ""
+        )
+        items.append(
+            {
+                "code": course.code,
+                "name": course.name,
+                "fee_inr": course.fee_inr,
+                "fee_display": fee_display,
+                "reservation_fee_inr": course.reservation_fee_inr,
+                "reservation_fee_display": reservation_fee_display,
+                "duration_label": course.duration_label,
+                "format_label": course.format_label,
+                "cohort_label": course.cohort_label,
+                "coming_soon": course.coming_soon,
+                "title_lead": course.title_lead,
+                "title_emphasis": course.title_emphasis,
+                "description": course.description,
+            }
+        )
+    return {"items": items}
+
+
 @router.get("/applications")
 def read_applications(tenant_name: str, db: Session = Depends(get_db)):
     raise HTTPException(status_code=400, detail="Secure endpoint required")
