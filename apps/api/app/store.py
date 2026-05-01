@@ -694,6 +694,10 @@ def create_course_chapter(db: Session, tenant_name: str, payload: dict) -> dict:
         "estimated_minutes": int(payload.get("estimated_minutes", 20) or 20),
         "mandatory": bool(payload.get("mandatory", True)),
         "question_prompt": payload.get("question_prompt", "").strip(),
+        # YouTube URL for content_type in {"video","guest_speaker"}.
+        # Empty string is fine — the student LMS shows a "video coming
+        # soon" placeholder so the chapter still progresses.
+        "video_url": (payload.get("video_url") or "").strip(),
         "created_at": current,
         "updated_at": current,
     }

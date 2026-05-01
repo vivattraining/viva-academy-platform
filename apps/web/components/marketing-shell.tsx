@@ -74,8 +74,8 @@ export function MarketingShell({
           <Link className={styles.brand} href="/">
             <span className={styles.brandMark}>V</span>
             <span className={styles.brandWord}>
-              <span className={styles.brandName}>VIVA</span>
-              <span className={styles.brandTag}>Academy · Est. 2011</span>
+              <span className={styles.brandName}>Viva Career Academy</span>
+              <span className={styles.brandTag}>Est. 2011</span>
             </span>
           </Link>
 
@@ -108,8 +108,8 @@ export function MarketingShell({
               <Link className={styles.brand} href="/">
                 <span className={styles.brandMark}>V</span>
                 <span className={styles.brandWord}>
-                  <span className={styles.brandName}>VIVA</span>
-                  <span className={styles.brandTag}>Academy · Est. 2011</span>
+                  <span className={styles.brandName}>Viva Career Academy</span>
+                  <span className={styles.brandTag}>Est. 2011</span>
                 </span>
               </Link>
             <p>

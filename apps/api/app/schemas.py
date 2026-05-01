@@ -33,6 +33,13 @@ class ApplicationCreate(BaseModel):
     notes: str = ""
     amount_due: float = 0  # ignored — see comment above
     currency: str = "INR"
+    # Reserve-a-Seat flow: when true, the application is for a coming-soon
+    # course and the student is paying the reservation fee (typically
+    # ₹5,000) as advance. Balance is due within 14 days of cohort
+    # announcement. Validated server-side against course.coming_soon and
+    # course.reservation_fee_inr — clients cannot fake reservation status
+    # for live courses.
+    is_reservation: bool = False
 
 
 class ApplicationStatusUpdate(BaseModel):
@@ -210,6 +217,12 @@ class CourseChapterCreate(BaseModel):
     estimated_minutes: int = 20
     mandatory: bool = True
     question_prompt: str = ""
+    # Video URL for content_type in {"video", "guest_speaker"}.
+    # Currently expects a YouTube URL (unlisted videos work — they're
+    # embeddable but not discoverable). Empty string means the chapter
+    # is a video chapter awaiting upload — the LMS will show a polite
+    # "video coming soon" placeholder until faculty fills the URL.
+    video_url: str = ""
 
 
 class LearnerProgressUpdate(BaseModel):

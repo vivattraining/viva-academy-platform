@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
 import { readSession } from "../lib/auth";
+import { ChapterVideoEmbed } from "./chapter-video-embed";
 
 type StudentLmsPayload = {
   application: { id: string };
@@ -20,6 +21,8 @@ type StudentLmsPayload = {
         summary: string;
         question_prompt: string;
         status: string;
+        content_type?: string;
+        video_url?: string;
         submission?: { answer_text?: string | null } | null;
       }>;
     }>;
@@ -115,10 +118,21 @@ export function ModuleSubmissionWorkspace({ moduleId }: { moduleId: string }) {
         <h2 className="editorial-workbench-title" style={{ marginTop: 12 }}>{activeModule.title}</h2>
         <p className="editorial-workbench-subtitle">{payload.lms.course.title}</p>
       </section>
-      {activeModule.chapters.map((chapter) => (
+      {activeModule.chapters.map((chapter) => {
+        const isVideoChapter = chapter.content_type === "video" || chapter.content_type === "guest_speaker";
+        return (
         <section key={chapter.id} className="editorial-workbench-card">
           <div className="eyebrow">{chapter.status.replaceAll("_", " ")}</div>
           <h3 className="editorial-workbench-title" style={{ marginTop: 10, fontSize: "2rem" }}>{chapter.title}</h3>
+          {isVideoChapter ? (
+            <div style={{ marginTop: 16, marginBottom: 12 }}>
+              <ChapterVideoEmbed
+                url={chapter.video_url || ""}
+                title={chapter.title}
+                contentType={chapter.content_type || "video"}
+              />
+            </div>
+          ) : null}
           <p className="editorial-workbench-subtitle">{chapter.summary}</p>
           <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>
             <strong>Question</strong>
@@ -136,7 +150,8 @@ export function ModuleSubmissionWorkspace({ moduleId }: { moduleId: string }) {
             <Link className="button-secondary" href="/dashboard">Back to dashboard</Link>
           </div>
         </section>
-      ))}
+        );
+      })}
       {message ? <section className="editorial-workbench-panel">{message}</section> : null}
     </section>
   );

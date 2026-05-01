@@ -114,10 +114,12 @@
 
 .brandName {
   font-family: "Libre Caslon Text", "Times New Roman", serif;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--navy);
+  white-space: nowrap;
+  text-transform: uppercase;
 }
 
 .brandTag {
@@ -1414,5 +1416,13 @@
 
   .brandTag {
     display: none;
+  }
+
+  /* On ultra-narrow phones, the wordmark "VIVA CAREER ACADEMY" can
+     overflow next to the nav controls. Drop to a tighter size and
+     slightly tighter letter-spacing. */
+  .brandName {
+    font-size: 14px;
+    letter-spacing: 0.04em;
   }
 }

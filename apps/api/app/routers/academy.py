@@ -675,6 +675,7 @@ def import_p01_curriculum(
                 "estimated_minutes": chapter_data.get("estimated_minutes", 20),
                 "mandatory": chapter_data.get("mandatory", True),
                 "question_prompt": chapter_data.get("question_prompt", ""),
+                "video_url": chapter_data.get("video_url", ""),
             }
             if not chapter_clean["title"]:
                 continue

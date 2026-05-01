@@ -109,7 +109,7 @@ export function SiteShell({
           <Link className={styles.brand} href="/">
             <span className={styles.brandMark}>V</span>
             <span className={styles.brandWord}>
-              <span className={styles.brandName}>VIVA</span>
+              <span className={styles.brandName}>Viva Career Academy</span>
               <span className={styles.brandTag}>{branding.custom_domain}</span>
             </span>
           </Link>
