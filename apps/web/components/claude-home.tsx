@@ -960,15 +960,17 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 8,
-                color: "rgba(245, 239, 228, 0.92)",
+                color: "#f5efe4",
                 textDecoration: "none",
-                fontWeight: 500,
+                fontWeight: 700,
+                fontSize: 13,
+                letterSpacing: "0.03em",
               }}
               aria-label="Built by NAMA AI Tech Co. — Narayan Mallapur on LinkedIn (opens in a new tab)"
             >
               <svg
-                width="16"
-                height="16"
+                width="18"
+                height="18"
                 viewBox="0 0 16 16"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
@@ -985,7 +987,7 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
                 >N</text>
               </svg>
               <span>Built by NAMA AI Tech Co.</span>
-              <span aria-hidden="true" style={{ fontSize: 11, opacity: 0.7 }}>↗</span>
+              <span aria-hidden="true" style={{ fontSize: 12, color: "#b8860b" }}>↗</span>
             </a>
           </div>
 
