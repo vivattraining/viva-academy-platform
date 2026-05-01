@@ -1,0 +1,220 @@
+.page {
+  background: var(--paper, #fbf7ee);
+}
+
+.head {
+  padding: clamp(48px, 6vw, 96px) 0 clamp(28px, 3vw, 56px);
+}
+
+.headInner {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.backLink {
+  display: inline-block;
+  margin-bottom: 24px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-deep, #5b6576);
+  text-decoration: none;
+}
+
+.backLink:hover {
+  color: var(--ink, #111d23);
+}
+
+.eyebrow {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent-deep, #5b6576);
+  margin: 0 0 16px;
+}
+
+.title {
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: clamp(36px, 4.6vw, 68px);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  color: var(--ink, #111d23);
+  margin: 0 0 16px;
+}
+
+.tagline {
+  font-size: clamp(17px, 1.6vw, 22px);
+  line-height: 1.45;
+  color: var(--accent-deep, #5b6576);
+  margin: 0 0 24px;
+  font-weight: 500;
+}
+
+.statusRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.badgeSoon,
+.badgeOpen,
+.metaPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.badgeSoon {
+  background: rgba(244, 180, 0, 0.16);
+  color: #6b4400;
+  border: 1px solid rgba(244, 180, 0, 0.32);
+}
+
+.badgeOpen {
+  background: rgba(31, 78, 216, 0.1);
+  color: #1f4ed8;
+  border: 1px solid rgba(31, 78, 216, 0.24);
+}
+
+.metaPill {
+  background: rgba(14, 27, 44, 0.06);
+  color: var(--ink, #111d23);
+  border: 1px solid rgba(14, 27, 44, 0.1);
+}
+
+.body {
+  background: #ffffff;
+  border-top: 1px solid rgba(14, 27, 44, 0.08);
+  padding: clamp(48px, 6vw, 96px) 0;
+}
+
+.bodyInner {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.lead {
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: clamp(20px, 1.8vw, 28px);
+  line-height: 1.42;
+  letter-spacing: -0.01em;
+  color: var(--ink, #111d23);
+  margin: 0 0 36px;
+}
+
+.sectionTitle {
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: clamp(24px, 2.2vw, 36px);
+  line-height: 1.1;
+  color: var(--ink, #111d23);
+  margin: 36px 0 18px;
+}
+
+.tiers {
+  margin: 36px 0;
+}
+
+.tierGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.tier {
+  padding: 22px;
+  border: 1px solid rgba(14, 27, 44, 0.1);
+  border-radius: 4px;
+  background: var(--paper, #fbf7ee);
+}
+
+.tierName {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-deep, #5b6576);
+  margin-bottom: 8px;
+}
+
+.tierPrice {
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  color: var(--ink, #111d23);
+}
+
+.tierDesc {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: var(--muted, #2f3140);
+  line-height: 1.5;
+}
+
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 36px 0;
+}
+
+.ctaPrimary,
+.ctaGhost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 22px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.ctaPrimary {
+  background: #1f4ed8;
+  color: #ffffff;
+}
+
+.ctaPrimary:hover {
+  background: #1a3eb0;
+}
+
+.ctaGhost {
+  background: transparent;
+  color: var(--ink, #111d23);
+  border: 1px solid rgba(14, 27, 44, 0.18);
+}
+
+.ctaGhost:hover {
+  background: rgba(14, 27, 44, 0.05);
+}
+
+.soonNote {
+  margin-top: 36px;
+  padding: 24px;
+  border-left: 3px solid #f4b400;
+  background: rgba(244, 180, 0, 0.06);
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--muted, #2f3140);
+}
+
+.soonNote p {
+  margin: 0;
+}
+
+.soonNote strong {
+  color: var(--ink, #111d23);
+}

@@ -1,0 +1,288 @@
+/*
+ * /courses — Master Build catalogue.
+ *
+ * 4 vertical level blocks (Foundation, Pro, Elite, Specialisations). Each
+ * block has a header + a responsive card grid. Cards distinguish open vs
+ * coming-soon visually (open cards lean active blue; coming-soon cards
+ * are softer / paper-toned).
+ */
+
+.hero {
+  padding: clamp(48px, 6vw, 96px) 0 clamp(28px, 3vw, 48px);
+}
+
+.heroInner {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.heroEyebrow {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent-deep, #5b6576);
+  margin: 0 0 16px;
+}
+
+.heroTitle {
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: clamp(36px, 4.2vw, 64px);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  color: var(--ink, #111d23);
+  margin: 0 0 24px;
+}
+
+.heroTitle em {
+  font-style: italic;
+  color: var(--accent-deep, #5b6576);
+  font-weight: 400;
+}
+
+.heroLead {
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--muted, #2f3140);
+  margin: 0;
+  max-width: 720px;
+}
+
+/* ---- Level block --------------------------------------------------------- */
+
+.levelBlock {
+  padding: clamp(28px, 3.5vw, 56px) 0;
+  border-top: 1px solid rgba(14, 27, 44, 0.08);
+}
+
+.levelBlock:first-of-type {
+  border-top: none;
+}
+
+.levelHead {
+  max-width: 920px;
+  margin: 0 auto clamp(24px, 3vw, 36px);
+  padding: 0 24px;
+}
+
+.levelKicker {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink, #111d23);
+  font-weight: 700;
+}
+
+.levelBlurb {
+  margin-top: 12px;
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: clamp(18px, 1.7vw, 24px);
+  line-height: 1.4;
+  color: var(--muted, #2f3140);
+  max-width: 720px;
+}
+
+/* ---- Grid + cards -------------------------------------------------------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(20px, 2.4vw, 32px);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media (max-width: 880px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid rgba(14, 27, 44, 0.1);
+  border-radius: 4px;
+  padding: clamp(22px, 2.4vw, 32px);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(14, 27, 44, 0.22);
+  box-shadow: 0 14px 40px rgba(11, 31, 58, 0.08);
+}
+
+.cardSoon {
+  background: var(--paper, #fbf7ee);
+}
+
+.cardCode {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-deep, #5b6576);
+  margin-bottom: 10px;
+}
+
+.cardTitle {
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: clamp(22px, 2vw, 30px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--ink, #111d23);
+  margin: 0 0 8px;
+}
+
+.cardTagline {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--accent-deep, #5b6576);
+  margin: 0 0 14px;
+  font-weight: 600;
+}
+
+.cardBody {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--muted, #2f3140);
+  margin: 0 0 22px;
+}
+
+.cardMeta {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 24px;
+  margin: 0 0 24px;
+  padding: 16px 0;
+  border-top: 1px solid rgba(14, 27, 44, 0.08);
+  border-bottom: 1px solid rgba(14, 27, 44, 0.08);
+}
+
+.cardMeta div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cardMeta dt {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-deep, #5b6576);
+  margin: 0;
+}
+
+.cardMeta dd {
+  font-size: 14px;
+  color: var(--ink, #111d23);
+  margin: 0;
+  font-weight: 600;
+}
+
+.cardFoot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-top: auto;
+  padding-top: 12px;
+  flex-wrap: wrap;
+}
+
+.badgeSoon {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(244, 180, 0, 0.16);
+  color: #6b4400;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid rgba(244, 180, 0, 0.32);
+}
+
+.badgeOpen {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(31, 78, 216, 0.1);
+  color: #1f4ed8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid rgba(31, 78, 216, 0.24);
+}
+
+.cardCtaPrimary,
+.cardCtaGhost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.cardCtaPrimary {
+  background: #1f4ed8;
+  color: #ffffff;
+}
+
+.cardCtaPrimary:hover {
+  background: #1a3eb0;
+}
+
+.cardCtaGhost {
+  background: transparent;
+  color: var(--ink, #111d23);
+  border: 1px solid rgba(14, 27, 44, 0.18);
+}
+
+.cardCtaGhost:hover {
+  background: rgba(14, 27, 44, 0.05);
+}
+
+.cardArrow {
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* ---- Closing ------------------------------------------------------------- */
+
+.closing {
+  max-width: 720px;
+  margin: clamp(48px, 5vw, 80px) auto 0;
+  padding: clamp(24px, 3vw, 36px) 24px;
+  border-top: 1px solid rgba(14, 27, 44, 0.1);
+  text-align: center;
+}
+
+.closing p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--muted, #2f3140);
+}
+
+.closing a {
+  color: var(--ink, #111d23);
+  font-weight: 600;
+  text-decoration: underline;
+}

@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.db import Base, engine
 from app import models  # noqa: F401
-from app.routers import academy, health
+from app import v2_models  # noqa: F401  (registers v2 tables for create_all)
+from app.routers import academy, health, v2_certificates
 
 Base.metadata.create_all(bind=engine)
 
@@ -55,6 +56,7 @@ app.add_middleware(
 
 app.include_router(health.router, prefix="/api/v1", tags=["health"])
 app.include_router(academy.router, prefix="/api/v1/academy", tags=["academy"])
+app.include_router(v2_certificates.router, prefix="/api/v1/academy", tags=["v2-certificates"])
 
 
 @app.get("/")
