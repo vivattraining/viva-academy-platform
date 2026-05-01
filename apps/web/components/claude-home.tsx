@@ -943,13 +943,13 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
             style={{
               marginTop: 18,
               paddingTop: 16,
-              borderTop: "1px solid rgba(245, 239, 228, 0.12)",
+              borderTop: "1px solid rgba(11, 31, 58, 0.12)",
               display: "flex",
               justifyContent: "flex-start",
               alignItems: "center",
-              fontSize: 12,
-              color: "rgba(245, 239, 228, 0.65)",
-              letterSpacing: "0.04em",
+              fontSize: 13,
+              color: "#0B1F3A",
+              letterSpacing: "0.03em",
             }}
           >
             <a
@@ -960,7 +960,7 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 8,
-                color: "#f5efe4",
+                color: "#0B1F3A",
                 textDecoration: "none",
                 fontWeight: 700,
                 fontSize: 13,
