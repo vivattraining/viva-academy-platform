@@ -24,7 +24,14 @@ from app.auth import (
 from app.config import settings
 from app.course_catalog import find_course, is_open_for_admissions
 from app.db import get_db
-from app.integrations import create_payment_link, fetch_payment_status, provision_zoom_meeting, razorpay_mode
+from app.integrations import (
+    create_payment_link,
+    fetch_payment_status,
+    provision_zoom_meeting,
+    razorpay_mode,
+    render_reservation_confirmation_email,
+    send_email,
+)
 from app.schemas import (
     ApplicationAttendanceUpdate,
     ApplicationCreate,
@@ -476,7 +483,7 @@ def save_branding_secure(
 
 
 @router.get("/courses/catalog")
-def read_course_catalog():
+def read_course_catalog(db: Session = Depends(get_db)):
     """
     Public, unauthenticated read of the course catalog.
 
@@ -501,6 +508,17 @@ def read_course_catalog():
       ]
     """
     from app.course_catalog import COURSE_CATALOG
+    from app.catalog_audit import detect_and_record
+
+    # Run the catalog change detector. Cheap when nothing changed
+    # (single hash compare); when prices or copy were edited, this
+    # records change events visible in the /admin catalog history
+    # panel. Failures here must NOT break the public endpoint —
+    # serving the catalog is more important than recording history.
+    try:
+        detect_and_record(db)
+    except Exception as audit_err:  # noqa: BLE001
+        logger.warning("catalog_audit: detect failed err=%s", audit_err)
 
     items = []
     for course in COURSE_CATALOG:
@@ -529,6 +547,29 @@ def read_course_catalog():
             }
         )
     return {"items": items}
+
+
+@router.get("/courses/changes/secure")
+def read_catalog_changes(
+    tenant_name: str,
+    limit: int = 100,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """
+    Admin-only audit log of catalog changes.
+
+    Returns the N most recent change events recorded by the audit
+    detector. Each event represents a single (course, field) change
+    captured during a deploy. Visible in the /admin catalog history
+    panel.
+    """
+    auth_dependency(db, tenant_name, x_academy_session, authorization, {"admin"})
+    from app.catalog_audit import list_recent_changes
+
+    capped = max(1, min(limit, 500))
+    return {"items": list_recent_changes(db, limit=capped)}
 
 
 @router.get("/applications")
@@ -588,17 +629,44 @@ def create_application_route(payload: ApplicationCreate, db: Session = Depends(g
             status_code=422,
             detail=(
                 "Unknown course. Provide a valid course_code from the public catalog "
-                "(see apps/web/lib/public-site-content.ts::LIVE_SITE_PROGRAMS)."
+                "(apps/api/app/course_catalog.py)."
             ),
         )
-    if not is_open_for_admissions(course):
-        raise HTTPException(
-            status_code=422,
-            detail=(
-                f"{course.name} is not yet open for admissions. Please pick a course "
-                "currently accepting applications."
-            ),
-        )
+
+    # Reservation-vs-live validation:
+    #   - is_reservation=True  → course MUST be coming-soon AND have
+    #                            reservation_fee_inr > 0
+    #   - is_reservation=False → course MUST be open (existing behavior)
+    # Clients cannot fake reservation status to bypass the coming-soon
+    # block, and cannot apply to a coming-soon course without using the
+    # reservation flow.
+    if payload.is_reservation:
+        if not course.coming_soon:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f"{course.name} is currently accepting full applications — "
+                    "use the standard application flow instead of Reserve a Seat."
+                ),
+            )
+        if not course.reservation_fee_inr or course.reservation_fee_inr <= 0:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f"Reservation is not available for {course.name}. "
+                    "Please contact admissions."
+                ),
+            )
+    else:
+        if not is_open_for_admissions(course):
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f"{course.name} is not yet open for full admissions. "
+                    "Use Reserve a Seat to pay the advance and hold a place "
+                    "for the next cohort."
+                ),
+            )
 
     # Build the canonical, server-controlled payload. Override anything the
     # client sent for the fee fields.
@@ -607,8 +675,29 @@ def create_application_route(payload: ApplicationCreate, db: Session = Depends(g
     body["course_name"] = course.name
     body["course_fee"] = course.fee_inr
     body["cohort_label"] = course.cohort_label
-    body["amount_due"] = float(course.fee_inr)
     body["currency"] = "INR"
+    body["is_reservation"] = payload.is_reservation
+
+    if payload.is_reservation:
+        # Reservation flow: amount_due is the advance (₹5,000), balance
+        # tracked separately. balance_due_by stays None until cohort
+        # is announced — see /courses/{code}/announce (todo).
+        reservation_amount = float(course.reservation_fee_inr)
+        balance_amount = float(course.fee_inr) - reservation_amount
+        body["reservation_amount"] = reservation_amount
+        body["balance_amount"] = balance_amount
+        body["amount_due"] = reservation_amount
+        body["reservation_paid_at"] = None
+        body["balance_due_by"] = None
+        body["balance_paid_at"] = None
+    else:
+        # Live flow: full fee due upfront, no reservation tracking.
+        body["amount_due"] = float(course.fee_inr)
+        body["reservation_amount"] = 0.0
+        body["balance_amount"] = 0.0
+        body["reservation_paid_at"] = None
+        body["balance_due_by"] = None
+        body["balance_paid_at"] = None
 
     item = create_application(db, payload.tenant_name, body)
     return {"ok": True, "item": item}
@@ -673,33 +762,52 @@ def create_application_payment_link(application_id: str, payload: PaymentLinkUpd
     # changes between application submission and payment link creation,
     # the new price applies. The client cannot influence the amount.
     #
-    # Resolution order:
-    #   1. Look up the application's `course_code` in the live catalog →
-    #      use the catalog's current fee. (Most common path.)
-    #   2. Fall back to the application's stamped `course_fee` if the
-    #      catalog no longer has that course (e.g. it was retired).
-    #   3. Final fallback: `amount_due` from the row, with a warning.
+    # For reservations (Reserve a Seat flow), the chargeable amount is
+    # the reservation_fee_inr (₹5,000), NOT the full course fee. The
+    # balance is collected separately after cohort announcement.
     course_code = application.get("course_code")
     course_name = application.get("course_name")
     course = find_course(code=course_code, name=course_name)
+    is_reservation = bool(application.get("is_reservation"))
+
     if course is not None:
         course_fee = float(course.fee_inr)
+        reservation_amount = float(course.reservation_fee_inr)
         # If the catalog price has shifted since the application was created,
         # update the application row so receipts + admin UI reflect reality.
         stamped_fee = application.get("course_fee")
-        if stamped_fee is not None and float(stamped_fee) != course_fee:
+        stamped_reservation = application.get("reservation_amount", 0)
+        catalog_drifted = (
+            (stamped_fee is not None and float(stamped_fee) != course_fee)
+            or (is_reservation and float(stamped_reservation) != reservation_amount)
+        )
+        if catalog_drifted:
             logger.info(
-                "Application %s: course %s price re-resolved %s → %s from catalog",
+                "Application %s: catalog drift detected for %s — fee %s→%s reservation %s→%s",
                 application_id, course.code, stamped_fee, course_fee,
+                stamped_reservation, reservation_amount,
             )
+            balance = course_fee - reservation_amount if is_reservation else 0.0
             application = _save_payment_transition(
                 db,
                 payload.tenant_name,
                 application_id,
-                {"course_fee": course.fee_inr, "amount_due": course_fee, "course_name": course.name},
+                {
+                    "course_fee": course.fee_inr,
+                    "course_name": course.name,
+                    **(
+                        {
+                            "reservation_amount": reservation_amount,
+                            "balance_amount": balance,
+                        }
+                        if is_reservation
+                        else {}
+                    ),
+                },
             ) or application
     elif application.get("course_fee") is not None:
         course_fee = float(application["course_fee"])
+        reservation_amount = float(application.get("reservation_amount", 0) or 0)
         logger.warning(
             "Application %s: course no longer in catalog (code=%s, name=%s); using stamped fee %s",
             application_id, course_code, course_name, course_fee,
@@ -707,14 +815,18 @@ def create_application_payment_link(application_id: str, payload: PaymentLinkUpd
     else:
         # Legacy applications created before the catalog change.
         course_fee = float(application.get("amount_due", 0))
+        reservation_amount = 0.0
         logger.warning(
             "Application %s has neither course_fee nor catalog match — falling back to amount_due (%s).",
             application_id, course_fee,
         )
 
+    # Choose what to charge NOW. For reservations, charge the advance.
+    chargeable_amount = reservation_amount if is_reservation else course_fee
+
     payment = create_payment_link(
         application_id=application_id,
-        amount_due=course_fee,
+        amount_due=chargeable_amount,
         currency="INR",
     )
     item = _save_payment_transition(
@@ -819,16 +931,21 @@ async def _capture_payment(
 
     tenant_name = application.get("tenant_name", "")
 
-    # 5a. FRAUD CHECK — captured amount must equal the expected course fee.
-    # Razorpay reports `amount` in paise; our catalog stores rupees. If
-    # someone tampered with the order to charge a smaller amount than the
-    # course fee, refuse to mark the application paid. The difference is
-    # logged for ops to investigate.
-    expected_inr = application.get("course_fee")
-    if expected_inr is None:
-        # Fall back to amount_due for legacy applications. Same fraud
-        # principle applies — the captured amount must equal what we asked.
-        expected_inr = application.get("amount_due")
+    # 5a. FRAUD CHECK — captured amount must equal the expected charge.
+    # For reservations, that's the reservation_amount (₹5,000). For
+    # standard applications, the full course_fee. Razorpay reports
+    # `amount` in paise; our catalog stores rupees. If someone tampered
+    # with the order to charge a smaller amount than expected, refuse
+    # to mark the application paid.
+    is_reservation = bool(application.get("is_reservation"))
+    if is_reservation and not application.get("reservation_paid_at"):
+        # First payment for a reservation → expected amount is the advance.
+        expected_inr = application.get("reservation_amount") or application.get("amount_due")
+    else:
+        # Standard payment path (full fee, or balance payment after announce).
+        expected_inr = application.get("course_fee")
+        if expected_inr is None:
+            expected_inr = application.get("amount_due")
     if expected_inr is not None:
         try:
             expected_paise = int(round(float(expected_inr) * 100))
@@ -853,14 +970,88 @@ async def _capture_payment(
                 application["id"], fraud_err,
             )
 
-    # 6. Secondary idempotency check — skip if already paid / enrolled
-    if application.get("payment_stage") == "paid":
+    # 6. Secondary idempotency check — skip if already paid / enrolled.
+    # For reservations we check reservation_paid_at; for full payments,
+    # payment_stage == "paid".
+    if is_reservation and application.get("reservation_paid_at"):
+        logger.info(
+            "Razorpay webhook: reservation %s already marked paid — skipping",
+            application["id"],
+        )
+        return {"ok": True, "idempotent": True, "application_id": application["id"], "payment_stage": application.get("payment_stage")}
+    if not is_reservation and application.get("payment_stage") == "paid":
         assigned = assign_first_batch_if_needed(db, tenant_name, application["id"]) or application
         logger.info(
             "Razorpay webhook: application %s already marked as paid — skipping",
             application["id"],
         )
         return {"ok": True, "idempotent": True, "application_id": assigned["id"], "payment_stage": assigned.get("payment_stage")}
+
+    # 6a. Reservation branch — diverges from the standard full-payment flow:
+    #   - Mark reservation_paid_at (timestamp)
+    #   - payment_stage = "reservation_paid" (NOT "paid" — balance still due)
+    #   - application_stage = "reserved" (NOT "enrolled" — no cohort yet)
+    #   - Send confirmation email (graceful no-op if Resend not configured)
+    #   - DO NOT issue student credentials yet (those come on full payment)
+    #   - DO NOT assign to a batch (no batch until cohort announced)
+    if is_reservation:
+        razorpay_payment_id = (
+            event.get("payload", {})
+                 .get("payment", {})
+                 .get("entity", {})
+                 .get("id")
+        )
+        timestamp = now_iso()
+        updated = _save_payment_transition(
+            db,
+            tenant_name,
+            application["id"],
+            {
+                "reservation_paid_at": timestamp,
+                "payment_verified_at": timestamp,
+                "payment_gateway_status": "captured",
+                "payment_gateway_payment_id": razorpay_payment_id,
+                "payment_reconciliation_status": "captured",
+                "payment_stage": "reservation_paid",
+                "application_stage": "reserved",
+            },
+        ) or application
+
+        # Send the reservation confirmation email. Failures here must NOT
+        # roll back the payment — the student paid, the row is updated;
+        # an undelivered email is a follow-up problem, not a payment problem.
+        try:
+            email_meta = render_reservation_confirmation_email(
+                student_name=updated.get("student_name", ""),
+                course_name=updated.get("course_name", ""),
+                reservation_amount=float(updated.get("reservation_amount", 0) or 0),
+                balance_amount=float(updated.get("balance_amount", 0) or 0),
+                currency=updated.get("currency", "INR"),
+            )
+            send_email(
+                to=updated.get("student_email", ""),
+                subject=email_meta["subject"],
+                html=email_meta["html"],
+                text=email_meta["text"],
+            )
+        except Exception as email_err:  # noqa: BLE001
+            logger.warning(
+                "Reservation confirmation email failed for application=%s err=%s",
+                application["id"], email_err,
+            )
+
+        # Record event_id for idempotency on retries.
+        if event_id:
+            try:
+                record_webhook_event(db, event_id, source="razorpay", reference=reference or "")
+            except Exception as record_err:  # noqa: BLE001
+                logger.warning("Failed to record processed event_id=%s err=%s", event_id, record_err)
+
+        logger.info(
+            "Razorpay webhook: reservation captured — application=%s tenant=%s event_id=%s",
+            application["id"], tenant_name, event_id,
+        )
+        return {"ok": True, "application_id": updated["id"], "payment_stage": updated.get("payment_stage")}
 
     updated = _reconcile_application_payment(db, application, reported_outcome="success")
     if updated is None:

@@ -1,5 +1,6 @@
 import { SiteShell } from "../../components/site-shell";
 import { AdminBrandingStudio } from "../../components/admin-branding-studio";
+import { AdminCatalogHistory } from "../../components/admin-catalog-history";
 import { AdminLaunchReadiness } from "../../components/admin-launch-readiness";
 import { AdminLmsConsole } from "../../components/admin-lms-console";
 import { AdminUserManagement } from "../../components/admin-user-management";
@@ -54,6 +55,7 @@ export default async function AdminPage() {
         <AdminLaunchReadiness />
         <AdminUserManagement />
         <AdminLmsConsole />
+        <AdminCatalogHistory />
         <AdminBrandingStudio />
       </InternalRouteGate>
     </SiteShell>

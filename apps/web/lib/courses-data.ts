@@ -89,8 +89,8 @@ const CATALOG_SNAPSHOT: Course[] = [
   {
     code: "P · 01",
     name: "Foundation Program in Travel & Tourism Industry",
-    fee_inr: 24999,
-    fee_display: "₹24,999*",
+    fee_inr: 36999,
+    fee_display: "₹36,999*",
     reservation_fee_inr: 0,
     reservation_fee_display: "",
     duration_label: "16 weeks",

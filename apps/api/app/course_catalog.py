@@ -45,7 +45,7 @@ COURSE_CATALOG: tuple[Course, ...] = (
     Course(
         code="P · 01",
         name="Foundation Program in Travel & Tourism Industry",
-        fee_inr=24999,
+        fee_inr=36999,
         duration_label="16 weeks",
         format_label="Hybrid",
         cohort_label="26 May 2026",

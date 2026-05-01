@@ -62,3 +62,49 @@ class AcademyWebhookEvent(Base):
     event_id = Column(String, index=True, nullable=False)
     reference = Column(String, nullable=True)  # optional secondary ref, e.g. application_id
     processed_at = Column(String, nullable=False)
+
+
+class AcademyCatalogSnapshot(Base):
+    """
+    Last-known snapshot of the course catalog. The audit detector
+    compares the live catalog against this row on each request to
+    /courses/catalog; when they differ, change events are appended
+    and the snapshot is replaced.
+
+    A single row would suffice, but keeping append-only history makes
+    forensic recovery trivial — you can rebuild any past catalog state
+    by replaying snapshots in order.
+    """
+
+    __tablename__ = "academy_catalog_snapshots"
+
+    id = Column(Integer, primary_key=True, index=True)
+    captured_at = Column(String, nullable=False, index=True)
+    catalog_hash = Column(String, nullable=False, index=True)
+    snapshot = Column(JSON, nullable=False)
+    commit_sha = Column(String, nullable=True)
+    commit_message = Column(String, nullable=True)
+
+
+class AcademyCatalogChangeEvent(Base):
+    """
+    Append-only log of every detected change to the course catalog.
+
+    One row per (course, field) change in a single deploy. So a
+    catalog edit that bumps both fee_inr and cohort_label on P·01
+    produces two rows for the same detected_at timestamp.
+
+    Visible to admins via GET /api/v1/academy/courses/changes and
+    surfaced in the /admin UI.
+    """
+
+    __tablename__ = "academy_catalog_change_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    detected_at = Column(String, nullable=False, index=True)
+    course_code = Column(String, nullable=False, index=True)
+    field = Column(String, nullable=False)
+    before_value = Column(String, nullable=True)
+    after_value = Column(String, nullable=True)
+    commit_sha = Column(String, nullable=True)
+    commit_message = Column(String, nullable=True)
