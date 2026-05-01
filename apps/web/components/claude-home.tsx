@@ -250,6 +250,8 @@ export function ClaudeHome() {
             <a href="#programs">Programs</a>
             <a href="#curriculum">Curriculum</a>
             <a href="#faculty">Faculty</a>
+            <Link href="/advisory-board">Advisory Board</Link>
+            <Link href="/patron">Patron</Link>
             <a href="#outcomes">Outcomes</a>
             <a href="#admissions">Admissions</a>
           </div>
@@ -772,6 +774,8 @@ export function ClaudeHome() {
               <h6 className={styles.footerHeading}>Academy</h6>
               <a href="#about">About VIVA</a>
               <a href="#faculty">Faculty</a>
+              <Link href="/advisory-board">Advisory Board</Link>
+              <Link href="/patron">Patron</Link>
               <a href="#curriculum">Curriculum</a>
               <a href="#outcomes">Outcomes</a>
               <Link href="/apply">Admissions</Link>
