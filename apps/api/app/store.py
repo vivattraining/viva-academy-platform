@@ -712,6 +712,251 @@ def list_sessions(db: Session, tenant_name: str, batch_id: Optional[str] = None)
     return sorted(filtered, key=lambda item: f'{item.get("session_date", "")} {item.get("start_time", "")}')
 
 
+# -------------------------------------------------------------------
+# Online certification test storage (V2 phase 2 sub-task D).
+# -------------------------------------------------------------------
+
+
+def list_tests(db: Session, tenant_name: str) -> list[dict]:
+    return list_items(db, tenant_name, "tests")
+
+
+def get_test_for_course(db: Session, tenant_name: str, course_id: str) -> Optional[dict]:
+    return next(
+        (t for t in list_tests(db, tenant_name)
+         if t.get("course_id") == course_id and t.get("active", True)),
+        None,
+    )
+
+
+def get_test_by_id(db: Session, tenant_name: str, test_id: str) -> Optional[dict]:
+    return next((t for t in list_tests(db, tenant_name) if t["id"] == test_id), None)
+
+
+def create_or_replace_test(db: Session, tenant_name: str, payload: dict) -> dict:
+    """One active test per course. Replaces any existing test for the course."""
+    state = get_tenant_state(db, tenant_name)
+    state.setdefault("tests", [])
+    course_id = payload["course_id"]
+    state["tests"] = [t for t in state["tests"] if t.get("course_id") != course_id]
+    record = {
+        "id": make_id("test"),
+        "tenant_name": tenant_name,
+        "course_id": course_id,
+        "pass_score": int(payload.get("pass_score", 75) or 75),
+        "retake_days": int(payload.get("retake_days", 14) or 14),
+        "time_limit_minutes": payload.get("time_limit_minutes"),
+        "active": bool(payload.get("active", True)),
+        "created_at": now_iso(),
+        "updated_at": now_iso(),
+    }
+    state["tests"].append(record)
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def list_test_questions(db: Session, tenant_name: str, test_id: str) -> list[dict]:
+    items = list_items(db, tenant_name, "test_questions")
+    filtered = [q for q in items if q.get("test_id") == test_id]
+    return sorted(filtered, key=lambda q: int(q.get("position", 0) or 0))
+
+
+def create_test_question(db: Session, tenant_name: str, payload: dict) -> dict:
+    state = get_tenant_state(db, tenant_name)
+    state.setdefault("test_questions", [])
+    record = {
+        "id": make_id("q"),
+        "tenant_name": tenant_name,
+        "test_id": payload["test_id"],
+        "prompt": payload["prompt"].strip(),
+        "type": payload.get("type", "true_false").strip(),
+        "options": list(payload.get("options") or []),
+        "correct_answer": str(payload["correct_answer"]).strip(),
+        "points": int(payload.get("points", 1) or 1),
+        "position": int(payload.get("position", 1) or 1),
+        "created_at": now_iso(),
+        "updated_at": now_iso(),
+    }
+    state["test_questions"].append(record)
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def update_test_question(
+    db: Session, tenant_name: str, question_id: str, patch: dict
+) -> Optional[dict]:
+    state = get_tenant_state(db, tenant_name)
+    for idx, q in enumerate(state.get("test_questions", [])):
+        if q["id"] == question_id:
+            for k, v in patch.items():
+                if v is None:
+                    continue
+                if k in {"prompt", "type", "correct_answer"}:
+                    q[k] = str(v).strip()
+                elif k == "options":
+                    q[k] = list(v)
+                elif k in {"points", "position"}:
+                    q[k] = int(v)
+                else:
+                    q[k] = v
+            q["updated_at"] = now_iso()
+            state["test_questions"][idx] = q
+            save_tenant_state(db, tenant_name, state)
+            return q
+    return None
+
+
+def delete_test_question(db: Session, tenant_name: str, question_id: str) -> bool:
+    state = get_tenant_state(db, tenant_name)
+    before = len(state.get("test_questions", []))
+    state["test_questions"] = [
+        q for q in state.get("test_questions", []) if q["id"] != question_id
+    ]
+    if len(state["test_questions"]) == before:
+        return False
+    save_tenant_state(db, tenant_name, state)
+    return True
+
+
+def list_test_attempts(
+    db: Session,
+    tenant_name: str,
+    test_id: Optional[str] = None,
+    application_id: Optional[str] = None,
+) -> list[dict]:
+    items = list_items(db, tenant_name, "test_attempts")
+    if test_id:
+        items = [a for a in items if a.get("test_id") == test_id]
+    if application_id:
+        items = [a for a in items if a.get("application_id") == application_id]
+    return sorted(items, key=lambda a: a.get("started_at", ""), reverse=True)
+
+
+def get_latest_attempt(
+    db: Session, tenant_name: str, test_id: str, application_id: str
+) -> Optional[dict]:
+    attempts = list_test_attempts(db, tenant_name, test_id=test_id, application_id=application_id)
+    return attempts[0] if attempts else None
+
+
+def start_test_attempt(
+    db: Session, tenant_name: str, test_id: str, application_id: str
+) -> dict:
+    state = get_tenant_state(db, tenant_name)
+    state.setdefault("test_attempts", [])
+    record = {
+        "id": make_id("att"),
+        "tenant_name": tenant_name,
+        "test_id": test_id,
+        "application_id": application_id,
+        "started_at": now_iso(),
+        "submitted_at": None,
+        "score_pct": None,
+        "passed": None,
+        "answers": [],
+    }
+    state["test_attempts"].append(record)
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def submit_test_attempt(
+    db: Session,
+    tenant_name: str,
+    attempt_id: str,
+    given_answers: list[dict],
+) -> Optional[dict]:
+    """Auto-grade and persist the attempt result.
+
+    given_answers: list of {question_id, given_answer}.
+    Unanswered questions are scored as incorrect (0 points).
+    Returns the updated attempt with score_pct and passed set, or
+    None if the attempt does not exist. If the attempt is already
+    submitted, returns it unchanged (idempotent).
+    """
+    state = get_tenant_state(db, tenant_name)
+    attempt = next(
+        (a for a in state.get("test_attempts", []) if a["id"] == attempt_id),
+        None,
+    )
+    if attempt is None:
+        return None
+    if attempt.get("submitted_at"):
+        return attempt
+
+    test = next(
+        (t for t in state.get("tests", []) if t["id"] == attempt["test_id"]),
+        None,
+    )
+    if test is None:
+        raise ValueError("Test not found for attempt")
+
+    questions = sorted(
+        [
+            q for q in state.get("test_questions", [])
+            if q.get("test_id") == attempt["test_id"]
+        ],
+        key=lambda q: int(q.get("position", 0) or 0),
+    )
+    questions_by_id = {q["id"]: q for q in questions}
+
+    answer_log: list[dict] = []
+    earned_points = 0
+    seen_qids: set[str] = set()
+
+    for ans in given_answers:
+        qid = ans.get("question_id")
+        if not qid or qid in seen_qids:
+            continue
+        seen_qids.add(qid)
+        question = questions_by_id.get(qid)
+        if question is None:
+            continue
+        given = (ans.get("given_answer") or "").strip()
+        correct = str(question.get("correct_answer", "")).strip()
+        is_correct = bool(given) and given.lower() == correct.lower()
+        points = int(question.get("points", 1) or 1)
+        if is_correct:
+            earned_points += points
+        answer_log.append({
+            "question_id": qid,
+            "given_answer": given,
+            "is_correct": is_correct,
+            "points": points,
+        })
+
+    # Cover any questions the student didn't answer at all.
+    for q in questions:
+        if q["id"] in seen_qids:
+            continue
+        answer_log.append({
+            "question_id": q["id"],
+            "given_answer": "",
+            "is_correct": False,
+            "points": int(q.get("points", 1) or 1),
+        })
+
+    total_points = sum(int(q.get("points", 1) or 1) for q in questions)
+    score_pct = round((earned_points / total_points) * 100, 2) if total_points > 0 else 0.0
+    pass_score = int(test.get("pass_score", 75) or 75)
+    passed = score_pct >= pass_score
+
+    attempt["submitted_at"] = now_iso()
+    attempt["score_pct"] = score_pct
+    attempt["passed"] = passed
+    attempt["answers"] = answer_log
+    attempt["earned_points"] = earned_points
+    attempt["total_points"] = total_points
+
+    for idx, a in enumerate(state["test_attempts"]):
+        if a["id"] == attempt_id:
+            state["test_attempts"][idx] = attempt
+            break
+
+    save_tenant_state(db, tenant_name, state)
+    return attempt
+
+
 def get_session(db: Session, tenant_name: str, session_id: str) -> Optional[dict]:
     return next((item for item in list_items(db, tenant_name, "sessions") if item["id"] == session_id), None)
 

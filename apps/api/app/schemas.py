@@ -262,3 +262,57 @@ class TrainerReviewCreate(BaseModel):
     ai_feedback: str = ""
     trainer_feedback: str = ""
     unlock_next_module: bool = False
+
+
+# -------------------------------------------------------------------
+# Online certification test — V2 phase 2 sub-task D.
+# Auto-graded test attached to a course. Y/N or multi-choice
+# questions, percentage-based pass score (default 75 from curriculum
+# Course.docx), N-day retake window (default 14 from curriculum).
+# Storage: tenant_state JSON arrays — `tests`, `test_questions`,
+# `test_attempts` — same blob pattern as applications.
+# -------------------------------------------------------------------
+
+
+class TestCreate(BaseModel):
+    tenant_name: str
+    course_id: str
+    pass_score: int = 75
+    retake_days: int = 14
+    time_limit_minutes: Optional[int] = None
+    active: bool = True
+
+
+class TestQuestionCreate(BaseModel):
+    tenant_name: str
+    test_id: str
+    prompt: str = Field(..., min_length=1)
+    # "true_false" → correct_answer must be "true" or "false"
+    # "multiple_choice" → options is a list of choices, correct_answer
+    #   is the exact text of the correct option
+    type: str = "true_false"
+    options: list[str] = []
+    correct_answer: str = Field(..., min_length=1)
+    points: int = 1
+    position: int = 1
+
+
+class TestQuestionUpdate(BaseModel):
+    tenant_name: str
+    prompt: Optional[str] = Field(default=None, min_length=1)
+    type: Optional[str] = None
+    options: Optional[list[str]] = None
+    correct_answer: Optional[str] = Field(default=None, min_length=1)
+    points: Optional[int] = None
+    position: Optional[int] = None
+
+
+class TestAnswerSubmit(BaseModel):
+    question_id: str
+    given_answer: str = ""
+
+
+class TestAttemptSubmit(BaseModel):
+    tenant_name: str
+    application_id: str
+    answers: list[TestAnswerSubmit] = []

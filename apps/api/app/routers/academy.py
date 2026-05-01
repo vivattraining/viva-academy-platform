@@ -52,11 +52,26 @@ from app.schemas import (
     SessionCreate,
     SessionZoomUpdate,
     TenantBranding,
+    TestAttemptSubmit,
+    TestCreate,
+    TestQuestionCreate,
+    TestQuestionUpdate,
     TrainerReviewCreate,
     ZoomProvisionRequest,
     ZoomWebhookAttendance,
 )
-from app.store import (
+from app.store import (  # noqa: I001
+    create_or_replace_test,
+    create_test_question,
+    delete_test_question,
+    get_latest_attempt,
+    get_test_by_id,
+    get_test_for_course,
+    list_test_attempts,
+    list_test_questions,
+    start_test_attempt,
+    submit_test_attempt,
+    update_test_question,
     assign_first_batch_if_needed,
     create_chapter_submission,
     create_application,
@@ -727,6 +742,256 @@ def read_catalog_changes(
 
     capped = max(1, min(limit, 500))
     return {"items": list_recent_changes(db, limit=capped)}
+
+
+# -----------------------------------------------------------------------
+# Online certification test (V2 phase 2 sub-task D).
+# Auto-graded test attached to a course. Y/N or multi-choice questions,
+# percentage-based pass score (75% default), N-day retake window
+# (14 days default — from Course.docx Week 15 spec).
+# Storage uses tenant_state JSON arrays — no DB migration needed.
+# -----------------------------------------------------------------------
+
+
+@router.post("/tests/secure")
+def create_test_route(
+    payload: TestCreate,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """Admin: create or replace the test for a course."""
+    auth_dependency(db, payload.tenant_name, x_academy_session, authorization, {"admin"})
+    body = payload.model_dump()
+    body.pop("tenant_name", None)
+    item = create_or_replace_test(db, payload.tenant_name, body)
+    return {"ok": True, "item": item}
+
+
+@router.get("/tests/secure")
+def read_test_admin(
+    tenant_name: str,
+    course_id: str,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """Admin or trainer: read the test + all questions WITH correct
+    answers (for editing and review)."""
+    auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES)
+    test = get_test_for_course(db, tenant_name, course_id)
+    if test is None:
+        return {"item": None, "questions": []}
+    questions = list_test_questions(db, tenant_name, test["id"])
+    return {"item": test, "questions": questions}
+
+
+@router.post("/tests/{test_id}/questions/secure")
+def add_test_question(
+    test_id: str,
+    payload: TestQuestionCreate,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_dependency(db, payload.tenant_name, x_academy_session, authorization, {"admin"})
+    if payload.test_id != test_id:
+        raise HTTPException(status_code=422, detail="test_id in path and body must match")
+    if payload.type not in {"true_false", "multiple_choice"}:
+        raise HTTPException(status_code=422, detail="type must be 'true_false' or 'multiple_choice'")
+    if payload.type == "multiple_choice":
+        if not payload.options or len(payload.options) < 2:
+            raise HTTPException(status_code=422, detail="multiple_choice questions need at least 2 options")
+        if payload.correct_answer not in payload.options:
+            raise HTTPException(status_code=422, detail="correct_answer must match one of the options")
+    if payload.type == "true_false":
+        if payload.correct_answer.strip().lower() not in {"true", "false"}:
+            raise HTTPException(status_code=422, detail="true_false correct_answer must be 'true' or 'false'")
+    body = payload.model_dump()
+    body.pop("tenant_name", None)
+    item = create_test_question(db, payload.tenant_name, body)
+    return {"ok": True, "item": item}
+
+
+@router.patch("/tests/questions/{question_id}/secure")
+def patch_test_question(
+    question_id: str,
+    payload: TestQuestionUpdate,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_dependency(db, payload.tenant_name, x_academy_session, authorization, {"admin"})
+    patch = payload.model_dump(exclude_none=True)
+    patch.pop("tenant_name", None)
+    item = update_test_question(db, payload.tenant_name, question_id, patch)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Question not found")
+    return {"ok": True, "item": item}
+
+
+@router.delete("/tests/questions/{question_id}/secure")
+def remove_test_question(
+    question_id: str,
+    tenant_name: str,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_dependency(db, tenant_name, x_academy_session, authorization, {"admin"})
+    if not delete_test_question(db, tenant_name, question_id):
+        raise HTTPException(status_code=404, detail="Question not found")
+    return {"ok": True}
+
+
+@router.get("/tests/student")
+def read_test_student(
+    tenant_name: str,
+    course_id: str,
+    application_id: str,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """Student: fetch the test for taking. Correct answers are
+    stripped from the response. Includes retake-eligibility info so
+    the UI can show 'available on [date]' when the 14-day window
+    hasn't elapsed since the last failed attempt."""
+    application = get_application(db, tenant_name, application_id)
+    if application is None:
+        raise HTTPException(status_code=404, detail="Application not found")
+    auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES | {"student"})
+
+    test = get_test_for_course(db, tenant_name, course_id)
+    if test is None:
+        return {"item": None, "questions": [], "latest_attempt": None,
+                "can_attempt": False, "can_attempt_after": None,
+                "reason": "no_test_configured"}
+
+    questions = list_test_questions(db, tenant_name, test["id"])
+    safe_questions = [
+        {k: v for k, v in q.items() if k != "correct_answer"}
+        for q in questions
+    ]
+
+    latest = get_latest_attempt(db, tenant_name, test["id"], application_id)
+    can_attempt = True
+    can_attempt_after: Optional[str] = None
+    reason: Optional[str] = None
+
+    if latest is not None:
+        if latest.get("passed"):
+            can_attempt = False
+            reason = "already_passed"
+        elif latest.get("submitted_at"):
+            from datetime import datetime, timedelta, timezone
+            try:
+                submitted_iso = latest["submitted_at"].replace("Z", "+00:00")
+                dt = datetime.fromisoformat(submitted_iso)
+                eligible = dt + timedelta(days=int(test.get("retake_days", 14) or 14))
+                if datetime.now(timezone.utc) < eligible:
+                    can_attempt = False
+                    can_attempt_after = eligible.isoformat()
+                    reason = "retake_window"
+            except (TypeError, ValueError) as parse_err:
+                logger.warning(
+                    "Could not parse submitted_at for attempt %s: %s",
+                    latest.get("id"), parse_err,
+                )
+        else:
+            # Open (not yet submitted) attempt — student is mid-test
+            can_attempt = True
+            reason = "in_progress"
+
+    return {
+        "item": test,
+        "questions": safe_questions,
+        "latest_attempt": latest,
+        "can_attempt": can_attempt,
+        "can_attempt_after": can_attempt_after,
+        "reason": reason,
+    }
+
+
+@router.post("/tests/{test_id}/attempts/start")
+def start_attempt_route(
+    test_id: str,
+    tenant_name: str,
+    application_id: str,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """Student: start a new attempt. Enforces the retake window."""
+    application = get_application(db, tenant_name, application_id)
+    if application is None:
+        raise HTTPException(status_code=404, detail="Application not found")
+    auth_dependency(db, tenant_name, x_academy_session, authorization, {"student"})
+
+    test = get_test_by_id(db, tenant_name, test_id)
+    if test is None or not test.get("active", True):
+        raise HTTPException(status_code=404, detail="Test not found or not active")
+
+    latest = get_latest_attempt(db, tenant_name, test_id, application_id)
+    if latest and latest.get("passed"):
+        raise HTTPException(
+            status_code=409,
+            detail="Test already passed. No further attempts needed.",
+        )
+    if latest and latest.get("submitted_at"):
+        from datetime import datetime, timedelta, timezone
+        try:
+            submitted_iso = latest["submitted_at"].replace("Z", "+00:00")
+            dt = datetime.fromisoformat(submitted_iso)
+            eligible = dt + timedelta(days=int(test.get("retake_days", 14) or 14))
+            if datetime.now(timezone.utc) < eligible:
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"Retake available on {eligible.date().isoformat()}",
+                )
+        except (TypeError, ValueError):
+            pass
+
+    # Reuse an open attempt if one exists (student refreshed mid-test).
+    open_attempts = [
+        a for a in list_test_attempts(db, tenant_name, test_id=test_id, application_id=application_id)
+        if not a.get("submitted_at")
+    ]
+    if open_attempts:
+        return {"ok": True, "attempt": open_attempts[0], "resumed": True}
+
+    record = start_test_attempt(db, tenant_name, test_id, application_id)
+    return {"ok": True, "attempt": record, "resumed": False}
+
+
+@router.post("/tests/attempts/{attempt_id}/submit")
+def submit_attempt_route(
+    attempt_id: str,
+    payload: TestAttemptSubmit,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """Student: submit answers for an attempt. Server auto-grades
+    and returns score + pass/fail."""
+    application = get_application(db, payload.tenant_name, payload.application_id)
+    if application is None:
+        raise HTTPException(status_code=404, detail="Application not found")
+    auth_dependency(db, payload.tenant_name, x_academy_session, authorization, {"student"})
+
+    answers = [a.model_dump() for a in payload.answers]
+    try:
+        attempt = submit_test_attempt(db, payload.tenant_name, attempt_id, answers)
+    except ValueError as err:
+        raise HTTPException(status_code=409, detail=str(err))
+    if attempt is None:
+        raise HTTPException(status_code=404, detail="Attempt not found")
+
+    # Sanity check: the attempt must belong to this application_id.
+    if attempt.get("application_id") != payload.application_id:
+        raise HTTPException(status_code=403, detail="Attempt belongs to a different application")
+
+    return {"ok": True, "attempt": attempt}
 
 
 @router.get("/applications")
