@@ -675,6 +675,123 @@ def list_course_chapters(db: Session, tenant_name: str, module_id: str) -> list[
     return sorted(filtered, key=lambda item: (int(item.get("position", 0)), item.get("title", "")))
 
 
+# -------------------------------------------------------------------
+# 4-level hierarchy (Path B): Lessons sit between Modules and Chapters.
+# Backwards compat: existing chapters with no lesson_id get a synthetic
+# "Main" lesson per module on first read of the outline.
+# -------------------------------------------------------------------
+
+
+def list_course_lessons(db: Session, tenant_name: str, module_id: str) -> list[dict]:
+    items = list_items(db, tenant_name, "course_lessons")
+    filtered = [item for item in items if item.get("module_id") == module_id]
+    return sorted(filtered, key=lambda item: (int(item.get("position", 0) or 0), item.get("title", "")))
+
+
+def create_course_lesson(db: Session, tenant_name: str, payload: dict) -> dict:
+    state = get_tenant_state(db, tenant_name)
+    state.setdefault("course_lessons", [])
+    if _find_by_id(state.get("courses", []), payload["course_id"]) is None:
+        raise ValueError("Course not found")
+    if _find_by_id(state.get("course_modules", []), payload["module_id"]) is None:
+        raise ValueError("Module not found")
+    record = {
+        "id": make_id("lesson"),
+        "tenant_name": tenant_name,
+        "course_id": payload["course_id"],
+        "module_id": payload["module_id"],
+        "title": payload["title"].strip(),
+        "position": int(payload.get("position", 1) or 1),
+        "summary": payload.get("summary", "").strip(),
+        "estimated_minutes": int(payload.get("estimated_minutes", 30) or 30),
+        "auto_created": bool(payload.get("auto_created", False)),
+        "created_at": now_iso(),
+        "updated_at": now_iso(),
+    }
+    state["course_lessons"].append(record)
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def update_course_lesson(
+    db: Session, tenant_name: str, lesson_id: str, patch: dict
+) -> Optional[dict]:
+    state = get_tenant_state(db, tenant_name)
+    for idx, lesson in enumerate(state.get("course_lessons", [])):
+        if lesson["id"] != lesson_id:
+            continue
+        for k, v in patch.items():
+            if v is None:
+                continue
+            if k in {"title", "summary"}:
+                lesson[k] = str(v).strip()
+            elif k in {"position", "estimated_minutes"}:
+                lesson[k] = int(v)
+            else:
+                lesson[k] = v
+        lesson["updated_at"] = now_iso()
+        state["course_lessons"][idx] = lesson
+        save_tenant_state(db, tenant_name, state)
+        return lesson
+    return None
+
+
+def delete_course_lesson(
+    db: Session, tenant_name: str, lesson_id: str, reassign_to: Optional[str] = None
+) -> bool:
+    """Delete a lesson. Chapters belonging to it are reassigned to
+    `reassign_to` lesson_id, or to a default Main lesson if not provided."""
+    state = get_tenant_state(db, tenant_name)
+    lesson = _find_by_id(state.get("course_lessons", []), lesson_id)
+    if lesson is None:
+        return False
+    target_lesson_id = reassign_to
+    if target_lesson_id is None:
+        # Find or create a default Main lesson in the same module
+        target = _find_or_create_default_lesson(state, lesson["course_id"], lesson["module_id"], tenant_name)
+        target_lesson_id = target["id"]
+    for chapter in state.get("course_chapters", []):
+        if chapter.get("lesson_id") == lesson_id:
+            chapter["lesson_id"] = target_lesson_id
+            chapter["updated_at"] = now_iso()
+    state["course_lessons"] = [l for l in state.get("course_lessons", []) if l["id"] != lesson_id]
+    save_tenant_state(db, tenant_name, state)
+    return True
+
+
+def _find_or_create_default_lesson(state: dict, course_id: str, module_id: str, tenant_name: str) -> dict:
+    """Find the auto-created "Main" lesson for a module, or create one.
+
+    Used by chapter creation when no lesson_id is supplied (backwards-compat
+    path). The "Main" lesson is invisible to the student LMS — when a
+    module has only a single auto-created lesson, the LMS renders the
+    chapters flat under the module instead of nested under a lesson header.
+    """
+    lessons = state.setdefault("course_lessons", [])
+    existing = next(
+        (l for l in lessons
+         if l.get("module_id") == module_id and l.get("auto_created") and l.get("title") == "Main"),
+        None,
+    )
+    if existing is not None:
+        return existing
+    record = {
+        "id": make_id("lesson"),
+        "tenant_name": tenant_name,
+        "course_id": course_id,
+        "module_id": module_id,
+        "title": "Main",
+        "position": 1,
+        "summary": "",
+        "estimated_minutes": 0,
+        "auto_created": True,
+        "created_at": now_iso(),
+        "updated_at": now_iso(),
+    }
+    lessons.append(record)
+    return record
+
+
 def create_course_chapter(db: Session, tenant_name: str, payload: dict) -> dict:
     state = get_tenant_state(db, tenant_name)
     current = now_iso()
@@ -682,11 +799,26 @@ def create_course_chapter(db: Session, tenant_name: str, payload: dict) -> dict:
         raise ValueError("Course not found")
     if _find_by_id(state["course_modules"], payload["module_id"]) is None:
         raise ValueError("Module not found")
+
+    # 4-level hierarchy: every chapter belongs to a Lesson. If the
+    # caller didn't supply lesson_id, find-or-create the auto "Main"
+    # lesson for this module so the chapter still has a valid parent.
+    lesson_id = payload.get("lesson_id")
+    if lesson_id:
+        if _find_by_id(state.get("course_lessons", []), lesson_id) is None:
+            raise ValueError("Lesson not found")
+    else:
+        default_lesson = _find_or_create_default_lesson(
+            state, payload["course_id"], payload["module_id"], tenant_name
+        )
+        lesson_id = default_lesson["id"]
+
     record = {
         "id": make_id("chap"),
         "tenant_name": tenant_name,
         "course_id": payload["course_id"],
         "module_id": payload["module_id"],
+        "lesson_id": lesson_id,
         "title": payload["title"].strip(),
         "position": int(payload["position"]),
         "content_type": payload.get("content_type", "lesson").strip(),
@@ -1496,6 +1628,59 @@ def get_course_outline(db: Session, tenant_name: str, course_id: str, applicatio
                 }
             )
         completed_count = len([item for item in chapters if item.get("status") == "completed"])
+
+        # 4-level (Path B): group chapters under their lessons.
+        # Backwards compat: chapters with no lesson_id (legacy data) get
+        # bucketed under a synthetic "Main" lesson. The frontend can
+        # detect a single auto-created lesson and render flat — see
+        # is_auto_grouped flag below.
+        module_lessons = list_course_lessons(db, tenant_name, module["id"])
+        # Make sure every chapter has a lesson_id; bucket loose chapters.
+        chapters_by_lesson: dict[str, list[dict]] = {l["id"]: [] for l in module_lessons}
+        loose_chapters: list[dict] = []
+        for chapter in chapters:
+            lid = chapter.get("lesson_id")
+            if lid and lid in chapters_by_lesson:
+                chapters_by_lesson[lid].append(chapter)
+            else:
+                loose_chapters.append(chapter)
+
+        lesson_views: list[dict] = []
+        for lesson in module_lessons:
+            lesson_chapters = chapters_by_lesson.get(lesson["id"], [])
+            lesson_completed = len([c for c in lesson_chapters if c.get("status") == "completed"])
+            lesson_views.append({
+                **lesson,
+                "chapters": lesson_chapters,
+                "chapters_completed": lesson_completed,
+                "chapters_total": len(lesson_chapters),
+            })
+        if loose_chapters:
+            # Stick orphan chapters into a synthetic "Main" lesson view
+            # without persisting it — useful for legacy data on read.
+            lesson_views.append({
+                "id": f"_orphan_{module['id']}",
+                "tenant_name": tenant_name,
+                "course_id": course_id,
+                "module_id": module["id"],
+                "title": "Main",
+                "position": 0,
+                "summary": "",
+                "estimated_minutes": 0,
+                "auto_created": True,
+                "chapters": loose_chapters,
+                "chapters_completed": len([c for c in loose_chapters if c.get("status") == "completed"]),
+                "chapters_total": len(loose_chapters),
+            })
+
+        # If the module has exactly one lesson AND it was auto-created,
+        # the frontend can choose to render chapters flat under the
+        # module instead of under a lesson header.
+        is_auto_grouped = (
+            len(lesson_views) == 1
+            and lesson_views[0].get("auto_created")
+        )
+
         modules.append(
             {
                 **module,
@@ -1504,6 +1689,8 @@ def get_course_outline(db: Session, tenant_name: str, course_id: str, applicatio
                 "chapters_completed": completed_count,
                 "chapters_total": len(chapters),
                 "chapters": chapters,
+                "lessons": lesson_views,
+                "is_auto_grouped": is_auto_grouped,
             }
         )
     return {

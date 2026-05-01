@@ -223,6 +223,35 @@ class CourseChapterCreate(BaseModel):
     # is a video chapter awaiting upload — the LMS will show a polite
     # "video coming soon" placeholder until faculty fills the URL.
     video_url: str = ""
+    # 4-level hierarchy (Path B): a chapter belongs to a Lesson within
+    # a Module. lesson_id optional for backwards compat — if missing,
+    # the server auto-finds-or-creates a default "Main" lesson per
+    # module and links the chapter there. New imports should set
+    # lesson_id explicitly to organise content into named lessons.
+    lesson_id: Optional[str] = None
+
+
+class CourseLessonCreate(BaseModel):
+    """4-level content hierarchy: Course → Module → Lesson → Chapter.
+
+    Lessons group chapters within a module. Useful when a single
+    week splits into multiple sub-topics, each with their own
+    explainer + video + assignment chapters."""
+    tenant_name: str
+    course_id: str
+    module_id: str
+    title: str = Field(..., min_length=1)
+    position: int = Field(..., ge=1)
+    summary: str = ""
+    estimated_minutes: int = 30
+
+
+class CourseLessonUpdate(BaseModel):
+    tenant_name: str
+    title: Optional[str] = Field(default=None, min_length=1)
+    position: Optional[int] = None
+    summary: Optional[str] = None
+    estimated_minutes: Optional[int] = None
 
 
 class CourseChapterUpdate(BaseModel):

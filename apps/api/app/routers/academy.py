@@ -55,6 +55,8 @@ from app.schemas import (
     TenantBranding,
     CertificateIssueRequest,
     CertificateRevokeRequest,
+    CourseLessonCreate,
+    CourseLessonUpdate,
     TestAttemptSubmit,
     TestCreate,
     TestQuestionCreate,
@@ -65,20 +67,24 @@ from app.schemas import (
 )
 from app.store import (  # noqa: I001
     create_certificate,
+    create_course_lesson,
     create_or_replace_test,
     create_test_question,
+    delete_course_lesson,
     delete_test_question,
     get_certificate_by_token_any_tenant,
     get_latest_attempt,
     get_test_by_id,
     get_test_for_course,
     list_certificates,
+    list_course_lessons,
     list_test_attempts,
     list_test_questions,
     revoke_certificate,
     start_test_attempt,
     submit_test_attempt,
     update_course_chapter,
+    update_course_lesson,
     update_test_question,
     assign_first_batch_if_needed,
     create_chapter_submission,
@@ -670,7 +676,15 @@ def import_p01_curriculum(
 
     created_course = create_course(db, tenant_name, course_payload_clean)
 
-    # Create modules + chapters
+    # Create modules + (optional lessons) + chapters.
+    # Both shapes are accepted:
+    #   3-level (legacy): module.chapters = [...]
+    #   4-level (new):    module.lessons = [{title, position, summary,
+    #                                        chapters: [...]}]
+    # When 3-level data is imported, chapters get auto-bucketed into a
+    # Main lesson per module via create_course_chapter's default-lesson
+    # path. When 4-level data is imported, lessons are created
+    # explicitly and chapters are linked to them.
     summary: list[dict] = []
     for module_data in modules_payload:
         module_clean = {
@@ -687,7 +701,53 @@ def import_p01_curriculum(
         created_module = create_course_module(db, tenant_name, module_clean)
 
         chapter_summary: list[str] = []
+        lesson_summary: list[dict] = []
+
+        # 4-level path: explicit lessons each holding their own chapters
+        if module_data.get("lessons"):
+            for lesson_idx, lesson_data in enumerate(module_data["lessons"]):
+                if not lesson_data.get("title"):
+                    continue
+                lesson_clean = {
+                    "course_id": created_course["id"],
+                    "module_id": created_module["id"],
+                    "title": lesson_data.get("title", ""),
+                    "position": lesson_data.get("position", lesson_idx + 1),
+                    "summary": lesson_data.get("summary", ""),
+                    "estimated_minutes": lesson_data.get("estimated_minutes", 30),
+                }
+                created_lesson = create_course_lesson(db, tenant_name, lesson_clean)
+                inner_chapter_ids: list[str] = []
+                for chapter_data in lesson_data.get("chapters", []):
+                    if not chapter_data.get("title"):
+                        continue
+                    chapter_clean = {
+                        "course_id": created_course["id"],
+                        "module_id": created_module["id"],
+                        "lesson_id": created_lesson["id"],
+                        "title": chapter_data.get("title", ""),
+                        "position": chapter_data.get("position", 1),
+                        "content_type": chapter_data.get("content_type", "lesson"),
+                        "summary": chapter_data.get("summary", ""),
+                        "estimated_minutes": chapter_data.get("estimated_minutes", 20),
+                        "mandatory": chapter_data.get("mandatory", True),
+                        "question_prompt": chapter_data.get("question_prompt", ""),
+                        "video_url": chapter_data.get("video_url", ""),
+                    }
+                    created_chapter = create_course_chapter(db, tenant_name, chapter_clean)
+                    inner_chapter_ids.append(created_chapter["id"])
+                    chapter_summary.append(created_chapter["id"])
+                lesson_summary.append({
+                    "lesson_id": created_lesson["id"],
+                    "title": created_lesson["title"],
+                    "chapter_ids": inner_chapter_ids,
+                })
+
+        # 3-level path: flat list of chapters under the module (legacy).
+        # The auto-Main-lesson path inside create_course_chapter handles it.
         for chapter_data in module_data.get("chapters", []):
+            if not chapter_data.get("title"):
+                continue
             chapter_clean = {
                 "course_id": created_course["id"],
                 "module_id": created_module["id"],
@@ -700,8 +760,6 @@ def import_p01_curriculum(
                 "question_prompt": chapter_data.get("question_prompt", ""),
                 "video_url": chapter_data.get("video_url", ""),
             }
-            if not chapter_clean["title"]:
-                continue
             created_chapter = create_course_chapter(db, tenant_name, chapter_clean)
             chapter_summary.append(created_chapter["id"])
 
@@ -711,6 +769,7 @@ def import_p01_curriculum(
             "title": created_module["title"],
             "chapter_ids": chapter_summary,
             "chapter_count": len(chapter_summary),
+            "lessons": lesson_summary,
         })
 
     logger.info(
@@ -1781,6 +1840,82 @@ def create_course_chapter_secure(
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return {"ok": True, "item": item}
+
+
+# ---------- Lessons (4-level hierarchy) ----------
+
+
+@router.post("/courses/{course_id}/modules/{module_id}/lessons/secure")
+def create_course_lesson_route(
+    course_id: str,
+    module_id: str,
+    payload: CourseLessonCreate,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """Admin/operations: create a Lesson within a Module. Lessons
+    group chapters into named sub-topics (e.g. Week 11's "Airline &
+    Routing Systems" can have Lessons "Flight connections", "Costings",
+    "Online plugs", each holding their own chapters)."""
+    auth_dependency(db, payload.tenant_name, x_academy_session, authorization, WRITE_ROLES)
+    body = payload.model_dump()
+    body["course_id"] = course_id
+    body["module_id"] = module_id
+    try:
+        item = create_course_lesson(db, payload.tenant_name, body)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return {"ok": True, "item": item}
+
+
+@router.get("/courses/{course_id}/modules/{module_id}/lessons/secure")
+def read_course_lessons_route(
+    course_id: str,
+    module_id: str,
+    tenant_name: str,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES | {"student"})
+    items = list_course_lessons(db, tenant_name, module_id)
+    return {"items": items}
+
+
+@router.patch("/course-lessons/{lesson_id}/secure")
+def patch_course_lesson_route(
+    lesson_id: str,
+    payload: CourseLessonUpdate,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_dependency(db, payload.tenant_name, x_academy_session, authorization, WRITE_ROLES)
+    patch = payload.model_dump(exclude_none=True)
+    patch.pop("tenant_name", None)
+    item = update_course_lesson(db, payload.tenant_name, lesson_id, patch)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    return {"ok": True, "item": item}
+
+
+@router.delete("/course-lessons/{lesson_id}/secure")
+def delete_course_lesson_route(
+    lesson_id: str,
+    tenant_name: str,
+    reassign_to: Optional[str] = None,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """Delete a Lesson. Chapters belonging to it get reassigned —
+    either to `reassign_to` lesson_id (must be in the same module),
+    or to an auto-created "Main" lesson if not specified."""
+    auth_dependency(db, tenant_name, x_academy_session, authorization, WRITE_ROLES)
+    if not delete_course_lesson(db, tenant_name, lesson_id, reassign_to=reassign_to):
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    return {"ok": True}
 
 
 @router.patch("/course-chapters/{chapter_id}/secure")
