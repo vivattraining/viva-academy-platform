@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import styles from "./claude-home.module.css";
+import type { Course } from "../lib/courses-data";
 
 const HERO_VIDEO_MP4 = "/hero/viva-career-academy-campus.mp4";
 const HERO_VIDEO_WEBM = "/hero/viva-career-academy-campus.webm";
@@ -31,85 +32,12 @@ const tickerItems = [
   "Hybrid · Live + Studio",
 ];
 
-type ProgramCard = {
-  code: string;
-  title: string;
-  emphasis: string;
-  description: string;
-  meta: Array<[string, string]>;
-  comingSoon?: boolean;
-};
-
-const programs: ProgramCard[] = [
-  {
-    code: "P · 01",
-    title: "Foundation Program in",
-    emphasis: "Travel & Tourism Industry",
-    description:
-      "The 16-week foundation programme. Sector orientation, customer journey, sales, operations, geography, MICE, costing, and business models — the disciplined first step into a real career in travel for committed beginners.",
-    meta: [
-      ["Duration", "16 weeks"],
-      ["Format", "Hybrid"],
-      ["Next cohort", "26 May 2026"],
-      ["Fee", "₹24,999*"],
-    ],
-  },
-  {
-    code: "P · 02",
-    title: "Travel Career",
-    emphasis: "Accelerator Program",
-    description:
-      "Master the commercial side of travel. Build expertise in client acquisition, product positioning, pricing strategy, and relationship management. Learn how to plan, sell, and deliver experiences end-to-end — designed to prepare you for high-performance roles in travel sales and business development.",
-    meta: [
-      ["Duration", "16 weeks"],
-      ["Format", "Hybrid"],
-      ["Next cohort", "6 Jun 2026"],
-      ["Fee", "₹36,999*"],
-    ],
-  },
-  {
-    code: "P · 03",
-    title: "Event & MICE",
-    emphasis: "Career Accelerator (Specialisation)",
-    description:
-      "Step into the world of high-impact events. Corporate meetings, incentives, conferences, exhibitions, and destination weddings. Event conceptualisation, vendor coordination, budgeting, and on-ground execution — for those aiming to build careers in India's fastest-growing MICE and experiential events segment.",
-    meta: [
-      ["Duration", "16 weeks"],
-      ["Format", "Hybrid"],
-      ["Next cohort", "Aug 2026"],
-      ["Fee", "₹36,999*"],
-    ],
-    comingSoon: true,
-  },
-  {
-    code: "P · 04",
-    title: "Travel Operations &",
-    emphasis: "Tour Management",
-    description:
-      "Operations-oriented programme. Itinerary design, GDS fundamentals, destination knowledge, vendor coordination, and end-to-end tour execution. Build the operational discipline behind seamless travel — for the people who run trips end-to-end.",
-    meta: [
-      ["Duration", "16 weeks"],
-      ["Format", "Hybrid"],
-      ["Next cohort", "Aug 2026"],
-      ["Fee", "₹36,999*"],
-    ],
-    comingSoon: true,
-  },
-  {
-    code: "P · 05",
-    title: "Food & Beverage",
-    emphasis: "Service Professional",
-    description:
-      "Restaurant-floor mastery for hospitality careers. Front-of-house service, beverage knowledge, guest handling, and the operational rhythm of high-standard restaurants. Designed for learners stepping into hospitality and F&B service roles.",
-    meta: [
-      ["Duration", "16 weeks"],
-      ["Format", "Hybrid"],
-      ["Next cohort", "Aug 2026"],
-      ["Fee", "₹49,999*"],
-    ],
-    comingSoon: true,
-  },
-];
+// Program card data is now driven by the server-side catalog
+// (apps/api/app/course_catalog.py) via the GET /courses/catalog
+// endpoint. The page-level server component fetches it and passes
+// the result down as a prop. To change a price, edit course_catalog.py
+// only — every surface (homepage cards, /courses page, application
+// dropdown, Razorpay modal, receipt) updates from one file.
 
 const curriculum = [
   {
@@ -268,7 +196,7 @@ const recruiters = [
   },
 ];
 
-export function ClaudeHome() {
+export function ClaudeHome({ programs }: { programs: Course[] }) {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
@@ -457,10 +385,10 @@ export function ClaudeHome() {
                   <div className={styles.programArrow}>↗</div>
                   <div className={styles.programNumber}>{program.code}</div>
                   <h3 className={styles.programTitle}>
-                    {program.title}
+                    {program.title_lead}
                     <br />
-                    <em>{program.emphasis}</em>
-                    {program.comingSoon ? (
+                    <em>{program.title_emphasis}</em>
+                    {program.coming_soon ? (
                       <span
                         style={{
                           display: "inline-block",
@@ -482,12 +410,22 @@ export function ClaudeHome() {
                   </h3>
                   <div className={styles.programDescription}>{program.description}</div>
                   <div className={styles.programMeta}>
-                    {program.meta.map(([label, value]) => (
-                      <div className={styles.metaRow} key={label}>
-                        <span>{label}</span>
-                        <span>{value}</span>
-                      </div>
-                    ))}
+                    <div className={styles.metaRow}>
+                      <span>Duration</span>
+                      <span>{program.duration_label}</span>
+                    </div>
+                    <div className={styles.metaRow}>
+                      <span>Format</span>
+                      <span>{program.format_label}</span>
+                    </div>
+                    <div className={styles.metaRow}>
+                      <span>Next cohort</span>
+                      <span>{program.cohort_label}</span>
+                    </div>
+                    <div className={styles.metaRow}>
+                      <span>Fee</span>
+                      <span>{program.fee_display}</span>
+                    </div>
                   </div>
                 </div>
               </article>

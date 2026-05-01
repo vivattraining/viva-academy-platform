@@ -4,14 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
-import { LIVE_SITE_PROGRAMS } from "../lib/public-site-content";
+import type { Course } from "../lib/courses-data";
 
-// Only programmes that are currently accepting applications. Coming-soon
-// courses are listed on the homepage but cannot be applied for yet — the
-// API rejects POST /applications for those (see course_catalog.py).
-const SELECTABLE_PROGRAMS = LIVE_SITE_PROGRAMS.filter((p) => !p.comingSoon);
-
-export function PublicAdmissionsFlow() {
+export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
   const [studentName, setStudentName] = useState("");
   const [studentEmail, setStudentEmail] = useState("");
   const [studentPhone, setStudentPhone] = useState("");
@@ -25,13 +20,15 @@ export function PublicAdmissionsFlow() {
   const [message, setMessage] = useState("");
   const [busyAction, setBusyAction] = useState<"submit" | "payment-link" | "checkout" | "">("");
 
-  const selectedProgram = SELECTABLE_PROGRAMS.find((p) => p.code === courseCode);
+  const selectedProgram = programs.find((p) => p.code === courseCode);
+  const selectedIsComingSoon = Boolean(selectedProgram?.coming_soon);
 
   const formReady =
     studentName.trim().length > 1 &&
     studentEmail.trim().length > 3 &&
     studentPhone.trim().length > 7 &&
-    Boolean(selectedProgram);
+    Boolean(selectedProgram) &&
+    !selectedIsComingSoon;
 
   const paymentLinkReady = Boolean(applicationId);
   const checkoutReady = Boolean(paymentUrl);
@@ -84,7 +81,7 @@ export function PublicAdmissionsFlow() {
         order_id: orderId,
         name: "Viva Career Academy",
         description: selectedProgram
-          ? `${selectedProgram.title} · ${selectedProgram.cohort}`
+          ? `${selectedProgram.name} · ${selectedProgram.cohort_label}`
           : "Application fee",
         prefill: {
           name: studentName,
@@ -113,6 +110,10 @@ export function PublicAdmissionsFlow() {
       setMessage("Please fill all required details before continuing.");
       return;
     }
+    if (selectedIsComingSoon) {
+      setMessage("This programme is opening soon — please choose a programme that is currently accepting applications.");
+      return;
+    }
     setBusyAction("submit");
     setMessage("Submitting application...");
     try {
@@ -128,9 +129,9 @@ export function PublicAdmissionsFlow() {
           student_email: studentEmail,
           student_phone: studentPhone,
           course_code: selectedProgram.code,
-          course_name: selectedProgram.title,
+          course_name: selectedProgram.name,
           source: education ? `website:${education}` : "website",
-          notes: `Program: ${selectedProgram.title}`,
+          notes: `Program: ${selectedProgram.name}`,
           currency: "INR",
         }),
       });
@@ -222,9 +223,14 @@ export function PublicAdmissionsFlow() {
           <span>Programme</span>
           <select value={courseCode} onChange={(event) => setCourseCode(event.target.value)}>
             <option value="">Select a programme</option>
-            {SELECTABLE_PROGRAMS.map((program) => (
-              <option key={program.code} value={program.code}>
-                {program.title} · {program.fee} · Cohort {program.cohort}
+            {programs.map((program) => (
+              <option
+                key={program.code}
+                value={program.code}
+                disabled={program.coming_soon}
+              >
+                {program.name} · {program.fee_display} · Cohort {program.cohort_label}
+                {program.coming_soon ? " · Coming Soon" : ""}
               </option>
             ))}
           </select>
@@ -235,21 +241,45 @@ export function PublicAdmissionsFlow() {
             style={{
               padding: "14px 16px",
               borderRadius: 4,
-              background: "rgba(31, 78, 216, 0.08)",
-              border: "1px solid rgba(31, 78, 216, 0.18)",
+              background: selectedIsComingSoon ? "rgba(244, 180, 0, 0.10)" : "rgba(31, 78, 216, 0.08)",
+              border: `1px solid ${selectedIsComingSoon ? "rgba(244, 180, 0, 0.32)" : "rgba(31, 78, 216, 0.18)"}`,
               fontSize: 14,
               lineHeight: 1.5,
             }}
           >
             <div style={{ fontWeight: 700, color: "var(--ink, #111d23)" }}>
-              {selectedProgram.title}
+              {selectedProgram.name}
+              {selectedIsComingSoon ? (
+                <span
+                  style={{
+                    display: "inline-block",
+                    marginLeft: 10,
+                    padding: "2px 8px",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    borderRadius: 999,
+                    background: "#F4B400",
+                    color: "#0B1F3A",
+                    verticalAlign: "middle",
+                  }}
+                >
+                  Coming Soon
+                </span>
+              ) : null}
             </div>
             <div style={{ marginTop: 4, color: "var(--muted, #2f3140)" }}>
-              {selectedProgram.duration} · {selectedProgram.format} · Cohort starts {selectedProgram.cohort}
+              {selectedProgram.duration_label} · {selectedProgram.format_label} · Cohort starts {selectedProgram.cohort_label}
             </div>
-            <div style={{ marginTop: 6, fontSize: 16, fontWeight: 700, color: "#1f4ed8" }}>
-              Fee: {selectedProgram.fee} (GST inclusive)
+            <div style={{ marginTop: 6, fontSize: 16, fontWeight: 700, color: selectedIsComingSoon ? "#7a5b00" : "#1f4ed8" }}>
+              Fee: {selectedProgram.fee_display} (GST inclusive)
             </div>
+            {selectedIsComingSoon ? (
+              <div style={{ marginTop: 8, fontSize: 13, color: "#7a5b00", fontStyle: "italic" }}>
+                Applications for this programme open closer to the cohort start date. Please pick a programme currently accepting applications.
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -301,7 +331,7 @@ export function PublicAdmissionsFlow() {
       </div>
       <p className="editorial-form-note">
         Secured by institutional payment gateway • non-refundable processing fee
-        {selectedProgram ? ` • programme fee: ${selectedProgram.fee} (GST inclusive)` : ""}
+        {selectedProgram && !selectedIsComingSoon ? ` • programme fee: ${selectedProgram.fee_display} (GST inclusive)` : ""}
         {paymentMode ? ` • mode: ${paymentMode}` : ""}
       </p>
       {message ? <div className="editorial-form-message">{message}</div> : null}

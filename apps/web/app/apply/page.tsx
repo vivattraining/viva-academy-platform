@@ -1,8 +1,10 @@
 import { MarketingShell } from "../../components/marketing-shell";
 import styles from "../../components/claude-home.module.css";
 import { PublicAdmissionsFlow } from "../../components/public-admissions-flow";
+import { getCourses } from "../../lib/courses-data";
 
-export default function ApplyPage() {
+export default async function ApplyPage() {
+  const programs = await getCourses();
   return (
     <MarketingShell activeHref="/apply">
       <section className={styles.admissions} id="admissions">
@@ -33,7 +35,7 @@ export default function ApplyPage() {
             </div>
           </div>
           <div>
-            <PublicAdmissionsFlow />
+            <PublicAdmissionsFlow programs={programs} />
             <div className={styles.footerSocial} style={{ marginTop: 18 }}>
               <span className={styles.chip}>256-Bit SSL Security</span>
               <span className={styles.chip}>Razorpay Ready</span>
