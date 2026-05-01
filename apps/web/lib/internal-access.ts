@@ -90,12 +90,23 @@ export async function requireInternalPageAccess(allowedRoles: string[]) {
   // signature on the access_token. If a JWT secret is configured but the
   // signature does not check out, treat the session as forged.
   const verified = verifyAccessToken(session.access_token);
-  if (jwtSecret() && !verified) {
+  const secretConfigured = !!jwtSecret();
+  if (secretConfigured && !verified) {
+    redirect("/internal/login");
+  }
+  // SECURITY (§17.2 C3): in production, NEVER trust the cookie role when
+  // the JWT secret is missing on the web deployment. The original code
+  // here fell back to the cookie role in that case, which means a forged
+  // cookie could render any internal shell (the API still rejects writes,
+  // but the read-only shell shouldn't render either). If the web project
+  // is missing ACADEMY_JWT_SECRET in production, hard-fail to login.
+  if (!secretConfigured && process.env.NODE_ENV === "production") {
     redirect("/internal/login");
   }
   // When verification succeeds, prefer the role from the signed payload
   // because it cannot be forged client-side. Fall back to the cookie role
-  // only if no JWT secret is configured (dev-only).
+  // only if no JWT secret is configured (dev-only — production is blocked
+  // above).
   const trustedRole = verified?.role ?? session.role;
 
   if (!allowedRoles.includes(trustedRole)) {

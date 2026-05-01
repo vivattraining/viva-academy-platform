@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
-from app.models import AcademyTenantState
+from app.models import AcademyTenantState, AcademyWebhookEvent
 
 
 def now_iso() -> str:
@@ -1181,4 +1181,74 @@ def create_message_event(db: Session, tenant_name: str, payload: dict) -> dict:
     }
     state.setdefault("message_events", []).append(record)
     save_tenant_state(db, tenant_name, state)
+    return record
+
+
+# ----- Webhook idempotency (§17.2 C2) ----------------------------------------
+
+def was_webhook_event_processed(db: Session, event_id: str, *, source: str = "razorpay") -> bool:
+    """Return True if this (source, event_id) pair has already been processed.
+
+    Use at the top of every inbound webhook handler to short-circuit duplicate
+    deliveries (Razorpay retries on its own schedule; Zoom does too).
+    """
+    if not event_id:
+        return False
+    record = (
+        db.query(AcademyWebhookEvent)
+        .filter(
+            AcademyWebhookEvent.source == source,
+            AcademyWebhookEvent.event_id == event_id,
+        )
+        .first()
+    )
+    return record is not None
+
+
+def record_webhook_event(
+    db: Session,
+    event_id: str,
+    *,
+    source: str = "razorpay",
+    reference: str = "",
+) -> Optional[AcademyWebhookEvent]:
+    """Persist a processed webhook event so future replays are short-circuited.
+
+    Idempotent: if the same (source, event_id) is recorded twice, the second
+    call returns the existing row instead of raising. Don't fail the webhook
+    if the recording fails — the side effects already happened.
+    """
+    if not event_id:
+        return None
+    existing = (
+        db.query(AcademyWebhookEvent)
+        .filter(
+            AcademyWebhookEvent.source == source,
+            AcademyWebhookEvent.event_id == event_id,
+        )
+        .first()
+    )
+    if existing is not None:
+        return existing
+    record = AcademyWebhookEvent(
+        source=source,
+        event_id=event_id,
+        reference=reference or None,
+        processed_at=now_iso(),
+    )
+    try:
+        db.add(record)
+        db.commit()
+        db.refresh(record)
+    except Exception:
+        db.rollback()
+        # Race condition: another concurrent webhook recorded it just now.
+        return (
+            db.query(AcademyWebhookEvent)
+            .filter(
+                AcademyWebhookEvent.source == source,
+                AcademyWebhookEvent.event_id == event_id,
+            )
+            .first()
+        )
     return record

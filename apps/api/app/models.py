@@ -40,3 +40,25 @@ class AcademyAuthSession(Base):
     created_at = Column(String, nullable=False)
     expires_at = Column(String, nullable=False)
     revoked_at = Column(String, nullable=True)
+
+
+class AcademyWebhookEvent(Base):
+    """
+    Idempotency log for inbound webhooks (Razorpay, Zoom, Resend, etc).
+
+    Each row represents one external event that has been processed by us.
+    Webhook handlers MUST short-circuit on duplicate `event_id` to prevent
+    refund→re-capture replay attacks (§17.2 C2). Per-source uniqueness is
+    enforced via UniqueConstraint on (source, event_id).
+    """
+
+    __tablename__ = "academy_webhook_events"
+    __table_args__ = (
+        UniqueConstraint("source", "event_id", name="uq_academy_webhook_event"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    source = Column(String, index=True, nullable=False)  # 'razorpay' | 'zoom' | 'resend' | ...
+    event_id = Column(String, index=True, nullable=False)
+    reference = Column(String, nullable=True)  # optional secondary ref, e.g. application_id
+    processed_at = Column(String, nullable=False)

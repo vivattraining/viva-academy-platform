@@ -85,6 +85,8 @@ from app.store import (
     update_branding,
     update_session,
     get_trainer_review_queue,
+    was_webhook_event_processed,
+    record_webhook_event,
 )
 
 router = APIRouter()
@@ -650,10 +652,19 @@ async def _capture_payment(
         raise HTTPException(status_code=400, detail="Invalid JSON payload")
 
     event_type = event.get("event")
+    event_id = event.get("id")
 
     # 4. Only act on payment.captured events
     if event_type != "payment.captured":
         return {"ok": True, "ignored": True, "event": event_type}
+
+    # 4a. SECURITY (§17.2 C2): idempotency by Razorpay event.id.
+    # Previously the only idempotency check was `payment_stage == "paid"`,
+    # which doesn't catch refund→re-capture loops or replay attacks. Track
+    # processed event IDs in the tenant state so we hard-skip duplicates.
+    if event_id and was_webhook_event_processed(db, event_id):
+        logger.info("Razorpay webhook: event %s already processed — short-circuit", event_id)
+        return {"ok": True, "idempotent": True, "event_id": event_id}
 
     # 5. Resolve the application by payment_reference (or fallback id)
     application = _resolve_razorpay_application(db, event, reference)
@@ -663,7 +674,7 @@ async def _capture_payment(
 
     tenant_name = application.get("tenant_name", "")
 
-    # 6. Idempotency check — skip if already paid / enrolled
+    # 6. Secondary idempotency check — skip if already paid / enrolled
     if application.get("payment_stage") == "paid":
         assigned = assign_first_batch_if_needed(db, tenant_name, application["id"]) or application
         logger.info(
@@ -729,10 +740,18 @@ async def _capture_payment(
                 cred_error,
             )
 
+    # Record the event ID so any retry / replay will short-circuit at step 4a.
+    if event_id:
+        try:
+            record_webhook_event(db, event_id, source="razorpay", reference=reference or "")
+        except Exception as record_err:  # noqa: BLE001
+            logger.warning("Failed to record processed event_id=%s err=%s", event_id, record_err)
+
     logger.info(
-        "Razorpay webhook: payment.captured processed — application=%s tenant=%s",
+        "Razorpay webhook: payment.captured processed — application=%s tenant=%s event_id=%s",
         application["id"],
         tenant_name,
+        event_id,
     )
     return {"ok": True, "application_id": updated["id"], "payment_stage": updated.get("payment_stage")}
 
@@ -945,9 +964,19 @@ def create_review_secure(
     authorization: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    auth_dependency(db, payload.tenant_name, x_academy_session, authorization, TRAINER_ROLES)
+    """
+    SECURITY (§17.2 C4): bind `reviewer_name` and `reviewer_email` to the
+    authenticated session. Previously the client could pass any string for
+    `reviewer_name`, letting one trainer impersonate another in the audit
+    trail. The session-derived values overwrite anything the client sent.
+    """
+    session = auth_dependency(db, payload.tenant_name, x_academy_session, authorization, TRAINER_ROLES)
+    body = payload.model_dump()
+    body["reviewer_name"] = session["full_name"]
+    body["reviewer_email"] = session["email"]
+    body["reviewer_role"] = session["role"]
     try:
-        item = create_trainer_review(db, payload.tenant_name, payload.model_dump())
+        item = create_trainer_review(db, payload.tenant_name, body)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return {"ok": True, "item": item}
@@ -1132,7 +1161,39 @@ def update_session_zoom_state_secure(
 
 
 @router.post("/zoom/webhook")
-def process_zoom_webhook(payload: ZoomWebhookAttendance, db: Session = Depends(get_db)):
+def process_zoom_webhook(
+    payload: ZoomWebhookAttendance,
+    request: Request,
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """
+    Zoom Marketplace webhook handler.
+
+    SECURITY (§17.2 C1): Zoom delivers webhooks with an Authorization header
+    matching the verification token configured on the app. We compare it
+    constant-time against `settings.zoom_webhook_secret_token`. Without this
+    check, anyone could POST forged 'auto-present' attendance for any learner.
+    Behaviour:
+      - If `ZOOM_WEBHOOK_SECRET_TOKEN` is unset, the endpoint refuses ALL
+        requests in production (400). Local dev with the token unset is the
+        only path that gets through, intentionally.
+      - If the token is set but the request omits it or sends the wrong
+        value, return 401.
+      - On match, proceed.
+    """
+    expected = settings.zoom_webhook_secret_token
+    if not expected:
+        if settings.app_env == "production":
+            logger.error("Zoom webhook received but ZOOM_WEBHOOK_SECRET_TOKEN is not configured")
+            raise HTTPException(status_code=400, detail="Zoom webhook not configured")
+    else:
+        # Zoom sends the verification token directly in the Authorization header.
+        provided = (authorization or "").strip()
+        if not provided or not hmac.compare_digest(provided, expected):
+            logger.warning("Zoom webhook rejected: bad or missing Authorization header")
+            raise HTTPException(status_code=401, detail="Invalid Zoom webhook authorization")
+
     session = find_session_by_zoom_meeting_id(db, payload.tenant_name, payload.zoom_meeting_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
