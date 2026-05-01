@@ -936,19 +936,6 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
               <h6 className={styles.footerHeading}>Contact</h6>
               <a href="mailto:support@vivacareeracademy.com">support@vivacareeracademy.com</a>
               <a href="tel:+917042107711">+91 70421 07711</a>
-              <span>Mumbai · HQ</span>
-              <span>Bangalore · Studio</span>
-              <span>Delhi · Studio</span>
-              <span>Goa · Studio</span>
-            </div>
-          </div>
-
-          <div className={styles.footerBottom}>
-            <div>© 2026 Viva Career Academy of Travel, Tourism & Hospitality. All rights reserved.</div>
-            <div className={styles.footerSocial}>
-              <a href="#">Instagram</a>
-              <a href="#">LinkedIn</a>
-              <a href="#">YouTube</a>
             </div>
           </div>
 
@@ -958,28 +945,26 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
               paddingTop: 16,
               borderTop: "1px solid rgba(245, 239, 228, 0.12)",
               display: "flex",
-              justifyContent: "center",
+              justifyContent: "flex-start",
               alignItems: "center",
-              gap: 8,
               fontSize: 12,
               color: "rgba(245, 239, 228, 0.65)",
               letterSpacing: "0.04em",
             }}
           >
-            <span>Built by</span>
             <a
-              href="https://www.linkedin.com/company/nama-ai/"
+              href="https://www.linkedin.com/in/narayanmallapur"
               target="_blank"
               rel="noopener noreferrer"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 6,
+                gap: 8,
                 color: "rgba(245, 239, 228, 0.92)",
                 textDecoration: "none",
                 fontWeight: 500,
               }}
-              aria-label="NAMA Technologies on LinkedIn (opens in a new tab)"
+              aria-label="Built by NAMA AI Tech Co. — Narayan Mallapur on LinkedIn (opens in a new tab)"
             >
               <svg
                 width="16"
@@ -999,9 +984,18 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
                   textAnchor="middle"
                 >N</text>
               </svg>
-              <span>NAMA Technologies</span>
+              <span>Built by NAMA AI Tech Co.</span>
               <span aria-hidden="true" style={{ fontSize: 11, opacity: 0.7 }}>↗</span>
             </a>
+          </div>
+
+          <div className={styles.footerBottom}>
+            <div>© 2026 Viva Career Academy of Travel, Tourism & Hospitality. All rights reserved.</div>
+            <div className={styles.footerSocial}>
+              <a href="#">Instagram</a>
+              <a href="#">LinkedIn</a>
+              <a href="#">YouTube</a>
+            </div>
           </div>
         </div>
       </footer>
