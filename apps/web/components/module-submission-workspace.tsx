@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
 import { readSession } from "../lib/auth";
 import { ChapterVideoEmbed } from "./chapter-video-embed";
+import { ChapterRichText } from "./chapter-rich-text";
 
 type StudentLmsPayload = {
   application: { id: string };
@@ -133,7 +134,9 @@ export function ModuleSubmissionWorkspace({ moduleId }: { moduleId: string }) {
               />
             </div>
           ) : null}
-          <p className="editorial-workbench-subtitle">{chapter.summary}</p>
+          <div className="editorial-workbench-subtitle" style={{ marginTop: 12 }}>
+            <ChapterRichText markdown={chapter.summary} />
+          </div>
           <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>
             <strong>Question</strong>
             <p className="muted" style={{ marginTop: 8 }}>{chapter.question_prompt}</p>
