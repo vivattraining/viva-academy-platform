@@ -22,10 +22,16 @@ class ApplicationCreate(BaseModel):
     student_name: str
     student_email: str
     student_phone: str = ""
-    course_name: str
+    # Either course_code (preferred) or course_name. Server resolves to the
+    # canonical Course in apps/api/app/course_catalog.py and stamps the
+    # authoritative course_name + course_fee on the row. amount_due from
+    # the client is ignored (kept on the schema for backward compatibility
+    # with older frontends, but the value is overwritten server-side).
+    course_code: Optional[str] = None
+    course_name: str = ""
     source: str = "website"
     notes: str = ""
-    amount_due: float = 0
+    amount_due: float = 0  # ignored — see comment above
     currency: str = "INR"
 
 

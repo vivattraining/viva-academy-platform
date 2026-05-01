@@ -22,6 +22,7 @@ from app.auth import (
     update_credential,
 )
 from app.config import settings
+from app.course_catalog import find_course, is_open_for_admissions
 from app.db import get_db
 from app.integrations import create_payment_link, fetch_payment_status, provision_zoom_meeting, razorpay_mode
 from app.schemas import (
@@ -510,7 +511,50 @@ def read_application(
 
 @router.post("/applications")
 def create_application_route(payload: ApplicationCreate, db: Session = Depends(get_db)):
-    item = create_application(db, payload.tenant_name, payload.model_dump())
+    """
+    Create an application. Course → price mapping is authoritative on the
+    server (apps/api/app/course_catalog.py); the client cannot influence
+    the fee. The flow is:
+
+      1. Client sends `course_code` (preferred) or `course_name`.
+      2. Server looks up the canonical Course in the catalog.
+      3. Server stamps `course_code`, `course_name`, `course_fee`,
+         `cohort_label`, `amount_due`, `currency` onto the application
+         row using the catalog's values.
+      4. /applications/{id}/payment-link uses the row's `course_fee` for
+         the Razorpay order, NOT anything the client supplies later.
+      5. The webhook validates the captured amount equals `course_fee`
+         in paise (a fraud check).
+    """
+    course = find_course(code=payload.course_code, name=payload.course_name)
+    if course is None:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Unknown course. Provide a valid course_code from the public catalog "
+                "(see apps/web/lib/public-site-content.ts::LIVE_SITE_PROGRAMS)."
+            ),
+        )
+    if not is_open_for_admissions(course):
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"{course.name} is not yet open for admissions. Please pick a course "
+                "currently accepting applications."
+            ),
+        )
+
+    # Build the canonical, server-controlled payload. Override anything the
+    # client sent for the fee fields.
+    body = payload.model_dump()
+    body["course_code"] = course.code
+    body["course_name"] = course.name
+    body["course_fee"] = course.fee_inr
+    body["cohort_label"] = course.cohort_label
+    body["amount_due"] = float(course.fee_inr)
+    body["currency"] = "INR"
+
+    item = create_application(db, payload.tenant_name, body)
     return {"ok": True, "item": item}
 
 
@@ -567,10 +611,55 @@ def create_application_payment_link(application_id: str, payload: PaymentLinkUpd
         raise HTTPException(status_code=404, detail="Application not found")
     if application.get("payment_stage") == "paid":
         raise HTTPException(status_code=409, detail="Payment is already completed for this application")
+
+    # Course → price authority: re-resolve the LIVE catalog price every
+    # time a payment link is generated. This means if the catalog price
+    # changes between application submission and payment link creation,
+    # the new price applies. The client cannot influence the amount.
+    #
+    # Resolution order:
+    #   1. Look up the application's `course_code` in the live catalog →
+    #      use the catalog's current fee. (Most common path.)
+    #   2. Fall back to the application's stamped `course_fee` if the
+    #      catalog no longer has that course (e.g. it was retired).
+    #   3. Final fallback: `amount_due` from the row, with a warning.
+    course_code = application.get("course_code")
+    course_name = application.get("course_name")
+    course = find_course(code=course_code, name=course_name)
+    if course is not None:
+        course_fee = float(course.fee_inr)
+        # If the catalog price has shifted since the application was created,
+        # update the application row so receipts + admin UI reflect reality.
+        stamped_fee = application.get("course_fee")
+        if stamped_fee is not None and float(stamped_fee) != course_fee:
+            logger.info(
+                "Application %s: course %s price re-resolved %s → %s from catalog",
+                application_id, course.code, stamped_fee, course_fee,
+            )
+            application = _save_payment_transition(
+                db,
+                payload.tenant_name,
+                application_id,
+                {"course_fee": course.fee_inr, "amount_due": course_fee, "course_name": course.name},
+            ) or application
+    elif application.get("course_fee") is not None:
+        course_fee = float(application["course_fee"])
+        logger.warning(
+            "Application %s: course no longer in catalog (code=%s, name=%s); using stamped fee %s",
+            application_id, course_code, course_name, course_fee,
+        )
+    else:
+        # Legacy applications created before the catalog change.
+        course_fee = float(application.get("amount_due", 0))
+        logger.warning(
+            "Application %s has neither course_fee nor catalog match — falling back to amount_due (%s).",
+            application_id, course_fee,
+        )
+
     payment = create_payment_link(
         application_id=application_id,
-        amount_due=payload.amount_due if payload.amount_due is not None else float(application.get("amount_due", 0)),
-        currency=payload.currency or application.get("currency", "INR"),
+        amount_due=course_fee,
+        currency="INR",
     )
     item = _save_payment_transition(
         db,
@@ -673,6 +762,40 @@ async def _capture_payment(
         raise HTTPException(status_code=404, detail="Application not found for this payment")
 
     tenant_name = application.get("tenant_name", "")
+
+    # 5a. FRAUD CHECK — captured amount must equal the expected course fee.
+    # Razorpay reports `amount` in paise; our catalog stores rupees. If
+    # someone tampered with the order to charge a smaller amount than the
+    # course fee, refuse to mark the application paid. The difference is
+    # logged for ops to investigate.
+    expected_inr = application.get("course_fee")
+    if expected_inr is None:
+        # Fall back to amount_due for legacy applications. Same fraud
+        # principle applies — the captured amount must equal what we asked.
+        expected_inr = application.get("amount_due")
+    if expected_inr is not None:
+        try:
+            expected_paise = int(round(float(expected_inr) * 100))
+            captured_paise = int(
+                event.get("payload", {})
+                     .get("payment", {})
+                     .get("entity", {})
+                     .get("amount", 0)
+            )
+            if captured_paise > 0 and captured_paise != expected_paise:
+                logger.error(
+                    "Razorpay webhook AMOUNT MISMATCH — application=%s expected=%spaise captured=%spaise. Refusing to mark paid.",
+                    application["id"], expected_paise, captured_paise,
+                )
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"Captured amount {captured_paise} does not match expected {expected_paise} for this application",
+                )
+        except (TypeError, ValueError) as fraud_err:
+            logger.warning(
+                "Razorpay webhook: could not validate captured amount for application=%s — %s",
+                application["id"], fraud_err,
+            )
 
     # 6. Secondary idempotency check — skip if already paid / enrolled
     if application.get("payment_stage") == "paid":

@@ -4,13 +4,19 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
+import { LIVE_SITE_PROGRAMS } from "../lib/public-site-content";
+
+// Only programmes that are currently accepting applications. Coming-soon
+// courses are listed on the homepage but cannot be applied for yet — the
+// API rejects POST /applications for those (see course_catalog.py).
+const SELECTABLE_PROGRAMS = LIVE_SITE_PROGRAMS.filter((p) => !p.comingSoon);
 
 export function PublicAdmissionsFlow() {
   const [studentName, setStudentName] = useState("");
   const [studentEmail, setStudentEmail] = useState("");
   const [studentPhone, setStudentPhone] = useState("");
   const [education, setEducation] = useState("");
-  const [interest, setInterest] = useState("");
+  const [courseCode, setCourseCode] = useState("");
   const [applicationId, setApplicationId] = useState("");
   const [paymentUrl, setPaymentUrl] = useState("");
   const [paymentReference, setPaymentReference] = useState("");
@@ -19,11 +25,13 @@ export function PublicAdmissionsFlow() {
   const [message, setMessage] = useState("");
   const [busyAction, setBusyAction] = useState<"submit" | "payment-link" | "checkout" | "">("");
 
+  const selectedProgram = SELECTABLE_PROGRAMS.find((p) => p.code === courseCode);
+
   const formReady =
     studentName.trim().length > 1 &&
     studentEmail.trim().length > 3 &&
     studentPhone.trim().length > 7 &&
-    interest.trim().length > 0;
+    Boolean(selectedProgram);
 
   const paymentLinkReady = Boolean(applicationId);
   const checkoutReady = Boolean(paymentUrl);
@@ -75,7 +83,9 @@ export function PublicAdmissionsFlow() {
         key: liveKey,
         order_id: orderId,
         name: "Viva Career Academy",
-        description: "Application fee",
+        description: selectedProgram
+          ? `${selectedProgram.title} · ${selectedProgram.cohort}`
+          : "Application fee",
         prefill: {
           name: studentName,
           email: studentEmail,
@@ -99,13 +109,17 @@ export function PublicAdmissionsFlow() {
   }
 
   async function submit() {
-    if (!formReady) {
+    if (!formReady || !selectedProgram) {
       setMessage("Please fill all required details before continuing.");
       return;
     }
     setBusyAction("submit");
     setMessage("Submitting application...");
     try {
+      // We send the course_code only. The server resolves the canonical
+      // course name + fee from its catalog (apps/api/app/course_catalog.py)
+      // — the client cannot influence the price. amount_due is intentionally
+      // NOT sent: the server stamps the row using the catalog's value.
       const data = await apiRequest<{ item: { id: string } }>("/api/v1/academy/applications", {
         method: "POST",
         body: JSON.stringify({
@@ -113,12 +127,12 @@ export function PublicAdmissionsFlow() {
           student_name: studentName,
           student_email: studentEmail,
           student_phone: studentPhone,
-          course_name: interest || "Professional Certification in Travel & Tourism",
+          course_code: selectedProgram.code,
+          course_name: selectedProgram.title,
           source: education ? `website:${education}` : "website",
-          notes: interest ? `Program interest: ${interest}` : "",
-          amount_due: 30000,
-          currency: "INR"
-        })
+          notes: `Program: ${selectedProgram.title}`,
+          currency: "INR",
+        }),
       });
       setApplicationId(data.item.id);
       setReceiptToken((data.item as { public_receipt_token?: string }).public_receipt_token || "");
@@ -205,15 +219,39 @@ export function PublicAdmissionsFlow() {
           </select>
         </label>
         <label className="editorial-field editorial-field-full">
-          <span>Interest Area</span>
-          <select value={interest} onChange={(event) => setInterest(event.target.value)}>
-            <option value="">Select program of interest</option>
-            <option value="Professional Certification in Travel & Tourism">Professional Certification in Travel & Tourism</option>
-            <option value="MICE Specialist">MICE Specialist</option>
-            <option value="Luxury Travel Expert">Luxury Travel Expert</option>
-            <option value="Ticketing Professional">Ticketing Professional</option>
+          <span>Programme</span>
+          <select value={courseCode} onChange={(event) => setCourseCode(event.target.value)}>
+            <option value="">Select a programme</option>
+            {SELECTABLE_PROGRAMS.map((program) => (
+              <option key={program.code} value={program.code}>
+                {program.title} · {program.fee} · Cohort {program.cohort}
+              </option>
+            ))}
           </select>
         </label>
+        {selectedProgram ? (
+          <div
+            className="editorial-field editorial-field-full"
+            style={{
+              padding: "14px 16px",
+              borderRadius: 4,
+              background: "rgba(31, 78, 216, 0.08)",
+              border: "1px solid rgba(31, 78, 216, 0.18)",
+              fontSize: 14,
+              lineHeight: 1.5,
+            }}
+          >
+            <div style={{ fontWeight: 700, color: "var(--ink, #111d23)" }}>
+              {selectedProgram.title}
+            </div>
+            <div style={{ marginTop: 4, color: "var(--muted, #2f3140)" }}>
+              {selectedProgram.duration} · {selectedProgram.format} · Cohort starts {selectedProgram.cohort}
+            </div>
+            <div style={{ marginTop: 6, fontSize: 16, fontWeight: 700, color: "#1f4ed8" }}>
+              Fee: {selectedProgram.fee} (GST inclusive)
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="editorial-process-steps" aria-label="Application progress">
@@ -262,7 +300,8 @@ export function PublicAdmissionsFlow() {
         </p>
       </div>
       <p className="editorial-form-note">
-        Secured by institutional payment gateway • non-refundable processing fee • current intake processing fee: Rs 30,000
+        Secured by institutional payment gateway • non-refundable processing fee
+        {selectedProgram ? ` • programme fee: ${selectedProgram.fee} (GST inclusive)` : ""}
         {paymentMode ? ` • mode: ${paymentMode}` : ""}
       </p>
       {message ? <div className="editorial-form-message">{message}</div> : null}
