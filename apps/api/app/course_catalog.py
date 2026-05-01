@@ -115,7 +115,7 @@ COURSE_CATALOG: tuple[Course, ...] = (
     Course(
         code="P · 05",
         name="Food & Beverage Service Professional Program",
-        fee_inr=49999,
+        fee_inr=15999,
         duration_label="16 weeks",
         format_label="Hybrid",
         cohort_label="Aug 2026",

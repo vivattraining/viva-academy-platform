@@ -153,8 +153,8 @@ const CATALOG_SNAPSHOT: Course[] = [
   {
     code: "P · 05",
     name: "Food & Beverage Service Professional Program",
-    fee_inr: 49999,
-    fee_display: "₹49,999*",
+    fee_inr: 15999,
+    fee_display: "₹15,999*",
     reservation_fee_inr: 5000,
     reservation_fee_display: "₹5,000",
     duration_label: "16 weeks",
