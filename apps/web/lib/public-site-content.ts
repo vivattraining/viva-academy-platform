@@ -3,7 +3,8 @@ export const PUBLIC_NAV = [
   { label: "Courses", href: "/courses" },
   { label: "Curriculum", href: "/curriculum" },
   { label: "Trainers", href: "/trainers" },
-  { label: "AI Platform", href: "/ai-platform" },
+  { label: "Advisory Board", href: "/advisory-board" },
+  { label: "Patron", href: "/patron" },
   { label: "Apply", href: "/apply" },
 ] as const;
 

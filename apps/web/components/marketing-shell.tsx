@@ -122,7 +122,8 @@ export function MarketingShell({
               <Link href="/courses">Courses</Link>
               <Link href="/curriculum">Curriculum</Link>
               <Link href="/trainers">Trainers</Link>
-              <Link href="/ai-platform">AI Platform</Link>
+              <Link href="/advisory-board">Advisory Board</Link>
+              <Link href="/patron">Patron</Link>
               <Link href="/apply">Apply</Link>
             </div>
 
