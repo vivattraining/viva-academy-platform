@@ -213,6 +213,66 @@ def create_credential(db: Session, tenant_name: str, *, email: str, full_name: s
     return record
 
 
+def ensure_student_credential(
+    db: Session,
+    tenant_name: str,
+    *,
+    email: str,
+    full_name: str,
+) -> tuple[AcademyUserCredential, Optional[str]]:
+    """
+    Idempotent-create a role=student credential after a successful payment.
+
+    Returns (credential_record, generated_password). The password is None
+    when the credential already existed (so we never re-rotate an existing
+    login on every webhook). The password is a fresh secure random string
+    when this call created the row.
+
+    Called from the Razorpay webhook handler after `payment_stage` is
+    flipped to "paid". The webhook is the canonical issue-credential
+    moment; this helper also runs from manual-mark-paid paths so admin
+    operators get the same automatic credential creation.
+
+    Safe to call multiple times — duplicate webhooks (which Razorpay
+    retries on its own) won't generate a new password each time.
+    """
+    normalized_email = email.strip().lower()
+    cleaned_name = full_name.strip() or normalized_email.split("@")[0]
+    if "@" not in normalized_email:
+        return (None, None)  # type: ignore[return-value]
+
+    existing = (
+        db.query(AcademyUserCredential)
+        .filter(
+            AcademyUserCredential.tenant_name == tenant_name,
+            AcademyUserCredential.email == normalized_email,
+        )
+        .first()
+    )
+    if existing is not None:
+        return (existing, None)
+
+    # Strong, URL-safe initial password. The student is told to change it
+    # on first login. Length is generous so even with clipboard quirks
+    # there's plenty of entropy after any user-side mishandling.
+    initial_password = secrets.token_urlsafe(16)
+
+    current = now_iso()
+    record = AcademyUserCredential(
+        tenant_name=tenant_name,
+        email=normalized_email,
+        full_name=cleaned_name,
+        role="student",
+        password_hash=hash_password(initial_password),
+        created_at=current,
+        updated_at=current,
+    )
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+    return (record, initial_password)
+
+
 def update_credential(
     db: Session,
     tenant_name: str,

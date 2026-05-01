@@ -1,0 +1,160 @@
+/*
+ * People grid (Advisory Board, Patron). Visual language matches the
+ * homepage but with elevated spacing and a more deliberate typographic
+ * hierarchy. Three columns desktop → two columns tablet → one column
+ * phone, with generous whitespace at every breakpoint.
+ */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(28px, 3vw, 44px);
+  margin-top: clamp(36px, 4vw, 56px);
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    margin-top: 28px;
+  }
+}
+
+/* Card */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--paper, #fbf7ee);
+  border: 1px solid rgba(14, 27, 44, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(11, 31, 58, 0.08);
+  border-color: rgba(14, 27, 44, 0.18);
+}
+
+/* Portrait */
+
+.portrait {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: linear-gradient(160deg, #16263c 0%, #0e1b2c 48%, #1d3150 100%);
+  overflow: hidden;
+}
+
+.photo {
+  object-fit: cover;
+}
+
+.fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: rgba(245, 239, 228, 0.92);
+}
+
+.fallbackInitials {
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: clamp(72px, 7vw, 110px);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.fallbackLabel {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(245, 239, 228, 0.6);
+}
+
+.code {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(245, 239, 228, 0.78);
+  background: rgba(14, 27, 44, 0.45);
+  backdrop-filter: blur(4px);
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 239, 228, 0.18);
+}
+
+/* Body */
+
+.body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: clamp(20px, 2vw, 28px) clamp(20px, 2vw, 28px) clamp(24px, 2.4vw, 32px);
+}
+
+.name {
+  margin: 0;
+  font-family: "Libre Caslon Text", "Times New Roman", serif;
+  font-size: clamp(22px, 1.8vw, 30px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--ink, #111d23);
+}
+
+.title {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent-deep, #5b6576);
+  text-transform: uppercase;
+}
+
+.company {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--muted, #2f3140);
+}
+
+.description {
+  margin: 16px 0 0;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--muted, #2f3140);
+}
+
+.creds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 18px;
+}
+
+.cred {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(14, 27, 44, 0.06);
+  color: var(--ink, #111d23);
+  border: 1px solid rgba(14, 27, 44, 0.08);
+}

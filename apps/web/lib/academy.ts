@@ -14,6 +14,8 @@
  *   - STUDENT:  signed-in student workspace (/student). No internal links.
  */
 export const PUBLIC_NAV = [
+  { label: "Advisory Board", href: "/advisory-board" },
+  { label: "Patron", href: "/patron" },
   { label: "Admissions", href: "/apply" },
   { label: "Login", href: "/login" },
 ] as const;

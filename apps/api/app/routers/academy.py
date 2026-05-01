@@ -13,6 +13,7 @@ from app.auth import (
     auth_dependency,
     bootstrap_admin_user,
     create_credential,
+    ensure_student_credential,
     list_credentials,
     login_user,
     revoke_session,
@@ -678,6 +679,55 @@ async def _capture_payment(
     # 8. Assign to first available batch if not already assigned
     if not updated.get("batch_id"):
         updated = assign_first_batch_if_needed(db, tenant_name, application["id"]) or updated
+
+    # 9. Issue student credential. Idempotent: if a credential already
+    # exists for this email, this is a no-op (no password rotation on
+    # webhook retries). When it creates a new credential, we persist the
+    # initial password on the application row so the academy team can
+    # surface it via the messaging center / admin UI to deliver to the
+    # student. Stored field: `initial_student_password`.
+    student_email = updated.get("student_email") or application.get("student_email")
+    student_name = updated.get("student_name") or application.get("student_name") or ""
+    if student_email:
+        try:
+            credential, initial_password = ensure_student_credential(
+                db,
+                tenant_name,
+                email=student_email,
+                full_name=student_name,
+            )
+            if initial_password:
+                # Newly-created credential. Persist the initial password on
+                # the application row so an operator can retrieve and send
+                # it to the student. Once the student logs in and changes
+                # their password, this field can be cleared (admin UI todo).
+                _save_payment_transition(
+                    db,
+                    tenant_name,
+                    application["id"],
+                    {"initial_student_password": initial_password},
+                )
+                logger.info(
+                    "Razorpay webhook: student credential issued — email=%s tenant=%s",
+                    student_email,
+                    tenant_name,
+                )
+            elif credential is not None:
+                logger.info(
+                    "Razorpay webhook: student credential already exists — email=%s tenant=%s (no password rotation)",
+                    student_email,
+                    tenant_name,
+                )
+        except Exception as cred_error:  # noqa: BLE001
+            # Never fail the webhook on credential issuance — payment was
+            # captured and the application row is already paid. The
+            # operator can retry credential creation manually from /admin.
+            logger.error(
+                "Razorpay webhook: credential issuance failed for application=%s email=%s err=%s",
+                application["id"],
+                student_email,
+                cred_error,
+            )
 
     logger.info(
         "Razorpay webhook: payment.captured processed — application=%s tenant=%s",
