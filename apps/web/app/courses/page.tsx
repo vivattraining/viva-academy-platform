@@ -14,7 +14,7 @@ export default function CoursesPage() {
             <h1 className={styles.sectionTitle}>Career tracks built for <em>modern</em> travel and hospitality careers.</h1>
           </div>
           <p className={styles.bodyText} style={{ maxWidth: 760, marginBottom: 28 }}>
-            Three programmes are accepting applications now. Three more are being readied for upcoming intakes.
+            Two programmes are accepting applications now. Three more are being readied for upcoming intakes.
           </p>
           <div className={styles.programGrid}>
             {LIVE_SITE_PROGRAMS.map((item) => (
@@ -33,11 +33,15 @@ export default function CoursesPage() {
                     <div className={styles.metaRow}><span>Duration</span><span>{item.duration}</span></div>
                     <div className={styles.metaRow}><span>Format</span><span>{item.format}</span></div>
                     <div className={styles.metaRow}><span>Next cohort</span><span>{item.cohort}</span></div>
+                    {item.fee ? <div className={styles.metaRow}><span>Fee</span><span>{item.fee}</span></div> : null}
                   </div>
                 </div>
               </article>
             ))}
           </div>
+          <p style={{ marginTop: 20, fontSize: 13, color: "var(--muted, #2f3140)", fontStyle: "italic" }}>
+            * All fees are GST inclusive.
+          </p>
         </div>
       </section>
     </MarketingShell>

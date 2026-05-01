@@ -31,42 +31,83 @@ const tickerItems = [
   "Hybrid · Live + Studio",
 ];
 
-const programs = [
+type ProgramCard = {
+  code: string;
+  title: string;
+  emphasis: string;
+  description: string;
+  meta: Array<[string, string]>;
+  comingSoon?: boolean;
+};
+
+const programs: ProgramCard[] = [
   {
     code: "P · 01",
-    title: "Travel Agency",
-    emphasis: "Management (Sales & Marketing)",
+    title: "Foundation Program in",
+    emphasis: "Travel & Tourism Industry",
     description:
-      "Master the commercial side of travel. Build expertise in client acquisition, product positioning, pricing strategy, and relationship management. Learn how to sell experiences, not just packages, while understanding consumer behaviour and digital channels. Designed to prepare you for high-performance roles in travel sales and business development.",
+      "The 16-week foundation programme. Sector orientation, customer journey, sales, operations, geography, MICE, costing, and business models — the disciplined first step into a real career in travel for committed beginners.",
     meta: [
       ["Duration", "16 weeks"],
       ["Format", "Hybrid"],
-      ["Next cohort", "Aug 2026"],
+      ["Next cohort", "26 May 2026"],
+      ["Fee", "₹24,999*"],
     ],
   },
   {
     code: "P · 02",
-    title: "Travel &",
-    emphasis: "Tour Operations",
+    title: "Travel Career",
+    emphasis: "Accelerator Program",
     description:
-      "Develop core operational expertise in global travel management. Itinerary design, GDS fundamentals, destination knowledge, and end-to-end tour execution. Learn how to plan, coordinate, and deliver seamless travel experiences across geographies — designed to prepare you for roles in tour operations, product planning, and travel logistics.",
+      "Master the commercial side of travel. Build expertise in client acquisition, product positioning, pricing strategy, and relationship management. Learn how to plan, sell, and deliver experiences end-to-end — designed to prepare you for high-performance roles in travel sales and business development.",
     meta: [
       ["Duration", "16 weeks"],
       ["Format", "Hybrid"],
-      ["Next cohort", "Aug 2026"],
+      ["Next cohort", "6 Jun 2026"],
+      ["Fee", "₹36,999*"],
     ],
   },
   {
     code: "P · 03",
-    title: "Event &",
-    emphasis: "MICE Design",
+    title: "Event & MICE",
+    emphasis: "Career Accelerator (Specialisation)",
     description:
-      "Step into the world of high-impact events. Corporate meetings, incentives, conferences, exhibitions, and destination weddings. Learn event conceptualisation, vendor coordination, budgeting, and on-ground execution — designed for those aiming to build careers in the rapidly growing MICE and experiential events segment.",
+      "Step into the world of high-impact events. Corporate meetings, incentives, conferences, exhibitions, and destination weddings. Event conceptualisation, vendor coordination, budgeting, and on-ground execution — for those aiming to build careers in India's fastest-growing MICE and experiential events segment.",
     meta: [
       ["Duration", "16 weeks"],
       ["Format", "Hybrid"],
       ["Next cohort", "Aug 2026"],
+      ["Fee", "₹36,999*"],
     ],
+    comingSoon: true,
+  },
+  {
+    code: "P · 04",
+    title: "Travel Operations &",
+    emphasis: "Tour Management",
+    description:
+      "Operations-oriented programme. Itinerary design, GDS fundamentals, destination knowledge, vendor coordination, and end-to-end tour execution. Build the operational discipline behind seamless travel — for the people who run trips end-to-end.",
+    meta: [
+      ["Duration", "16 weeks"],
+      ["Format", "Hybrid"],
+      ["Next cohort", "Aug 2026"],
+      ["Fee", "₹36,999*"],
+    ],
+    comingSoon: true,
+  },
+  {
+    code: "P · 05",
+    title: "Food & Beverage",
+    emphasis: "Service Professional",
+    description:
+      "Restaurant-floor mastery for hospitality careers. Front-of-house service, beverage knowledge, guest handling, and the operational rhythm of high-standard restaurants. Designed for learners stepping into hospitality and F&B service roles.",
+    meta: [
+      ["Duration", "16 weeks"],
+      ["Format", "Hybrid"],
+      ["Next cohort", "Aug 2026"],
+      ["Fee", "₹49,999*"],
+    ],
+    comingSoon: true,
   },
 ];
 
@@ -405,7 +446,7 @@ export function ClaudeHome() {
           <div className={styles.secHead}>
             <div className={styles.kicker}>§ 02 — Programs</div>
             <h2 className={styles.sectionTitle}>
-              Three career tracks. <em>One</em> unwavering standard.
+              Five career tracks. <em>One</em> unwavering standard.
             </h2>
           </div>
 
@@ -419,6 +460,25 @@ export function ClaudeHome() {
                     {program.title}
                     <br />
                     <em>{program.emphasis}</em>
+                    {program.comingSoon ? (
+                      <span
+                        style={{
+                          display: "inline-block",
+                          marginLeft: 10,
+                          padding: "3px 10px",
+                          fontSize: "0.5em",
+                          fontWeight: 600,
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                          borderRadius: 999,
+                          background: "#F4B400",
+                          color: "#0B1F3A",
+                          verticalAlign: "middle",
+                        }}
+                      >
+                        Coming Soon
+                      </span>
+                    ) : null}
                   </h3>
                   <div className={styles.programDescription}>{program.description}</div>
                   <div className={styles.programMeta}>
@@ -433,6 +493,16 @@ export function ClaudeHome() {
               </article>
             ))}
           </div>
+          <p
+            style={{
+              marginTop: 20,
+              fontSize: 13,
+              color: "var(--muted, #2f3140)",
+              fontStyle: "italic",
+            }}
+          >
+            * All fees are GST inclusive.
+          </p>
         </div>
       </section>
 
@@ -741,6 +811,139 @@ export function ClaudeHome() {
                   <div className={styles.faqAnswer}>{faq.answer}</div>
                 </details>
               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        className={styles.section}
+        id="mission"
+        style={{
+          background: "var(--ink, #111d23)",
+          color: "var(--cream, #f5efe4)",
+          padding: "clamp(56px, 7vw, 120px) 0",
+        }}
+      >
+        <div className={styles.wrap}>
+          <div className={styles.secHead}>
+            <div className={styles.kicker} style={{ color: "var(--accent, #b8860b)" }}>
+              § 09 — Vision & Mission
+            </div>
+            <h2 className={styles.sectionTitle} style={{ color: "var(--cream, #f5efe4)" }}>
+              Bridging India&apos;s skill gap, one career at a time.
+            </h2>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1.5fr",
+              gap: "clamp(32px, 5vw, 72px)",
+              alignItems: "start",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+                  fontSize: 11,
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                  color: "var(--accent, #b8860b)",
+                  marginBottom: 18,
+                }}
+              >
+                Vision Statement
+              </div>
+              <p
+                style={{
+                  fontFamily: '"Libre Caslon Text", "Times New Roman", serif',
+                  fontSize: "clamp(20px, 1.8vw, 28px)",
+                  lineHeight: 1.42,
+                  letterSpacing: "-0.01em",
+                  margin: 0,
+                  color: "var(--cream, #f5efe4)",
+                }}
+              >
+                To bridge the national skill gap by creating a scalable, industry-integrated education platform across multiple high-demand sectors.
+              </p>
+            </div>
+
+            <div>
+              <div
+                style={{
+                  fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+                  fontSize: 11,
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                  color: "var(--accent, #b8860b)",
+                  marginBottom: 18,
+                }}
+              >
+                Mission Statement
+              </div>
+              <p
+                style={{
+                  fontSize: 17,
+                  lineHeight: 1.7,
+                  margin: 0,
+                  color: "rgba(245, 239, 228, 0.92)",
+                }}
+              >
+                At Viva Career Academy, our mission is to bridge the gap between education and employment by delivering industry-aligned training across high-demand sectors, enabling students to become job-ready from day one.
+              </p>
+              <p
+                style={{
+                  fontSize: 15,
+                  lineHeight: 1.65,
+                  margin: "18px 0 14px",
+                  color: "rgba(245, 239, 228, 0.78)",
+                  fontWeight: 600,
+                }}
+              >
+                We aim to:
+              </p>
+              <ul
+                style={{
+                  listStyle: "none",
+                  padding: 0,
+                  margin: 0,
+                  display: "grid",
+                  gap: 12,
+                }}
+              >
+                {[
+                  "Build a skilled talent pipeline for industries facing manpower gaps",
+                  "Deliver practical, hybrid learning led by industry professionals",
+                  "Provide clear, outcome-driven career pathways",
+                  "Expand access to quality education across metro and emerging cities in India",
+                  "Partner with industry leaders to ensure relevance, employability, and continuous evolution of curriculum",
+                ].map((item) => (
+                  <li
+                    key={item}
+                    style={{
+                      paddingLeft: 22,
+                      position: "relative",
+                      fontSize: 15,
+                      lineHeight: 1.6,
+                      color: "rgba(245, 239, 228, 0.88)",
+                    }}
+                  >
+                    <span
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        top: "0.4em",
+                        width: 12,
+                        height: 1,
+                        background: "var(--accent, #b8860b)",
+                      }}
+                    />
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
