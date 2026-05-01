@@ -225,6 +225,22 @@ class CourseChapterCreate(BaseModel):
     video_url: str = ""
 
 
+class CourseChapterUpdate(BaseModel):
+    """Patch a course chapter. All fields optional — only what's
+    sent gets updated. Used by /course-chapters/{id}/secure to let
+    admins set video_url, edit titles, etc. without touching the
+    curriculum JSON file."""
+    tenant_name: str
+    title: Optional[str] = Field(default=None, min_length=1)
+    position: Optional[int] = None
+    content_type: Optional[str] = None
+    summary: Optional[str] = None
+    estimated_minutes: Optional[int] = None
+    mandatory: Optional[bool] = None
+    question_prompt: Optional[str] = None
+    video_url: Optional[str] = None
+
+
 class LearnerProgressUpdate(BaseModel):
     tenant_name: str
     application_id: str

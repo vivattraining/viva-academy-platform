@@ -706,6 +706,33 @@ def create_course_chapter(db: Session, tenant_name: str, payload: dict) -> dict:
     return record
 
 
+def update_course_chapter(
+    db: Session, tenant_name: str, chapter_id: str, patch: dict
+) -> Optional[dict]:
+    """Patch a chapter's editable fields (title, summary, video_url,
+    etc.). Returns the updated chapter or None if not found."""
+    state = get_tenant_state(db, tenant_name)
+    for idx, chapter in enumerate(state.get("course_chapters", [])):
+        if chapter["id"] != chapter_id:
+            continue
+        for k, v in patch.items():
+            if v is None:
+                continue
+            if k in {"title", "content_type", "summary", "question_prompt", "video_url"}:
+                chapter[k] = str(v).strip()
+            elif k in {"position", "estimated_minutes"}:
+                chapter[k] = int(v)
+            elif k == "mandatory":
+                chapter[k] = bool(v)
+            else:
+                chapter[k] = v
+        chapter["updated_at"] = now_iso()
+        state["course_chapters"][idx] = chapter
+        save_tenant_state(db, tenant_name, state)
+        return chapter
+    return None
+
+
 def list_sessions(db: Session, tenant_name: str, batch_id: Optional[str] = None) -> list[dict]:
     items = list_items(db, tenant_name, "sessions")
     filtered = [item for item in items if not batch_id or item["batch_id"] == batch_id]

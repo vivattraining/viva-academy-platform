@@ -42,6 +42,7 @@ from app.schemas import (
     CredentialCreateRequest,
     CredentialUpdateRequest,
     CourseChapterCreate,
+    CourseChapterUpdate,
     CourseCreate,
     CourseModuleCreate,
     LearnerProgressUpdate,
@@ -71,6 +72,7 @@ from app.store import (  # noqa: I001
     list_test_questions,
     start_test_attempt,
     submit_test_attempt,
+    update_course_chapter,
     update_test_question,
     assign_first_batch_if_needed,
     create_chapter_submission,
@@ -1668,6 +1670,30 @@ def create_course_chapter_secure(
         item = create_course_chapter(db, payload.tenant_name, data)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return {"ok": True, "item": item}
+
+
+@router.patch("/course-chapters/{chapter_id}/secure")
+def patch_course_chapter(
+    chapter_id: str,
+    payload: CourseChapterUpdate,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """Admin/operations: patch a chapter (title, summary, video_url,
+    etc.). Only fields explicitly provided in the body are updated.
+
+    Common use: setting `video_url` for a chapter without re-importing
+    the curriculum JSON. Faculty paste a YouTube unlisted URL in the
+    /admin "Chapter videos" panel and click Save — students see the
+    embed on next page load."""
+    auth_dependency(db, payload.tenant_name, x_academy_session, authorization, WRITE_ROLES)
+    patch = payload.model_dump(exclude_none=True)
+    patch.pop("tenant_name", None)
+    item = update_course_chapter(db, payload.tenant_name, chapter_id, patch)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Chapter not found")
     return {"ok": True, "item": item}
 
 
