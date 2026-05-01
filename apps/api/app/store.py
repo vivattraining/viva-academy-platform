@@ -706,6 +706,146 @@ def create_course_chapter(db: Session, tenant_name: str, payload: dict) -> dict:
     return record
 
 
+# -------------------------------------------------------------------
+# Certificates (V2: cert issuance, verification, revocation).
+# Stored in `tenant_state.certificates` array. Each cert has a
+# `verification_token` (URL-safe random string) — that's what goes
+# into the public verification URL employers can hit.
+# -------------------------------------------------------------------
+
+
+def list_certificates(
+    db: Session,
+    tenant_name: str,
+    application_id: Optional[str] = None,
+    course_id: Optional[str] = None,
+) -> list[dict]:
+    items = list_items(db, tenant_name, "certificates")
+    if application_id:
+        items = [c for c in items if c.get("application_id") == application_id]
+    if course_id:
+        items = [c for c in items if c.get("course_id") == course_id]
+    return sorted(items, key=lambda c: c.get("issued_at", ""), reverse=True)
+
+
+def get_certificate_by_token(db: Session, tenant_name: str, token: str) -> Optional[dict]:
+    items = list_items(db, tenant_name, "certificates")
+    return next(
+        (c for c in items
+         if c.get("verification_token") == token and not c.get("revoked_at")),
+        None,
+    )
+
+
+def get_certificate_by_token_any_tenant(db: Session, token: str) -> Optional[dict]:
+    """Public verification — search across all tenants for a token.
+
+    Verification URLs (`/certificates/{token}`) are public, so the
+    handler doesn't have a tenant context. Today this is fine because
+    we have one tenant. When white-label tenants go live, the URL
+    should embed tenant context (e.g. `/{tenant}/certificates/{token}`)
+    to avoid the cross-tenant scan.
+    """
+    from app.models import AcademyTenantState  # noqa: I001 — avoid circular import at module load
+    rows = db.query(AcademyTenantState).all()
+    for row in rows:
+        state = row.state or {}
+        for cert in state.get("certificates", []):
+            if cert.get("verification_token") == token and not cert.get("revoked_at"):
+                return cert
+    return None
+
+
+def create_certificate(
+    db: Session,
+    tenant_name: str,
+    application_id: str,
+    course_id: Optional[str] = None,
+    attempt_id: Optional[str] = None,
+    notes: str = "",
+) -> dict:
+    """Issue a certificate. Looks up student + course + test attempt
+    from tenant state, snapshots the names/scores onto the cert row
+    so revocation/renaming downstream doesn't change what verifiers see.
+
+    Idempotency: if a non-revoked cert already exists for this
+    application + course, return it instead of creating a duplicate.
+    """
+    state = get_tenant_state(db, tenant_name)
+    state.setdefault("certificates", [])
+
+    application = _find_by_id(state.get("applications", []), application_id)
+    if application is None:
+        raise ValueError("Application not found")
+
+    # Resolve course_id — either provided, or inferred from the attempt's test,
+    # or from the application's course_code via the courses table.
+    if not course_id and attempt_id:
+        attempt = _find_by_id(state.get("test_attempts", []), attempt_id)
+        if attempt:
+            test = _find_by_id(state.get("tests", []), attempt.get("test_id"))
+            if test:
+                course_id = test.get("course_id")
+    if not course_id:
+        # Fall back to looking up by the application's stamped course_code
+        for c in state.get("courses", []):
+            if c.get("code") == application.get("course_code"):
+                course_id = c["id"]
+                break
+
+    course = _find_by_id(state.get("courses", []), course_id) if course_id else None
+    attempt = _find_by_id(state.get("test_attempts", []), attempt_id) if attempt_id else None
+
+    # Idempotency: don't issue duplicates for the same student+course.
+    if course_id:
+        existing = next(
+            (c for c in state.get("certificates", [])
+             if c.get("application_id") == application_id
+             and c.get("course_id") == course_id
+             and not c.get("revoked_at")),
+            None,
+        )
+        if existing is not None:
+            return existing
+
+    record = {
+        "id": make_id("cert"),
+        "tenant_name": tenant_name,
+        "application_id": application_id,
+        "course_id": course_id,
+        "attempt_id": attempt_id,
+        "student_name": application.get("student_name", ""),
+        "student_email": application.get("student_email", ""),
+        "course_code": (course or {}).get("code") or application.get("course_code", ""),
+        "course_name": (course or {}).get("title") or application.get("course_name", ""),
+        "cohort_label": application.get("cohort_label", ""),
+        "score_pct": float(attempt.get("score_pct", 0)) if attempt and attempt.get("score_pct") is not None else None,
+        "passed": bool(attempt.get("passed")) if attempt else True,
+        "issued_at": now_iso(),
+        "revoked_at": None,
+        "revoked_reason": None,
+        "verification_token": secrets.token_urlsafe(20),
+        "notes": (notes or "").strip(),
+    }
+    state["certificates"].append(record)
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def revoke_certificate(
+    db: Session, tenant_name: str, certificate_id: str, reason: str = ""
+) -> Optional[dict]:
+    state = get_tenant_state(db, tenant_name)
+    for idx, cert in enumerate(state.get("certificates", [])):
+        if cert["id"] == certificate_id:
+            cert["revoked_at"] = now_iso()
+            cert["revoked_reason"] = (reason or "").strip()
+            state["certificates"][idx] = cert
+            save_tenant_state(db, tenant_name, state)
+            return cert
+    return None
+
+
 def update_course_chapter(
     db: Session, tenant_name: str, chapter_id: str, patch: dict
 ) -> Optional[dict]:

@@ -332,3 +332,20 @@ class TestAttemptSubmit(BaseModel):
     tenant_name: str
     application_id: str
     answers: list[TestAnswerSubmit] = []
+
+
+class CertificateIssueRequest(BaseModel):
+    """Admin: manually issue a certificate. Used for waivers, manual
+    grading, or backfilling certs for cohorts that completed before
+    the auto-issue path was live. The webhook auto-issues on test
+    pass — this endpoint is the manual override."""
+    tenant_name: str
+    application_id: str
+    course_id: Optional[str] = None
+    attempt_id: Optional[str] = None
+    notes: str = ""
+
+
+class CertificateRevokeRequest(BaseModel):
+    tenant_name: str
+    reason: str = ""

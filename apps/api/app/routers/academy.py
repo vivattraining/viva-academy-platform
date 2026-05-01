@@ -53,6 +53,8 @@ from app.schemas import (
     SessionCreate,
     SessionZoomUpdate,
     TenantBranding,
+    CertificateIssueRequest,
+    CertificateRevokeRequest,
     TestAttemptSubmit,
     TestCreate,
     TestQuestionCreate,
@@ -62,14 +64,18 @@ from app.schemas import (
     ZoomWebhookAttendance,
 )
 from app.store import (  # noqa: I001
+    create_certificate,
     create_or_replace_test,
     create_test_question,
     delete_test_question,
+    get_certificate_by_token_any_tenant,
     get_latest_attempt,
     get_test_by_id,
     get_test_for_course,
+    list_certificates,
     list_test_attempts,
     list_test_questions,
+    revoke_certificate,
     start_test_attempt,
     submit_test_attempt,
     update_course_chapter,
@@ -993,7 +999,111 @@ def submit_attempt_route(
     if attempt.get("application_id") != payload.application_id:
         raise HTTPException(status_code=403, detail="Attempt belongs to a different application")
 
-    return {"ok": True, "attempt": attempt}
+    # Auto-issue certificate when the student passes. Idempotent inside
+    # create_certificate — if a non-revoked cert already exists for this
+    # application+course, it returns the existing row instead of duplicating.
+    # Failures here are logged but never roll back the test result.
+    issued_certificate = None
+    if attempt.get("passed"):
+        try:
+            issued_certificate = create_certificate(
+                db,
+                payload.tenant_name,
+                application_id=payload.application_id,
+                attempt_id=attempt_id,
+            )
+        except Exception as cert_err:  # noqa: BLE001
+            logger.warning(
+                "Auto cert issuance failed for attempt=%s err=%s",
+                attempt_id, cert_err,
+            )
+
+    return {"ok": True, "attempt": attempt, "certificate": issued_certificate}
+
+
+# -----------------------------------------------------------------------
+# Certificates (V2 phase 2 / Path B).
+# Auto-issued on test pass; admin can manually issue or revoke.
+# Public verification at GET /certificates/verify/{token} — anyone
+# can hit it to confirm a certificate is real (employers, registrars).
+# -----------------------------------------------------------------------
+
+
+@router.post("/certificates/issue/secure")
+def issue_certificate_route(
+    payload: CertificateIssueRequest,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """Admin: manually issue a certificate. The webhook auto-issues on
+    test pass; this endpoint is the override path for waivers, manual
+    grading, or backfilling earlier cohorts."""
+    auth_dependency(db, payload.tenant_name, x_academy_session, authorization, {"admin"})
+    try:
+        cert = create_certificate(
+            db,
+            payload.tenant_name,
+            application_id=payload.application_id,
+            course_id=payload.course_id,
+            attempt_id=payload.attempt_id,
+            notes=payload.notes,
+        )
+    except ValueError as err:
+        raise HTTPException(status_code=404, detail=str(err))
+    return {"ok": True, "item": cert}
+
+
+@router.get("/certificates/secure")
+def list_certificates_route(
+    tenant_name: str,
+    application_id: Optional[str] = None,
+    course_id: Optional[str] = None,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """Admin/operations/trainer: list issued certificates, optionally
+    filtered by application or course."""
+    auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES)
+    items = list_certificates(db, tenant_name, application_id=application_id, course_id=course_id)
+    return {"items": items}
+
+
+@router.post("/certificates/{certificate_id}/revoke/secure")
+def revoke_certificate_route(
+    certificate_id: str,
+    payload: CertificateRevokeRequest,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_dependency(db, payload.tenant_name, x_academy_session, authorization, {"admin"})
+    cert = revoke_certificate(db, payload.tenant_name, certificate_id, reason=payload.reason)
+    if cert is None:
+        raise HTTPException(status_code=404, detail="Certificate not found")
+    return {"ok": True, "item": cert}
+
+
+@router.get("/certificates/verify/{token}")
+def verify_certificate_route(token: str, db: Session = Depends(get_db)):
+    """Public: anyone with the token can verify a cert. Returns minimal
+    fields — never email or internal IDs. The token-as-URL pattern means
+    only people the student has chosen to share with can verify (the URL
+    isn't enumerable; verification_token is 27 random URL-safe chars)."""
+    cert = get_certificate_by_token_any_tenant(db, token)
+    if cert is None:
+        return {"valid": False}
+    return {
+        "valid": True,
+        "student_name": cert.get("student_name", ""),
+        "course_name": cert.get("course_name", ""),
+        "course_code": cert.get("course_code", ""),
+        "cohort_label": cert.get("cohort_label", ""),
+        "score_pct": cert.get("score_pct"),
+        "issued_at": cert.get("issued_at"),
+        "verification_token": token,
+    }
 
 
 @router.get("/applications")
