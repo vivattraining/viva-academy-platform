@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
+
 import { MarketingShell } from "../../components/marketing-shell";
 import { PUBLIC_CONTACT } from "../../lib/public-site-content";
+
+export const metadata: Metadata = {
+  title: "Contact",
+  description:
+    "Get in touch with Viva Career Academy admissions. Email admission@vivacareeracademy.com or call +91 70421 07711.",
+  alternates: { canonical: "/contact" },
+};
 
 export default function ContactPage() {
   return (

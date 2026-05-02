@@ -36,17 +36,64 @@ export const metadata: Metadata = {
     description:
       "Premium career academy for travel, hospitality, and aviation. Apply, learn, and certify with Viva.",
     url: "https://www.vivacareeracademy.com",
+    locale: "en_IN",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Viva Career Academy",
+    description:
+      "Premium career academy for travel, hospitality, and aviation. Apply, learn, and certify with Viva.",
   },
   robots: {
     index: true,
     follow: true,
   },
+  alternates: {
+    canonical: "/",
+  },
+};
+
+const ORGANIZATION_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  name: "Viva Career Academy",
+  alternateName: "VCA",
+  url: "https://www.vivacareeracademy.com",
+  logo: "https://www.vivacareeracademy.com/icon.svg",
+  foundingDate: "2011",
+  description:
+    "VIVA Career Academy prepares the next generation of travel, tourism, and hospitality professionals through hybrid live cohorts, industry mentorship and global placement pathways.",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Mumbai",
+    addressRegion: "MH",
+    addressCountry: "IN",
+  },
+  contactPoint: [
+    {
+      "@type": "ContactPoint",
+      contactType: "admissions",
+      email: "admission@vivacareeracademy.com",
+      telephone: "+91-70421-07711",
+      areaServed: "IN",
+      availableLanguage: ["en", "hi"],
+    },
+  ],
+  sameAs: [],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={greatVibes.variable}>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Organization JSON-LD — helps Google's Knowledge Panel
+            and improves brand SERP grouping. SEO audit item #6. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
+        />
+      </body>
     </html>
   );
 }

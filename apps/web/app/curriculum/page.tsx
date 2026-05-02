@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
+
 import { MarketingShell } from "../../components/marketing-shell";
 import styles from "../../components/claude-home.module.css";
 import { VIVA_12_MODULES } from "../../lib/public-site-content";
+
+export const metadata: Metadata = {
+  title: "Curriculum",
+  description:
+    "VIVA's 16-week curriculum covers travel-industry foundations, geography, segments (outbound, inbound, domestic, MICE), operations, and career readiness.",
+  alternates: { canonical: "/curriculum" },
+};
 
 export default function CurriculumPage() {
   return (

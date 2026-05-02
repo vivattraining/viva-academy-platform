@@ -23,9 +23,13 @@ export default function robots(): MetadataRoute.Robots {
           "/white-label",
           "/internal/",
           "/payment/",
+          "/login",          // student login page — not useful in SERP
+          "/certificates/",  // per-student certificate pages — keep tokens out of the index
+          "/strategy",       // redirect-only stub
         ],
       },
     ],
+    sitemap: "https://www.vivacareeracademy.com/sitemap.xml",
     host: "https://www.vivacareeracademy.com",
   };
 }

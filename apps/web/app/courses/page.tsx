@@ -1,6 +1,22 @@
+import type { Metadata } from "next";
+
 import { MarketingShell } from "../../components/marketing-shell";
 import styles from "../../components/claude-home.module.css";
 import { getCourses } from "../../lib/courses-data";
+
+export const metadata: Metadata = {
+  title: "Courses",
+  description:
+    "Explore Viva Career Academy programmes — Foundation in Travel & Tourism, Travel Career Accelerator, Event & MICE, Travel Operations, Food & Beverage. 16-week hybrid cohorts.",
+  alternates: { canonical: "/courses" },
+  openGraph: {
+    title: "Courses · Viva Career Academy",
+    description:
+      "Five career tracks. One unwavering standard. Hybrid cohorts in travel, tourism and hospitality.",
+    url: "https://www.vivacareeracademy.com/courses",
+    type: "website",
+  },
+};
 
 export default async function CoursesPage() {
   const programs = await getCourses();

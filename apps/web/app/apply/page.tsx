@@ -1,7 +1,23 @@
+import type { Metadata } from "next";
+
 import { MarketingShell } from "../../components/marketing-shell";
 import styles from "../../components/claude-home.module.css";
 import { PublicAdmissionsFlow } from "../../components/public-admissions-flow";
 import { getCourses } from "../../lib/courses-data";
+
+export const metadata: Metadata = {
+  title: "Apply",
+  description:
+    "Apply to a Viva Career Academy programme. Pick a course, complete the 15-minute application form, and reserve your seat in the next cohort.",
+  alternates: { canonical: "/apply" },
+  openGraph: {
+    title: "Apply · Viva Career Academy",
+    description:
+      "Apply to a Viva Career Academy programme. Travel, tourism, and hospitality cohorts starting May 2026.",
+    url: "https://www.vivacareeracademy.com/apply",
+    type: "website",
+  },
+};
 
 export default async function ApplyPage() {
   const programs = await getCourses();

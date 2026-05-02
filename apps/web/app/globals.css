@@ -1339,11 +1339,18 @@ main {
   color: var(--muted);
 }
 
-.editorial-form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-  margin-top: 24px;
+/* Note: .editorial-form-grid base rule lives at line ~394 (auto-fit
+   responsive). This second declaration previously hard-coded 2 columns
+   at all widths which broke the apply form on iPhone (375px viewport
+   forced inputs side-by-side and overflow). Mobile audit (2026-05-01) #2.
+   Now: keep the 2-column layout only at ≥720px — narrower viewports use
+   the auto-fit base rule which collapses to 1 column. */
+@media (min-width: 720px) {
+  .editorial-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+  }
 }
 
 .editorial-field {
@@ -1780,6 +1787,31 @@ main {
   .dashboard-alert {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+/* Mobile touch-target minimums (Apple HIG: 44×44pt). Mobile audit (2026-05-01).
+   Hits every clickable / focusable surface at ≤720px so links inside
+   tables, nav strips, footer columns, and inline call-to-actions are
+   reliably tappable. */
+@media (max-width: 720px) {
+  .editorial-form-button,
+  .button-primary,
+  .button-secondary,
+  .editorial-form-secondary,
+  .editorial-form-submit {
+    min-height: 44px;
+  }
+  .editorial-field input,
+  .editorial-field select,
+  .editorial-field textarea,
+  .editorial-textarea {
+    min-height: 44px;
+    font-size: 16px;  /* ≥16px on inputs prevents iOS auto-zoom on focus */
+  }
+  .editorial-field textarea,
+  .editorial-textarea {
+    min-height: 88px;  /* textareas need more height than the touch min */
   }
 }
 
