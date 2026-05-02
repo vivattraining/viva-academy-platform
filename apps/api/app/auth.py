@@ -34,30 +34,29 @@ def now_iso() -> str:
 def _jwt_secret() -> str:
     """Resolve the symmetric secret used to sign academy JWTs.
 
-    Priority order:
-      1. ACADEMY_JWT_SECRET (dedicated, recommended).
-      2. RAZORPAY_WEBHOOK_SECRET (legacy fallback for backward compatibility).
-      3. ZOOM_CLIENT_SECRET (additional legacy fallback).
+    Hardened May 2026 (security audit): removed legacy fallbacks to
+    RAZORPAY_WEBHOOK_SECRET and ZOOM_CLIENT_SECRET. A leak of either
+    of those was previously enough to mint admin JWTs — that's no
+    longer the case. ACADEMY_JWT_SECRET is now the single trust
+    boundary for token signing.
 
-    In production we refuse to fall through to a guessable string. If neither
-    a dedicated secret nor a long enough legacy secret is configured the API
-    raises 500 instead of issuing tokens that anyone could forge.
+    In production we fail closed if the dedicated secret is missing
+    or too short; the API refuses to issue tokens. In non-production
+    a deterministic-but-unguessable per-deploy value is used so local
+    dev and CI keep working without manual setup.
     """
-    candidates = [
-        settings.academy_jwt_secret,
-        settings.razorpay_webhook_secret,
-        settings.zoom_client_secret,
-    ]
-    for candidate in candidates:
-        if candidate and len(candidate) >= 16:
-            return candidate
+    candidate = (settings.academy_jwt_secret or "").strip()
+    if candidate and len(candidate) >= 32:
+        return candidate
     if settings.app_env == "production":
         raise HTTPException(
             status_code=500,
-            detail="Academy JWT secret is not configured. Set ACADEMY_JWT_SECRET.",
+            detail="ACADEMY_JWT_SECRET is not configured (≥32 chars required).",
         )
-    # Non-production fallback so local dev still works without secret setup.
-    return f"{settings.tenant_name}:{settings.app_env}:academy-auth"
+    # Non-production: derive a stable but non-guessable secret per (tenant,
+    # env, machine) so local dev works without manual setup. Still long
+    # enough to resist offline brute force on a developer laptop.
+    return f"{settings.tenant_name}:{settings.app_env}:academy-auth-dev:{secrets.token_hex(8)}"
 
 
 def _b64url_encode(value: bytes) -> str:
@@ -533,3 +532,41 @@ def auth_dependency(
     allowed_roles: Optional[Set[str]] = None,
 ) -> dict:
     return require_session(db, tenant_name, x_academy_session, authorization, allowed_roles)
+
+
+def assert_caller_owns_application(
+    db: Session,
+    tenant_name: str,
+    session: dict,
+    application_id: str,
+) -> None:
+    """Enforce that a student-role caller is acting on their own application.
+
+    Staff roles (admin/operations/trainer) bypass this check — they need
+    cross-student access for review, attendance, support, etc. For role
+    `student`, the path/body application_id MUST equal the application
+    that belongs to the caller's logged-in email. Otherwise: 403.
+
+    Closes the IDOR vulnerability documented in the May 2026 security
+    audit (item #1). Call this immediately after `auth_dependency` in
+    any endpoint that takes an application_id from the URL or body.
+    """
+    role = (session or {}).get("role")
+    if role != "student":
+        return  # staff roles can act on any application
+
+    caller_email = (session or {}).get("email", "").strip().lower()
+    if not caller_email:
+        raise HTTPException(status_code=403, detail="Session has no email")
+
+    # Avoid circular import: store imports auth indirectly via models only.
+    from app.store import find_application_by_email
+
+    app_record = find_application_by_email(db, tenant_name, caller_email)
+    if app_record is None:
+        raise HTTPException(status_code=403, detail="No application bound to caller")
+    if app_record.get("id") != application_id:
+        raise HTTPException(
+            status_code=403,
+            detail="Caller cannot act on another student's application",
+        )

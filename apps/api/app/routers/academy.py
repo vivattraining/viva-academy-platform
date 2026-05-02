@@ -5,11 +5,14 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
+
+from app.rate_limit import enforce_preset
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
 from app.auth import (
+    assert_caller_owns_application,
     auth_dependency,
     bootstrap_admin_user,
     create_credential,
@@ -295,7 +298,10 @@ def _resolve_razorpay_application(db: Session, event: dict, reference: Optional[
 
 
 @router.post("/auth/login")
-def academy_login(payload: LoginRequest, db: Session = Depends(get_db)):
+def academy_login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)):
+    # Rate limit: 5 attempts / 15 min per (IP, email). Credential-stuffing
+    # defense — see security audit #3.
+    enforce_preset(request, "login", extra_key=(payload.email or "").lower())
     return {
         "ok": True,
         "session": login_user(db, payload.tenant_name, payload.email, payload.password, payload.expected_role),
@@ -314,9 +320,13 @@ def academy_auth_status(tenant_name: str, db: Session = Depends(get_db)):
 @router.post("/auth/bootstrap-admin")
 def academy_bootstrap_admin(
     payload: BootstrapAdminRequest,
+    request: Request,
     x_bootstrap_token: Optional[str] = Header(default=None, alias="X-Bootstrap-Token"),
     db: Session = Depends(get_db),
 ):
+    # Rate limit: 3 attempts / hour per IP. Bootstrap is a rare, high-stakes
+    # action — anything more than this is suspicious.
+    enforce_preset(request, "bootstrap")
     """Bootstrap the first admin for a tenant.
 
     Hardened:
@@ -927,7 +937,8 @@ def read_test_student(
     application = get_application(db, tenant_name, application_id)
     if application is None:
         raise HTTPException(status_code=404, detail="Application not found")
-    auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES | {"student"})
+    session = auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES | {"student"})
+    assert_caller_owns_application(db, tenant_name, session, application_id)
 
     test = get_test_for_course(db, tenant_name, course_id)
     if test is None:
@@ -993,7 +1004,8 @@ def start_attempt_route(
     application = get_application(db, tenant_name, application_id)
     if application is None:
         raise HTTPException(status_code=404, detail="Application not found")
-    auth_dependency(db, tenant_name, x_academy_session, authorization, {"student"})
+    session = auth_dependency(db, tenant_name, x_academy_session, authorization, {"student"})
+    assert_caller_owns_application(db, tenant_name, session, application_id)
 
     test = get_test_by_id(db, tenant_name, test_id)
     if test is None or not test.get("active", True):
@@ -1044,7 +1056,8 @@ def submit_attempt_route(
     application = get_application(db, payload.tenant_name, payload.application_id)
     if application is None:
         raise HTTPException(status_code=404, detail="Application not found")
-    auth_dependency(db, payload.tenant_name, x_academy_session, authorization, {"student"})
+    session = auth_dependency(db, payload.tenant_name, x_academy_session, authorization, {"student"})
+    assert_caller_owns_application(db, payload.tenant_name, session, payload.application_id)
 
     answers = [a.model_dump() for a in payload.answers]
     try:
@@ -1145,11 +1158,14 @@ def revoke_certificate_route(
 
 
 @router.get("/certificates/verify/{token}")
-def verify_certificate_route(token: str, db: Session = Depends(get_db)):
+def verify_certificate_route(token: str, request: Request, db: Session = Depends(get_db)):
     """Public: anyone with the token can verify a cert. Returns minimal
     fields — never email or internal IDs. The token-as-URL pattern means
     only people the student has chosen to share with can verify (the URL
     isn't enumerable; verification_token is 27 random URL-safe chars)."""
+    # Rate limit: 60 RPM per IP — modest cap, plenty for legitimate
+    # employer verification, blocks scrapers and DoS amplification.
+    enforce_preset(request, "cert-verify")
     cert = get_certificate_by_token_any_tenant(db, token)
     if cert is None:
         return {"valid": False}
@@ -1194,13 +1210,37 @@ def read_application(
     if item is None:
         raise HTTPException(status_code=404, detail="Application not found")
     if token and token == item.get("public_receipt_token"):
-        return {"item": item}
-    auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES | {"student"})
+        # Public receipt URL: project a minimal subset (no PII beyond name,
+        # no internal notes, no plaintext password). See security audit #9.
+        safe_item = {
+            "id": item.get("id"),
+            "student_name": item.get("student_name"),
+            "course_name": item.get("course_name"),
+            "course_code": item.get("course_code"),
+            "cohort_label": item.get("cohort_label"),
+            "amount_due": item.get("amount_due"),
+            "currency": item.get("currency"),
+            "payment_stage": item.get("payment_stage"),
+            "payment_url": item.get("payment_url"),
+            "payment_reference": item.get("payment_reference"),
+            "public_receipt_token": item.get("public_receipt_token"),
+            "is_reservation": item.get("is_reservation"),
+            "reservation_amount": item.get("reservation_amount"),
+            "balance_amount": item.get("balance_amount"),
+            "balance_due_by": item.get("balance_due_by"),
+            "reservation_paid_at": item.get("reservation_paid_at"),
+        }
+        return {"item": safe_item}
+    session = auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES | {"student"})
+    assert_caller_owns_application(db, tenant_name, session, application_id)
     return {"item": item}
 
 
 @router.post("/applications")
-def create_application_route(payload: ApplicationCreate, db: Session = Depends(get_db)):
+def create_application_route(payload: ApplicationCreate, request: Request, db: Session = Depends(get_db)):
+    # Rate limit: 10 RPM per IP. Stops bot-driven application spam without
+    # impeding real students who refresh / retry occasionally.
+    enforce_preset(request, "applications")
     """
     Create an application. Course → price mapping is authoritative on the
     server (apps/api/app/course_catalog.py); the client cannot influence
@@ -1343,7 +1383,10 @@ def update_application_attendance_secure(
 
 
 @router.post("/applications/{application_id}/payment-link")
-def create_application_payment_link(application_id: str, payload: PaymentLinkUpdate, db: Session = Depends(get_db)):
+def create_application_payment_link(application_id: str, payload: PaymentLinkUpdate, request: Request, db: Session = Depends(get_db)):
+    # Rate limit: 10 RPM per IP. Payment-link generation hits Razorpay
+    # which costs us cycles + a small per-call fee — cap abuse.
+    enforce_preset(request, "payment-link")
     application = get_application(db, payload.tenant_name, application_id)
     if application is None:
         raise HTTPException(status_code=404, detail="Application not found")
@@ -1548,7 +1591,11 @@ async def _capture_payment(
                      .get("entity", {})
                      .get("amount", 0)
             )
-            if captured_paise > 0 and captured_paise != expected_paise:
+            # Hardened May 2026 (security audit #16): require strict equality.
+            # Previously zero-amount captures (malformed payload that survives
+            # signature verification) would slip through. Now any non-match
+            # — including 0 — is rejected.
+            if captured_paise != expected_paise:
                 logger.error(
                     "Razorpay webhook AMOUNT MISMATCH — application=%s expected=%spaise captured=%spaise. Refusing to mark paid.",
                     application["id"], expected_paise, captured_paise,
@@ -1656,12 +1703,22 @@ async def _capture_payment(
 
     # 9. Issue student credential. Idempotent: if a credential already
     # exists for this email, this is a no-op (no password rotation on
-    # webhook retries). When it creates a new credential, we persist the
-    # initial password on the application row so the academy team can
-    # surface it via the messaging center / admin UI to deliver to the
-    # student. Stored field: `initial_student_password`.
+    # webhook retries).
+    #
+    # Hardened May 2026 (security audit #5): we no longer persist the
+    # plaintext initial password to the application row. Instead, the
+    # password is emailed directly to the student via Resend in the same
+    # webhook. If Resend is not yet configured the email logs as
+    # `[email mock]` and an operator can rotate via the admin UI (no DB
+    # plaintext means no PII leak from a backup/dump).
     student_email = updated.get("student_email") or application.get("student_email")
     student_name = updated.get("student_name") or application.get("student_name") or ""
+    # Privacy: log a hash of the email rather than the raw address.
+    import hashlib as _hashlib
+    email_hash = (
+        _hashlib.sha256((student_email or "").encode("utf-8")).hexdigest()[:12]
+        if student_email else "anon"
+    )
     if student_email:
         try:
             credential, initial_password = ensure_student_credential(
@@ -1671,36 +1728,61 @@ async def _capture_payment(
                 full_name=student_name,
             )
             if initial_password:
-                # Newly-created credential. Persist the initial password on
-                # the application row so an operator can retrieve and send
-                # it to the student. Once the student logs in and changes
-                # their password, this field can be cleared (admin UI todo).
-                _save_payment_transition(
-                    db,
-                    tenant_name,
-                    application["id"],
-                    {"initial_student_password": initial_password},
-                )
+                # Newly-created credential. Email the password directly;
+                # do NOT store on the row. Operators can rotate later if
+                # the email bounces.
+                try:
+                    from app.integrations import send_email
+                    pretty_name = (student_name or "there").split(" ")[0]
+                    portal_url = "https://www.vivacareeracademy.com/login"
+                    send_email(
+                        to=student_email,
+                        subject="Your VIVA Career Academy student portal access",
+                        text=(
+                            f"Hi {pretty_name},\n\n"
+                            f"Your enrolment is confirmed and your student portal account is ready.\n\n"
+                            f"Sign in at: {portal_url}\n"
+                            f"Email: {student_email}\n"
+                            f"Initial password: {initial_password}\n\n"
+                            f"Change your password from the profile menu after first login.\n\n"
+                            f"— Viva Career Academy"
+                        ),
+                        html=(
+                            f"<div style=\"font-family:'Helvetica Neue',Arial,sans-serif;color:#111d23;max-width:560px;\">"
+                            f"<h2 style=\"color:#0B1F3A;\">Welcome to Viva Career Academy</h2>"
+                            f"<p>Hi {pretty_name},</p>"
+                            f"<p>Your enrolment is confirmed and your student portal account is ready.</p>"
+                            f"<p><a href=\"{portal_url}\" style=\"display:inline-block;background:#0B1F3A;color:#f5efe4;padding:12px 22px;border-radius:4px;text-decoration:none;font-weight:600;\">Open student portal</a></p>"
+                            f"<table style=\"border-collapse:collapse;margin:16px 0;font-size:14px;\">"
+                            f"<tr><td style=\"padding:6px 14px 6px 0;color:#2f3140;\">Email</td><td style=\"padding:6px 0;font-weight:700;\">{student_email}</td></tr>"
+                            f"<tr><td style=\"padding:6px 14px 6px 0;color:#2f3140;\">Initial password</td><td style=\"padding:6px 0;font-family:ui-monospace,monospace;font-weight:700;\">{initial_password}</td></tr>"
+                            f"</table>"
+                            f"<p style=\"color:#5a5040;font-size:13px;\">Change your password from the profile menu after first login.</p>"
+                            f"<p style=\"color:#2f3140;margin-top:24px;\">— Viva Career Academy</p>"
+                            f"</div>"
+                        ),
+                    )
+                except Exception as email_err:  # noqa: BLE001
+                    logger.warning(
+                        "Razorpay webhook: student-credential email failed application=%s email_hash=%s err=%s",
+                        application["id"], email_hash, email_err,
+                    )
                 logger.info(
-                    "Razorpay webhook: student credential issued — email=%s tenant=%s",
-                    student_email,
-                    tenant_name,
+                    "Razorpay webhook: student credential issued — application=%s email_hash=%s tenant=%s",
+                    application["id"], email_hash, tenant_name,
                 )
             elif credential is not None:
                 logger.info(
-                    "Razorpay webhook: student credential already exists — email=%s tenant=%s (no password rotation)",
-                    student_email,
-                    tenant_name,
+                    "Razorpay webhook: student credential already exists — application=%s email_hash=%s tenant=%s (no password rotation)",
+                    application["id"], email_hash, tenant_name,
                 )
         except Exception as cred_error:  # noqa: BLE001
             # Never fail the webhook on credential issuance — payment was
             # captured and the application row is already paid. The
             # operator can retry credential creation manually from /admin.
             logger.error(
-                "Razorpay webhook: credential issuance failed for application=%s email=%s err=%s",
-                application["id"],
-                student_email,
-                cred_error,
+                "Razorpay webhook: credential issuance failed for application=%s email_hash=%s err=%s",
+                application["id"], email_hash, cred_error,
             )
 
     # Record the event ID so any retry / replay will short-circuit at step 4a.
@@ -1950,7 +2032,8 @@ def read_learner_lms_secure(
     authorization: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES | {"student"})
+    session = auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES | {"student"})
+    assert_caller_owns_application(db, tenant_name, session, application_id)
     item = get_student_lms_overview(db, tenant_name, application_id)
     if item is None:
         raise HTTPException(status_code=404, detail="Learner LMS state not found")
@@ -1985,7 +2068,11 @@ def read_submissions_secure(
     authorization: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES | {"student"})
+    session = auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES | {"student"})
+    # If a student is asking and a specific application_id is requested,
+    # enforce that it's their own. Staff can query any application.
+    if application_id and (session or {}).get("role") == "student":
+        assert_caller_owns_application(db, tenant_name, session, application_id)
     return {"items": list_chapter_submissions(db, tenant_name, application_id=application_id, module_id=module_id)}
 
 
@@ -1996,7 +2083,8 @@ def create_submission_secure(
     authorization: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    auth_dependency(db, payload.tenant_name, x_academy_session, authorization, TRAINER_ROLES | {"student"})
+    session = auth_dependency(db, payload.tenant_name, x_academy_session, authorization, TRAINER_ROLES | {"student"})
+    assert_caller_owns_application(db, payload.tenant_name, session, payload.application_id)
     try:
         item = create_chapter_submission(db, payload.tenant_name, payload.model_dump())
     except ValueError as exc:
