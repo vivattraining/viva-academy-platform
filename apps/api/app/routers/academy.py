@@ -32,7 +32,13 @@ from app.integrations import (
     fetch_payment_status,
     provision_zoom_meeting,
     razorpay_mode,
+    render_application_received_email,
+    render_certificate_issued_email,
+    render_payment_link_ready_email,
     render_reservation_confirmation_email,
+    render_test_failed_email,
+    render_test_passed_email,
+    render_trainer_feedback_email,
     send_email,
 )
 from app.schemas import (
@@ -1090,6 +1096,59 @@ def submit_attempt_route(
                 attempt_id, cert_err,
             )
 
+        # Send "you passed" email with cert URL.
+        if issued_certificate:
+            try:
+                pass_meta = render_test_passed_email(
+                    student_name=application.get("student_name", ""),
+                    course_name=application.get("course_name", ""),
+                    score_pct=float(attempt.get("score_pct") or 0),
+                    verification_token=issued_certificate.get("verification_token", ""),
+                )
+                send_email(
+                    to=application.get("student_email", ""),
+                    subject=pass_meta["subject"],
+                    html=pass_meta["html"],
+                    text=pass_meta["text"],
+                )
+            except Exception as email_err:  # noqa: BLE001
+                logger.warning(
+                    "Test-passed email failed for attempt=%s err=%s",
+                    attempt_id, email_err,
+                )
+    else:
+        # Test failed — send retake-encouragement email.
+        try:
+            from datetime import datetime, timedelta, timezone
+            test = get_test_by_id(db, payload.tenant_name, attempt.get("test_id"))
+            retake_days = int((test or {}).get("retake_days", 14) or 14)
+            pass_score = int((test or {}).get("pass_score", 75) or 75)
+            submitted_iso = attempt.get("submitted_at") or datetime.now(timezone.utc).isoformat()
+            try:
+                submitted_dt = datetime.fromisoformat(submitted_iso.replace("Z", "+00:00"))
+            except (TypeError, ValueError):
+                submitted_dt = datetime.now(timezone.utc)
+            retake_after_iso = (submitted_dt + timedelta(days=retake_days)).isoformat()
+
+            fail_meta = render_test_failed_email(
+                student_name=application.get("student_name", ""),
+                course_name=application.get("course_name", ""),
+                score_pct=float(attempt.get("score_pct") or 0),
+                pass_score=pass_score,
+                retake_after_iso=retake_after_iso,
+            )
+            send_email(
+                to=application.get("student_email", ""),
+                subject=fail_meta["subject"],
+                html=fail_meta["html"],
+                text=fail_meta["text"],
+            )
+        except Exception as email_err:  # noqa: BLE001
+            logger.warning(
+                "Test-failed email failed for attempt=%s err=%s",
+                attempt_id, email_err,
+            )
+
     return {"ok": True, "attempt": attempt, "certificate": issued_certificate}
 
 
@@ -1123,6 +1182,29 @@ def issue_certificate_route(
         )
     except ValueError as err:
         raise HTTPException(status_code=404, detail=str(err))
+
+    # Send "your certificate is ready" email. Skip if no email on the
+    # cert row (defensive — should always have one from the application).
+    if cert.get("student_email"):
+        try:
+            cert_meta = render_certificate_issued_email(
+                student_name=cert.get("student_name", ""),
+                course_name=cert.get("course_name", ""),
+                verification_token=cert.get("verification_token", ""),
+                score_pct=cert.get("score_pct"),
+            )
+            send_email(
+                to=cert["student_email"],
+                subject=cert_meta["subject"],
+                html=cert_meta["html"],
+                text=cert_meta["text"],
+            )
+        except Exception as email_err:  # noqa: BLE001
+            logger.warning(
+                "Cert-issued email failed for cert=%s err=%s",
+                cert.get("id"), email_err,
+            )
+
     return {"ok": True, "item": cert}
 
 
@@ -1333,6 +1415,32 @@ def create_application_route(payload: ApplicationCreate, request: Request, db: S
         body["balance_paid_at"] = None
 
     item = create_application(db, payload.tenant_name, body)
+
+    # Send "application received" confirmation email. Graceful no-op
+    # if Resend isn't configured. Failures here never block the
+    # application creation — the row is already in the DB.
+    try:
+        meta = render_application_received_email(
+            student_name=item.get("student_name", ""),
+            course_name=item.get("course_name", ""),
+            cohort_label=item.get("cohort_label", ""),
+            is_reservation=bool(item.get("is_reservation")),
+            amount_due=float(item.get("amount_due", 0) or 0),
+            application_id=item.get("id", ""),
+            currency=item.get("currency", "INR"),
+        )
+        send_email(
+            to=item.get("student_email", ""),
+            subject=meta["subject"],
+            html=meta["html"],
+            text=meta["text"],
+        )
+    except Exception as email_err:  # noqa: BLE001
+        logger.warning(
+            "Application-received email failed for application=%s err=%s",
+            item.get("id"), email_err,
+        )
+
     return {"ok": True, "item": item}
 
 
@@ -1487,6 +1595,30 @@ def create_application_payment_link(application_id: str, payload: PaymentLinkUpd
             "payment_stage": payload.payment_stage or "order_created",
         },
     )
+
+    # Email the payment link so the student can pay from any device
+    # / share with a parent funding the fee. Graceful no-op.
+    try:
+        link_meta = render_payment_link_ready_email(
+            student_name=(item or {}).get("student_name") or application.get("student_name", ""),
+            course_name=(item or {}).get("course_name") or application.get("course_name", ""),
+            amount=chargeable_amount,
+            payment_url=payment["payment_url"],
+            is_reservation=is_reservation,
+            currency="INR",
+        )
+        send_email(
+            to=(item or {}).get("student_email") or application.get("student_email", ""),
+            subject=link_meta["subject"],
+            html=link_meta["html"],
+            text=link_meta["text"],
+        )
+    except Exception as email_err:  # noqa: BLE001
+        logger.warning(
+            "Payment-link email failed for application=%s err=%s",
+            application_id, email_err,
+        )
+
     return {
         "ok": True,
         "item": item,
@@ -2130,6 +2262,41 @@ def create_review_secure(
         item = create_trainer_review(db, payload.tenant_name, body)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    # Email the student that feedback is in. Need to look up application
+    # + chapter to get the student email and a friendly chapter title.
+    try:
+        # The submission carries application_id + chapter_id
+        from app.store import get_submission, list_items
+        submission = get_submission(db, payload.tenant_name, payload.submission_id)
+        if submission:
+            applicant = get_application(db, payload.tenant_name, submission.get("application_id", ""))
+            chapter_id = submission.get("chapter_id")
+            chapter = next(
+                (c for c in list_items(db, payload.tenant_name, "course_chapters") if c.get("id") == chapter_id),
+                None,
+            )
+            if applicant and applicant.get("student_email"):
+                fb_meta = render_trainer_feedback_email(
+                    student_name=applicant.get("student_name", ""),
+                    chapter_title=(chapter or {}).get("title") or "your submission",
+                    outcome=payload.outcome,
+                    trainer_feedback=payload.trainer_feedback or "",
+                    score=payload.score,
+                    application_id=applicant.get("id"),
+                )
+                send_email(
+                    to=applicant["student_email"],
+                    subject=fb_meta["subject"],
+                    html=fb_meta["html"],
+                    text=fb_meta["text"],
+                )
+    except Exception as email_err:  # noqa: BLE001
+        logger.warning(
+            "Trainer-feedback email failed for review=%s err=%s",
+            item.get("id"), email_err,
+        )
+
     return {"ok": True, "item": item}
 
 
