@@ -1,35 +1,22 @@
 import type { MetadataRoute } from "next";
 
-import { getCourses } from "../lib/courses-data";
-
 const SITE = "https://www.vivacareeracademy.com";
 
 /**
  * Public-route sitemap. Submitted to Google Search Console after
  * launch — see SEO audit (2026-05-01) item #1.
  *
- * Includes every static public page plus per-course detail pages
- * driven from the live catalog (`getCourses`). Dynamic certificate
- * URLs are explicitly NOT listed: those are private to each
- * student and shouldn't be discoverable.
+ * Fully static: doesn't fetch the API at build time. The api project
+ * builds in parallel on Vercel and isn't guaranteed to be available
+ * during a web build. Course codes here mirror
+ * `apps/api/app/course_catalog.py` — keep in sync when adding a course.
+ *
+ * Dynamic certificate URLs (`/certificates/[token]`) are explicitly
+ * NOT listed: those are private to each student and shouldn't be
+ * discoverable by search engines.
  */
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-
-  // Try to enumerate course detail URLs from the live catalog.
-  // Fall back to a static snapshot if the API call fails at build time.
-  let courses: { code: string }[] = [];
-  try {
-    courses = await getCourses();
-  } catch {
-    courses = [
-      { code: "P · 01" },
-      { code: "P · 02" },
-      { code: "P · 03" },
-      { code: "P · 04" },
-      { code: "P · 05" },
-    ];
-  }
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${SITE}/`,                changeFrequency: "weekly",  priority: 1.0, lastModified: now },
@@ -47,10 +34,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/accessibility`,   changeFrequency: "yearly",  priority: 0.3, lastModified: now },
   ];
 
-  // Course detail URLs — use the code as a slug, URL-encoded.
-  // (Detail pages exist on the roadmap; sitemap is forward-compatible.)
-  const courseRoutes: MetadataRoute.Sitemap = courses.map((c) => ({
-    url: `${SITE}/courses/${encodeURIComponent(c.code)}`,
+  // Course detail URLs — codes mirror apps/api/app/course_catalog.py.
+  // Pages don't exist yet (forward-compatible), so flag low priority
+  // until they ship.
+  const courseCodes = ["P · 01", "P · 02", "P · 03", "P · 04", "P · 05"];
+  const courseRoutes: MetadataRoute.Sitemap = courseCodes.map((code) => ({
+    url: `${SITE}/courses/${encodeURIComponent(code)}`,
     changeFrequency: "monthly" as const,
     priority: 0.85,
     lastModified: now,
