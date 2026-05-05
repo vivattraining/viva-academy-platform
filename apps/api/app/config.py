@@ -28,6 +28,11 @@ class Settings:
     razorpay_webhook_secret: str = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
 
     resend_api_key: str = os.getenv("RESEND_API_KEY", "")
+    # Shared secret for verifying inbound Resend webhook events
+    # (delivered, bounced, complained). Configured on the Resend
+    # dashboard. If unset in production the /email/webhook/resend
+    # endpoint refuses all requests — telemetry capture is mandatory.
+    resend_webhook_secret: str = os.getenv("RESEND_WEBHOOK_SECRET", "")
     whatsapp_api_token: str = os.getenv("WHATSAPP_API_TOKEN", "")
     whatsapp_phone_id: str = os.getenv("WHATSAPP_PHONE_ID", "")
 

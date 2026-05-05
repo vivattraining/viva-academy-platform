@@ -135,6 +135,17 @@ class ZoomWebhookAttendance(BaseModel):
     note: str = ""
 
 
+class SessionResourceCreate(BaseModel):
+    """Phase B §2.2: artefacts attached to a live session — recording,
+    slides, handout, or transcript. Stored as JSON blobs on
+    tenant_state, scoped to a session_id."""
+    tenant_name: str
+    session_id: str
+    kind: str = Field(..., min_length=1)
+    url: str = Field(..., min_length=1)
+    title: Optional[str] = ""
+
+
 class LoginRequest(BaseModel):
     tenant_name: str
     email: str
@@ -190,6 +201,9 @@ class CourseCreate(BaseModel):
     relock_grace_days: int = 2
     certificate_name: Optional[str] = None
     active: bool = True
+    # Minutes after start_time at which a 'present' attendance row gets
+    # downgraded to 'late' by the attendance-finalize cron (§8.1).
+    late_threshold_minutes: int = 15
 
 
 class CourseModuleCreate(BaseModel):

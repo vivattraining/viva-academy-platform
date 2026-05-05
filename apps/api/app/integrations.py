@@ -788,6 +788,50 @@ def render_reservation_confirmation_email(
     return {"subject": subject, "html": html, "text": text}
 
 
+def render_recording_published_email(
+    *,
+    student_name: str,
+    session_title: str,
+    session_date: str,
+    recording_url: str,
+    application_id: str,
+) -> Dict[str, str]:
+    """Sent when a trainer/admin attaches a `recording` resource to a session.
+
+    Triggered inline from `POST /sessions/{id}/resources/secure` when
+    kind=='recording'. Brief, single-CTA layout — same visual rhythm as the
+    other 10 templates so the inbox set stays consistent.
+    """
+    first = _first_name(student_name)
+    subject = f"Recording is up · {session_title}"
+    text = (
+        f"Hi {first},\n\n"
+        f"The recording for {session_title} ({session_date}) is now available.\n\n"
+        f"Watch: {recording_url}\n\n"
+        f"If you missed the live class, this is your catch-up. The recording "
+        f"will stay available in your dashboard for the duration of the cohort.\n\n"
+        f"— Viva Career Academy"
+    )
+    html = (
+        f"<div style=\"font-family:'Helvetica Neue',Arial,sans-serif;color:#111d23;max-width:560px;margin:0 auto;\">"
+        f"<div style=\"background:rgba(11,31,58,0.06);border-left:3px solid #0B1F3A;padding:14px 18px;margin-bottom:18px;\">"
+        f"<div style=\"font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#0B1F3A;font-weight:600;\">Recording published</div>"
+        f"<div style=\"margin-top:4px;font-size:18px;color:#0B1F3A;font-weight:700;\">{session_title}</div>"
+        f"<div style=\"margin-top:2px;color:#5a5040;font-size:13px;\">{session_date}</div>"
+        f"</div>"
+        f"<p>Hi {first},</p>"
+        f"<p>The recording for <strong>{session_title}</strong> is now available. "
+        f"If you missed the live class, this is your catch-up.</p>"
+        f"<p style=\"margin:18px 0;\">"
+        f"<a href=\"{recording_url}\" style=\"display:inline-block;background:#0B1F3A;color:#f5efe4;padding:12px 22px;border-radius:4px;text-decoration:none;font-weight:600;\">Open recording</a>"
+        f"</p>"
+        f"<p style=\"color:#5a5040;font-size:13px;\">The recording stays available in your dashboard for the duration of the cohort.</p>"
+        f"<p style=\"color:#2f3140;margin-top:24px;\">— Viva Career Academy</p>"
+        f"</div>"
+    )
+    return {"subject": subject, "html": html, "text": text}
+
+
 def render_module_unlocked_email(
     *,
     student_name: str,

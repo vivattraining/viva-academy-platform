@@ -1,6 +1,6 @@
 import { SiteShell } from "../../components/site-shell";
 import { InternalRouteGate } from "../../components/internal-route-gate";
-import { TrainerReviewWorkspace } from "../../components/trainer-review-workspace";
+import { TrainerDashboardWorkspace } from "../../components/trainer-dashboard-workspace";
 import { requireInternalPageAccess } from "../../lib/internal-access";
 
 export default async function TrainerPage() {
@@ -17,7 +17,7 @@ export default async function TrainerPage() {
       navVariant="internal"
     >
       <InternalRouteGate allowedRoles={["trainer", "admin", "operations"]}>
-        <TrainerReviewWorkspace />
+        <TrainerDashboardWorkspace />
       </InternalRouteGate>
     </SiteShell>
   );

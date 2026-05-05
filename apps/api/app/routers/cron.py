@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import hmac
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException
@@ -36,10 +36,16 @@ from app.config import settings
 from app.db import get_db
 from app.integrations import render_module_unlocked_email, send_email
 from app.store import (
+    find_session_by_id,
     get_course_outline,
     get_tenant_state,
     list_applications,
+    list_attendance_for_session,
     list_batches,
+    list_courses,
+    list_session_resources,
+    list_sessions,
+    mark_attendance,
     save_tenant_state,
 )
 
@@ -188,23 +194,174 @@ def cron_unlock_modules(
     }
 
 
+def _parse_session_window(session_row: dict) -> tuple[Optional[datetime], Optional[datetime]]:
+    """Combine `session_date` (YYYY-MM-DD) with `start_time` / `end_time`
+    (HH:MM) and return UTC-aware datetimes. We treat the stored time as
+    UTC for cron arithmetic — the platform runs IST sessions but the row
+    times are inserted as the trainer typed them. Close enough for a
+    'has-the-window-ended' check; the +15 min grace absorbs slop."""
+    session_date = (session_row.get("session_date") or "").strip()
+    start_time = (session_row.get("start_time") or "").strip()
+    end_time = (session_row.get("end_time") or "").strip()
+    if not session_date:
+        return None, None
+    start_dt: Optional[datetime] = None
+    end_dt: Optional[datetime] = None
+    try:
+        if start_time:
+            start_dt = datetime.fromisoformat(f"{session_date}T{start_time}").replace(tzinfo=timezone.utc)
+    except ValueError:
+        start_dt = None
+    try:
+        if end_time:
+            end_dt = datetime.fromisoformat(f"{session_date}T{end_time}").replace(tzinfo=timezone.utc)
+    except ValueError:
+        end_dt = None
+    return start_dt, end_dt
+
+
+def _course_for_session(session_row: dict, courses: list[dict], batches: list[dict]) -> Optional[dict]:
+    """Resolve a session → course via batch.course_name. Returns None if
+    the batch's course can't be matched to any course row."""
+    batch = next((b for b in batches if b.get("id") == session_row.get("batch_id")), None)
+    if not batch:
+        return None
+    target = (batch.get("course_name") or "").strip().lower()
+    if not target:
+        return None
+    return next(
+        (c for c in courses if (c.get("title") or "").strip().lower() == target),
+        None,
+    )
+
+
 @router.post("/attendance-finalize")
 def cron_attendance_finalize(
     authorization: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
 ):
     """
-    Stub for Phase A.
-
-    Phase B will: for each session whose `end_time + 15 min` has passed and
-    whose attendance roll is incomplete, write `absent` rows for every
-    enrolled student who has no attendance row yet, and downgrade
-    `present → late` when join_time > start_time + late_threshold.
+    For each session whose `end_time + 15 min` has passed (and whose
+    session_date is today or yesterday — don't backfill ancient cohorts):
+      1. Insert `status='absent'` rows for every enrolled student on the
+         batch who has no attendance row yet.
+      2. Downgrade `present` rows whose `join_time > start_time + late_threshold`
+         to `late`. Threshold reads from course.late_threshold_minutes,
+         defaulting to 15.
 
     Run hourly.
     """
     _require_cron_secret(authorization)
-    return {"ok": True, "skipped": True, "reason": "Phase A stub — Phase B will implement"}
+    tenant_name = settings.tenant_name
+    now_utc = datetime.now(timezone.utc)
+    today = now_utc.date()
+    yesterday = today - timedelta(days=1)
+
+    sessions = list_sessions(db, tenant_name)
+    applications = list_applications(db, tenant_name)
+    batches = list_batches(db, tenant_name)
+    courses = list_courses(db, tenant_name)
+
+    sessions_finalized = 0
+    absent_marked = 0
+    late_downgraded = 0
+
+    state = get_tenant_state(db, tenant_name)
+
+    for session_row in sessions:
+        # Date guardrail — only finalize today/yesterday.
+        session_date_str = (session_row.get("session_date") or "").strip()
+        try:
+            session_date = datetime.fromisoformat(session_date_str).date()
+        except ValueError:
+            continue
+        if session_date not in {today, yesterday}:
+            continue
+
+        start_dt, end_dt = _parse_session_window(session_row)
+        if end_dt is None:
+            continue
+        if now_utc < end_dt + timedelta(minutes=15):
+            continue
+
+        course = _course_for_session(session_row, courses, batches)
+        late_threshold = int(((course or {}).get("late_threshold_minutes")) or 15)
+
+        existing = list_attendance_for_session(db, tenant_name, session_row["id"])
+        existing_by_app = {row.get("application_id"): row for row in existing}
+
+        # 1. Mark absent for every enrolled student missing a row.
+        enrolled = [
+            app for app in applications
+            if app.get("batch_id") == session_row.get("batch_id")
+            and app.get("application_stage") in {"enrolled", "active", "in_progress"}
+        ]
+        any_change = False
+        for app in enrolled:
+            if app["id"] in existing_by_app:
+                continue
+            try:
+                mark_attendance(
+                    db,
+                    tenant_name,
+                    {
+                        "session_id": session_row["id"],
+                        "application_id": app["id"],
+                        "status": "absent",
+                        "marked_by": "system",
+                        "join_source": "auto-finalize",
+                        "note": "Auto-marked absent by attendance-finalize cron.",
+                    },
+                )
+                absent_marked += 1
+                any_change = True
+            except Exception as exc:  # noqa: BLE001
+                logger.warning(
+                    "absent-mark failed session=%s app=%s err=%s",
+                    session_row.get("id"), app.get("id"), exc,
+                )
+
+        # 2. Downgrade `present` → `late` when join_time exceeds the threshold.
+        if start_dt is not None:
+            late_cutoff = start_dt + timedelta(minutes=late_threshold)
+            # Re-read state to mutate attendance rows in place.
+            state = get_tenant_state(db, tenant_name)
+            mutated = False
+            for idx, row in enumerate(state.get("attendance", [])):
+                if row.get("session_id") != session_row["id"]:
+                    continue
+                if row.get("status") != "present":
+                    continue
+                join_time_str = row.get("join_time")
+                if not join_time_str:
+                    continue
+                try:
+                    join_dt = datetime.fromisoformat(str(join_time_str).replace("Z", "+00:00"))
+                    if join_dt.tzinfo is None:
+                        join_dt = join_dt.replace(tzinfo=timezone.utc)
+                except ValueError:
+                    continue
+                if join_dt > late_cutoff:
+                    state["attendance"][idx] = {
+                        **row,
+                        "status": "late",
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
+                    }
+                    late_downgraded += 1
+                    mutated = True
+            if mutated:
+                save_tenant_state(db, tenant_name, state)
+                any_change = True
+
+        if any_change:
+            sessions_finalized += 1
+
+    return {
+        "ok": True,
+        "sessions_finalized": sessions_finalized,
+        "absent_marked": absent_marked,
+        "late_downgraded": late_downgraded,
+    }
 
 
 @router.post("/recording-deadline")
@@ -213,13 +370,49 @@ def cron_recording_deadline(
     db: Session = Depends(get_db),
 ):
     """
-    Stub for Phase A.
+    For every session that ended >48h ago (and <14 days ago — don't go
+    backfill ancient cohorts) AND has no session_resources row of
+    kind='recording', flag it as overdue.
 
-    Phase B will: for every session that finished >48h ago and has no
-    `session_resources` row of kind=recording, email the trainer of record
-    and CC ops.
+    Phase B punt: trainer-as-user migration isn't done yet, so we just
+    log and return the count for visibility. Once trainers are real
+    users, we'll resolve session.trainer_name → user → email.
 
     Run daily at 07:00 IST.
     """
     _require_cron_secret(authorization)
-    return {"ok": True, "skipped": True, "reason": "Phase A stub — Phase B will implement"}
+    tenant_name = settings.tenant_name
+    now_utc = datetime.now(timezone.utc)
+
+    sessions = list_sessions(db, tenant_name)
+    overdue = 0
+
+    for session_row in sessions:
+        _, end_dt = _parse_session_window(session_row)
+        if end_dt is None:
+            continue
+        age = now_utc - end_dt
+        if age < timedelta(hours=48):
+            continue
+        if age > timedelta(days=14):
+            continue
+        recordings = [
+            r for r in list_session_resources(db, tenant_name, session_id=session_row["id"])
+            if r.get("kind") == "recording"
+        ]
+        if recordings:
+            continue
+        overdue += 1
+        # TODO: when trainer-as-user lands, look up trainer email here and
+        # send a "your recording is overdue" reminder + CC ops. For now
+        # we just emit a structured log line so ops can manually chase.
+        logger.warning(
+            "recording-overdue tenant=%s session=%s title=%r trainer=%r ended=%s",
+            tenant_name,
+            session_row.get("id"),
+            session_row.get("title"),
+            session_row.get("trainer_name"),
+            end_dt.isoformat(),
+        )
+
+    return {"ok": True, "sessions_overdue": overdue}

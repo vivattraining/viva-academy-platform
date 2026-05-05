@@ -35,6 +35,7 @@ from app.integrations import (
     render_application_received_email,
     render_certificate_issued_email,
     render_payment_link_ready_email,
+    render_recording_published_email,
     render_reservation_confirmation_email,
     render_test_failed_email,
     render_test_passed_email,
@@ -60,6 +61,7 @@ from app.schemas import (
     PaymentVerificationRequest,
     SessionAttendanceUpdate,
     SessionCreate,
+    SessionResourceCreate,
     SessionZoomUpdate,
     TenantBranding,
     CertificateIssueRequest,
@@ -95,6 +97,7 @@ from app.store import (  # noqa: I001
     update_course_chapter,
     update_course_lesson,
     update_test_question,
+    append_email_event,
     assign_first_batch_if_needed,
     create_chapter_submission,
     create_application,
@@ -104,7 +107,13 @@ from app.store import (  # noqa: I001
     create_course_module,
     create_message_event,
     create_session,
+    create_session_resource,
     create_trainer_review,
+    delete_session_resource,
+    list_session_resources,
+    list_attendance_for_session,
+    find_session_by_id,
+    mark_email_bounced,
     find_application_by_email,
     find_application_by_order_id,
     find_application_by_reference,
@@ -2478,6 +2487,217 @@ def update_session_zoom_state_secure(
     return {"ok": True, "item": item}
 
 
+# -------------------------------------------------------------------
+# §2.2 session-resources: recordings, slides, handouts, transcripts.
+# Read for any READ_ROLES (so trainer + ops + admin can see). Write
+# for TRAINER_ROLES (admin/operations/trainer). Delete is admin/ops
+# only — trainers shouldn't be able to nuke recordings out from
+# under each other.
+# -------------------------------------------------------------------
+
+
+@router.get("/sessions/{session_id}/resources/secure")
+def read_session_resources_secure(
+    session_id: str,
+    tenant_name: str,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES)
+    return {"items": list_session_resources(db, tenant_name, session_id=session_id)}
+
+
+@router.post("/sessions/{session_id}/resources/secure")
+def create_session_resource_secure(
+    session_id: str,
+    payload: SessionResourceCreate,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """Attach a recording / slide deck / handout / transcript to a session.
+
+    When kind=='recording', also fan out the recording-published email to
+    every enrolled student on the session's batch. Email failures are
+    swallowed — same pattern as the trainer-feedback email in
+    `create_review_secure` — so a flaky Resend call doesn't refuse the
+    upload.
+    """
+    session_ctx = auth_dependency(
+        db, payload.tenant_name, x_academy_session, authorization, TRAINER_ROLES
+    )
+
+    # Whitelist `kind` so we don't accept arbitrary strings.
+    allowed_kinds = {"recording", "slides", "handout", "transcript"}
+    kind = (payload.kind or "").strip().lower()
+    if kind not in allowed_kinds:
+        raise HTTPException(
+            status_code=422,
+            detail=f"kind must be one of: {', '.join(sorted(allowed_kinds))}",
+        )
+
+    session_row = find_session_by_id(db, payload.tenant_name, session_id)
+    if session_row is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    body = {
+        "session_id": session_id,
+        "kind": kind,
+        "url": payload.url,
+        "title": payload.title or "",
+        "uploaded_by": session_ctx.get("email") or "system",
+    }
+    item = create_session_resource(db, payload.tenant_name, body)
+
+    # Fan-out: notify every enrolled student on this batch when a recording
+    # lands. Slides/handouts/transcripts don't trigger an email — too noisy.
+    if kind == "recording":
+        try:
+            batch_id = session_row.get("batch_id")
+            applications = list_applications(db, payload.tenant_name)
+            recipients = [
+                app for app in applications
+                if app.get("batch_id") == batch_id
+                and app.get("application_stage") in {"enrolled", "active", "in_progress"}
+                and app.get("student_email")
+            ]
+            for app in recipients:
+                try:
+                    meta = render_recording_published_email(
+                        student_name=app.get("student_name") or "Student",
+                        session_title=session_row.get("title") or "Live class",
+                        session_date=session_row.get("session_date") or "",
+                        recording_url=item["url"],
+                        application_id=app["id"],
+                    )
+                    send_email(
+                        to=app["student_email"],
+                        subject=meta["subject"],
+                        html=meta["html"],
+                        text=meta["text"],
+                    )
+                except Exception as inner_err:  # noqa: BLE001
+                    logger.warning(
+                        "recording_published email failed app=%s err=%s",
+                        app.get("id"), inner_err,
+                    )
+        except Exception as fanout_err:  # noqa: BLE001
+            logger.warning(
+                "recording_published fan-out failed session=%s err=%s",
+                session_id, fanout_err,
+            )
+
+    return {"ok": True, "item": item}
+
+
+@router.delete("/session-resources/{resource_id}/secure")
+def delete_session_resource_secure(
+    resource_id: str,
+    tenant_name: str,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_dependency(db, tenant_name, x_academy_session, authorization, WRITE_ROLES)
+    deleted = delete_session_resource(db, tenant_name, resource_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    return {"ok": True, "deleted": resource_id}
+
+
+# -------------------------------------------------------------------
+# §10.4 Resend email-webhook handler. Resend posts delivery telemetry
+# (delivered / bounced / complained / opened / clicked) to a webhook
+# we register on their dashboard. We log every event onto
+# tenant_state['email_events'] and bookkeep bounces in
+# tenant_state['email_bounces'] so future cron jobs can skip dead
+# addresses.
+# -------------------------------------------------------------------
+
+
+@router.post("/email/webhook/resend")
+def process_resend_webhook(
+    payload: dict,
+    request: Request,
+    svix_signature: Optional[str] = Header(default=None, alias="svix-signature"),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """
+    Inbound webhook from Resend. We currently match the configured shared
+    secret against the `svix-signature` header value. This is intentionally
+    weaker than full Svix HMAC verification — proper HMAC-over-body sits in
+    the v1.1 backlog (see TODO below) but the secret-match is sufficient
+    to keep the surface non-public for the MVP.
+    """
+    expected = (settings.resend_webhook_secret or "").strip()
+    if not expected:
+        if settings.app_env == "production":
+            logger.error(
+                "Resend webhook hit but RESEND_WEBHOOK_SECRET is not configured"
+            )
+            raise HTTPException(status_code=400, detail="Resend webhook not configured")
+        # Dev with no secret: allow through so local testing is easy.
+    else:
+        # TODO(v1.1): replace with full Svix HMAC verification over the raw
+        # body (svix-id + svix-timestamp + body, base64-decoded secret,
+        # constant-time compare). For MVP we accept either a matching
+        # `svix-signature` header or `Authorization: Bearer <secret>`.
+        provided_sig = (svix_signature or "").strip()
+        provided_auth = (authorization or "").strip()
+        if provided_auth.lower().startswith("bearer "):
+            provided_auth = provided_auth.split(" ", 1)[1].strip()
+        candidates = [c for c in (provided_sig, provided_auth) if c]
+        if not any(hmac.compare_digest(c, expected) for c in candidates):
+            logger.warning("Resend webhook rejected: bad or missing signature")
+            raise HTTPException(status_code=401, detail="Invalid Resend webhook signature")
+
+    tenant_name = settings.tenant_name
+    event_type = (payload.get("type") or "").strip().lower()
+    data = payload.get("data") or {}
+    if not isinstance(data, dict):
+        data = {}
+
+    # Append the raw event for the audit trail.
+    try:
+        append_email_event(
+            db,
+            tenant_name,
+            {
+                "type": event_type,
+                "email_id": data.get("email_id") or data.get("id") or "",
+                "to": data.get("to") or [],
+                "from": data.get("from") or "",
+                "subject": data.get("subject") or "",
+                "raw": payload,
+            },
+        )
+    except Exception as log_err:  # noqa: BLE001
+        logger.warning("Resend event log failed err=%s", log_err)
+
+    # Capture bounces so we can skip these addresses in future broadcasts.
+    if event_type in {"email.bounced", "bounced", "email.complained", "complained"}:
+        recipients = data.get("to") or []
+        if isinstance(recipients, str):
+            recipients = [recipients]
+        reason = (
+            data.get("reason")
+            or data.get("bounce", {}).get("message")
+            or event_type
+        )
+        for address in recipients:
+            try:
+                mark_email_bounced(db, tenant_name, str(address), reason=str(reason))
+            except Exception as bounce_err:  # noqa: BLE001
+                logger.warning(
+                    "Resend bounce-mark failed addr=%s err=%s",
+                    address, bounce_err,
+                )
+
+    return {"ok": True}
+
+
 @router.post("/zoom/webhook")
 def process_zoom_webhook(
     payload: ZoomWebhookAttendance,
@@ -2518,6 +2738,25 @@ def process_zoom_webhook(
     application = find_application_by_email(db, payload.tenant_name, payload.participant_email)
     if application is None:
         raise HTTPException(status_code=404, detail="Learner not found")
+
+    # §13.2 idempotency: Zoom retries `meeting.participant_joined` events on
+    # transient errors and on rejoin churn (mobile dropouts, network blips).
+    # If we already have a present-ish attendance row for this learner from
+    # the live-class source, treat duplicates as a no-op so retry storms
+    # don't keep churning attendance.updated_at and producing audit noise.
+    existing_rows = list_attendance(db, payload.tenant_name, session["id"])
+    duplicate = next(
+        (
+            row for row in existing_rows
+            if row.get("application_id") == application["id"]
+            and row.get("status") in {"auto-present", "present", "late"}
+            and row.get("join_source") == "live-class"
+        ),
+        None,
+    )
+    if duplicate is not None:
+        return {"ok": True, "skipped": True, "reason": "duplicate"}
+
     item = mark_attendance(
         db,
         payload.tenant_name,

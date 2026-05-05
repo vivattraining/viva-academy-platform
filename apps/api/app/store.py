@@ -55,6 +55,11 @@ def _ensure_lms_collections(state: dict) -> dict:
     state.setdefault("chapter_submissions", [])
     state.setdefault("learner_progress", [])
     state.setdefault("trainer_reviews", [])
+    # §2.2 session-attached artefacts (recordings, slides, handouts, transcripts).
+    state.setdefault("session_resources", [])
+    # §10.4 inbound delivery telemetry from Resend webhooks.
+    state.setdefault("email_events", [])
+    state.setdefault("email_bounces", [])
     return state
 
 
@@ -633,6 +638,7 @@ def create_course(db: Session, tenant_name: str, payload: dict) -> dict:
         "relock_grace_days": int(payload.get("relock_grace_days", 2) or 2),
         "certificate_name": payload.get("certificate_name") or payload["title"].strip(),
         "active": bool(payload.get("active", True)),
+        "late_threshold_minutes": int(payload.get("late_threshold_minutes", 15) or 15),
         "created_at": current,
         "updated_at": current,
     }
@@ -1811,6 +1817,125 @@ def was_webhook_event_processed(db: Session, event_id: str, *, source: str = "ra
         .first()
     )
     return record is not None
+
+
+# -------------------------------------------------------------------
+# Session helpers (Phase B §5.3, §8.3, §2.2)
+# Thin wrappers used by the cron jobs and the session-resources router.
+# Keeping them here means the route handlers stay focused on
+# auth/orchestration and never reach into raw state arrays.
+# -------------------------------------------------------------------
+
+
+def find_session_by_id(db: Session, tenant_name: str, session_id: str) -> Optional[dict]:
+    """Alias of `get_session` named to match the Phase B spec wording."""
+    return get_session(db, tenant_name, session_id)
+
+
+def list_attendance_for_session(db: Session, tenant_name: str, session_id: str) -> list[dict]:
+    """Same as list_attendance — Phase B spec uses this name in cron docs."""
+    return list_attendance(db, tenant_name, session_id)
+
+
+# -------------------------------------------------------------------
+# Session resources (§2.2): recordings, slides, handouts, transcripts.
+# JSON-blob pattern, same as other LMS data.
+# -------------------------------------------------------------------
+
+
+def list_session_resources(
+    db: Session,
+    tenant_name: str,
+    session_id: Optional[str] = None,
+) -> list[dict]:
+    items = list_items(db, tenant_name, "session_resources")
+    if session_id:
+        items = [item for item in items if item.get("session_id") == session_id]
+    return sorted(items, key=lambda item: item.get("uploaded_at", ""), reverse=True)
+
+
+def create_session_resource(db: Session, tenant_name: str, payload: dict) -> dict:
+    state = get_tenant_state(db, tenant_name)
+    state.setdefault("session_resources", [])
+    current = now_iso()
+    record = {
+        "id": make_id("res"),
+        "tenant_name": tenant_name,
+        "session_id": str(payload["session_id"]).strip(),
+        "kind": str(payload["kind"]).strip().lower(),
+        "url": str(payload["url"]).strip(),
+        "title": (payload.get("title") or "").strip(),
+        "uploaded_by": payload.get("uploaded_by", "system"),
+        "uploaded_at": current,
+        "created_at": current,
+        "updated_at": current,
+    }
+    state["session_resources"].append(record)
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def delete_session_resource(db: Session, tenant_name: str, resource_id: str) -> bool:
+    state = get_tenant_state(db, tenant_name)
+    state.setdefault("session_resources", [])
+    before = len(state["session_resources"])
+    state["session_resources"] = [
+        item for item in state["session_resources"] if item.get("id") != resource_id
+    ]
+    if len(state["session_resources"]) == before:
+        return False
+    save_tenant_state(db, tenant_name, state)
+    return True
+
+
+# -------------------------------------------------------------------
+# Email delivery telemetry (§10.4): inbound from Resend webhook.
+# -------------------------------------------------------------------
+
+
+def append_email_event(db: Session, tenant_name: str, event: dict) -> dict:
+    state = get_tenant_state(db, tenant_name)
+    state.setdefault("email_events", [])
+    record = {
+        "id": make_id("emev"),
+        "tenant_name": tenant_name,
+        "received_at": now_iso(),
+        **event,
+    }
+    state["email_events"].append(record)
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def mark_email_bounced(db: Session, tenant_name: str, address: str, reason: str = "") -> dict:
+    """Idempotent: a repeat bounce for the same address bumps `last_seen_at`
+    rather than appending another row."""
+    if not address:
+        return {}
+    state = get_tenant_state(db, tenant_name)
+    state.setdefault("email_bounces", [])
+    normalised = address.strip().lower()
+    current = now_iso()
+    for item in state["email_bounces"]:
+        if (item.get("email") or "").lower() == normalised:
+            item["last_seen_at"] = current
+            item["bounce_count"] = int(item.get("bounce_count", 0) or 0) + 1
+            if reason:
+                item["last_reason"] = reason
+            save_tenant_state(db, tenant_name, state)
+            return item
+    record = {
+        "id": make_id("bounce"),
+        "tenant_name": tenant_name,
+        "email": normalised,
+        "first_seen_at": current,
+        "last_seen_at": current,
+        "bounce_count": 1,
+        "last_reason": reason,
+    }
+    state["email_bounces"].append(record)
+    save_tenant_state(db, tenant_name, state)
+    return record
 
 
 def record_webhook_event(
