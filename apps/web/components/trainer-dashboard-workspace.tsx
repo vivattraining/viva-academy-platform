@@ -464,6 +464,11 @@ export function TrainerDashboardWorkspace() {
           One surface for the week ahead, the submissions queue, and the recordings still owed
           to learners.
         </p>
+        <div className="button-row" style={{ marginTop: 14 }}>
+          <Link className="button-secondary" href="/trainer/profile">
+            Manage public profile
+          </Link>
+        </div>
         <div
           className="button-row"
           role="tablist"

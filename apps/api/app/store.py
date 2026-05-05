@@ -65,6 +65,11 @@ def _ensure_lms_collections(state: dict) -> dict:
     # §13.3 unified events timeline (auto-attendance, recordings,
     # cron runs, etc.) for ops debugging. Capped to last 5000 entries.
     state.setdefault("events", [])
+    # Phase D — trainer self-serve onboarding.
+    # `trainer_invites`: admin-issued invitations (token, expiry, status).
+    # `trainer_profiles`: trainer-managed public profiles, admin-approved.
+    state.setdefault("trainer_invites", [])
+    state.setdefault("trainer_profiles", [])
     return state
 
 
@@ -2223,3 +2228,280 @@ def list_events(
     if limit and limit > 0:
         items = items[:limit]
     return items
+
+
+# -------------------------------------------------------------------
+# Phase D — trainer self-serve onboarding.
+# `trainer_invites`: admin sends an invite (email + name + token).
+#   The token (uuid hex 32 chars) is embedded in the accept URL.
+#   Default expiry = 7 days. Status is one of:
+#     pending | accepted | revoked  (expired is computed from expires_at)
+# `trainer_profiles`: a trainer's public profile (bio, expertise,
+#   certifications, etc.). One row per user_email. Each edit by the
+#   trainer resets approval_status='pending_review' so admins re-review.
+# -------------------------------------------------------------------
+
+TRAINER_INVITE_TTL_DAYS = 7
+
+
+def _normalize_email(value: str) -> str:
+    return (value or "").strip().lower()
+
+
+def create_trainer_invite(
+    db: Session,
+    tenant_name: str,
+    payload: dict,
+) -> dict:
+    """Create a pending trainer invite. Caller is responsible for
+    pre-validating that the email isn't already a user / has no
+    unexpired pending invite — the store layer just appends.
+    """
+    state = get_tenant_state(db, tenant_name)
+    state.setdefault("trainer_invites", [])
+    current = now_iso()
+    expires_at = (
+        datetime.now(timezone.utc) + timedelta(days=TRAINER_INVITE_TTL_DAYS)
+    ).isoformat()
+    record = {
+        "id": make_id("tinv"),
+        "tenant_name": tenant_name,
+        "email": _normalize_email(payload.get("email", "")),
+        "full_name": (payload.get("full_name") or "").strip(),
+        "invited_by": (payload.get("invited_by") or "").strip(),
+        "token": uuid4().hex,  # 32-char hex
+        "status": "pending",
+        "expires_at": expires_at,
+        "accepted_at": None,
+        "created_at": current,
+        "updated_at": current,
+    }
+    state["trainer_invites"].append(record)
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def get_trainer_invite_by_token(
+    db: Session,
+    tenant_name: str,
+    token: str,
+) -> Optional[dict]:
+    state = get_tenant_state(db, tenant_name)
+    needle = (token or "").strip()
+    if not needle:
+        return None
+    for item in state.get("trainer_invites", []) or []:
+        if item.get("token") == needle:
+            return deepcopy(item)
+    return None
+
+
+def find_trainer_invite_by_email(
+    db: Session,
+    tenant_name: str,
+    email: str,
+    *,
+    only_active: bool = False,
+) -> Optional[dict]:
+    """Lookup helper used by the create-invite endpoint to detect
+    duplicates. When `only_active=True`, returns the most recent invite
+    that is still pending and not expired.
+    """
+    state = get_tenant_state(db, tenant_name)
+    target = _normalize_email(email)
+    if not target:
+        return None
+    matches = [
+        item
+        for item in (state.get("trainer_invites", []) or [])
+        if _normalize_email(item.get("email", "")) == target
+    ]
+    if not matches:
+        return None
+    matches.sort(key=lambda item: item.get("created_at", ""), reverse=True)
+    if not only_active:
+        return deepcopy(matches[0])
+    now = now_iso()
+    for item in matches:
+        if item.get("status") != "pending":
+            continue
+        expires = item.get("expires_at") or ""
+        if expires and expires < now:
+            continue
+        return deepcopy(item)
+    return None
+
+
+def mark_trainer_invite_accepted(
+    db: Session,
+    tenant_name: str,
+    invite_id: str,
+) -> Optional[dict]:
+    state = get_tenant_state(db, tenant_name)
+    for idx, item in enumerate(state.get("trainer_invites", []) or []):
+        if item.get("id") == invite_id:
+            item["status"] = "accepted"
+            item["accepted_at"] = now_iso()
+            item["updated_at"] = now_iso()
+            state["trainer_invites"][idx] = item
+            save_tenant_state(db, tenant_name, state)
+            return deepcopy(item)
+    return None
+
+
+def revoke_trainer_invite(
+    db: Session,
+    tenant_name: str,
+    invite_id: str,
+) -> Optional[dict]:
+    state = get_tenant_state(db, tenant_name)
+    for idx, item in enumerate(state.get("trainer_invites", []) or []):
+        if item.get("id") == invite_id:
+            item["status"] = "revoked"
+            item["updated_at"] = now_iso()
+            state["trainer_invites"][idx] = item
+            save_tenant_state(db, tenant_name, state)
+            return deepcopy(item)
+    return None
+
+
+def list_trainer_invites(db: Session, tenant_name: str) -> list[dict]:
+    state = get_tenant_state(db, tenant_name)
+    items = list(state.get("trainer_invites", []) or [])
+    items.sort(key=lambda item: item.get("created_at", ""), reverse=True)
+    return deepcopy(items)
+
+
+# -------------------------------------------------------------------
+# trainer_profiles
+# -------------------------------------------------------------------
+
+VALID_TRAINER_APPROVAL_STATUSES = {"approved", "changes_requested", "rejected"}
+
+
+def _trainer_profile_field_defaults() -> dict:
+    return {
+        "full_name": "",
+        "photo_url": "",
+        "bio": "",
+        "expertise": [],
+        "specializations": [],
+        "linkedin_url": "",
+        "years_experience": 0,
+        "certifications": [],
+    }
+
+
+def upsert_trainer_profile(
+    db: Session,
+    tenant_name: str,
+    user_email: str,
+    payload: dict,
+) -> dict:
+    """Upsert a trainer's profile keyed by user_email. On any edit by
+    the trainer the approval_status is reset to `pending_review` so an
+    admin re-reviews changes before they go public.
+    """
+    state = get_tenant_state(db, tenant_name)
+    state.setdefault("trainer_profiles", [])
+    target_email = _normalize_email(user_email)
+    if not target_email:
+        raise ValueError("user_email is required")
+    current = now_iso()
+    defaults = _trainer_profile_field_defaults()
+    cleaned = {
+        "full_name": (payload.get("full_name") or "").strip(),
+        "photo_url": (payload.get("photo_url") or "").strip(),
+        "bio": (payload.get("bio") or "").strip(),
+        "expertise": list(payload.get("expertise") or []),
+        "specializations": list(payload.get("specializations") or []),
+        "linkedin_url": (payload.get("linkedin_url") or "").strip(),
+        "years_experience": int(payload.get("years_experience") or 0),
+        "certifications": list(payload.get("certifications") or []),
+    }
+    for idx, item in enumerate(state["trainer_profiles"]):
+        if _normalize_email(item.get("user_email", "")) == target_email:
+            updated = {**defaults, **item, **cleaned}
+            updated["approval_status"] = "pending_review"
+            updated["approval_note"] = ""
+            updated["approved_by"] = None
+            updated["approved_at"] = None
+            updated["updated_at"] = current
+            state["trainer_profiles"][idx] = updated
+            save_tenant_state(db, tenant_name, state)
+            return deepcopy(updated)
+    record = {
+        "id": make_id("tprof"),
+        "tenant_name": tenant_name,
+        "user_email": target_email,
+        **defaults,
+        **cleaned,
+        "approval_status": "pending_review",
+        "approval_note": "",
+        "approved_by": None,
+        "approved_at": None,
+        "created_at": current,
+        "updated_at": current,
+    }
+    state["trainer_profiles"].append(record)
+    save_tenant_state(db, tenant_name, state)
+    return deepcopy(record)
+
+
+def get_trainer_profile(
+    db: Session,
+    tenant_name: str,
+    user_email: str,
+) -> Optional[dict]:
+    state = get_tenant_state(db, tenant_name)
+    target = _normalize_email(user_email)
+    for item in state.get("trainer_profiles", []) or []:
+        if _normalize_email(item.get("user_email", "")) == target:
+            return deepcopy(item)
+    return None
+
+
+def list_trainer_profiles(
+    db: Session,
+    tenant_name: str,
+    status: Optional[str] = None,
+) -> list[dict]:
+    state = get_tenant_state(db, tenant_name)
+    items = list(state.get("trainer_profiles", []) or [])
+    if status:
+        items = [
+            item for item in items if item.get("approval_status") == status
+        ]
+    items.sort(key=lambda item: item.get("updated_at", ""), reverse=True)
+    return deepcopy(items)
+
+
+def set_trainer_profile_approval(
+    db: Session,
+    tenant_name: str,
+    profile_id: str,
+    status: str,
+    approver_email: str,
+    note: str = "",
+) -> Optional[dict]:
+    """Admin-set approval state. Status must be one of
+    {approved, changes_requested, rejected}.
+    """
+    normalized_status = (status or "").strip().lower()
+    if normalized_status not in VALID_TRAINER_APPROVAL_STATUSES:
+        raise ValueError(
+            "status must be one of: approved, changes_requested, rejected"
+        )
+    state = get_tenant_state(db, tenant_name)
+    current = now_iso()
+    for idx, item in enumerate(state.get("trainer_profiles", []) or []):
+        if item.get("id") == profile_id:
+            item["approval_status"] = normalized_status
+            item["approval_note"] = (note or "").strip()
+            item["approved_by"] = _normalize_email(approver_email)
+            item["approved_at"] = current if normalized_status == "approved" else None
+            item["updated_at"] = current
+            state["trainer_profiles"][idx] = item
+            save_tenant_state(db, tenant_name, state)
+            return deepcopy(item)
+    return None

@@ -918,6 +918,163 @@ def render_module_unlocked_email(
     return {"subject": subject, "html": html, "text": text}
 
 
+def render_trainer_invite_email(
+    *,
+    invitee_name: str,
+    inviter_name: str,
+    accept_url: str,
+    expires_at: str,
+) -> Dict[str, str]:
+    """13th transactional template — Phase D trainer onboarding.
+
+    Sent when an admin issues a `POST /trainers/invite/secure`. Lands in
+    the prospective trainer's inbox with a single CTA to the accept page,
+    where they choose a password and complete onboarding. The token is
+    embedded in `accept_url`; this template doesn't surface it directly.
+    """
+    first = _first_name(invitee_name)
+    inviter_label = (inviter_name or "").strip() or "the Viva Career Academy team"
+    # Best-effort human-friendly expiry — falls back to the raw ISO if
+    # the parse fails so the recipient still sees something.
+    expiry_label = expires_at
+    try:
+        if expires_at:
+            dt = datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
+            expiry_label = dt.strftime("%d %b %Y")
+    except (TypeError, ValueError):
+        expiry_label = expires_at or "soon"
+
+    subject = "You're invited to teach at Viva Career Academy"
+    text = (
+        f"Hi {first},\n\n"
+        f"{inviter_label} has invited you to join Viva Career Academy as a trainer.\n\n"
+        f"Accept the invitation and set up your account here:\n{accept_url}\n\n"
+        f"This invitation expires on {expiry_label}.\n\n"
+        f"Once you accept, you'll choose a password and be guided through "
+        f"creating your trainer profile (bio, expertise, certifications). "
+        f"After admin review your profile goes live on the public Trainers "
+        f"page.\n\n"
+        f"Questions? Reply to this email and ops will get back to you.\n\n"
+        f"— Viva Career Academy"
+    )
+    html = (
+        f"<div style=\"font-family:'Helvetica Neue',Arial,sans-serif;color:#111d23;max-width:560px;margin:0 auto;\">"
+        f"<div style=\"background:rgba(11,31,58,0.06);border-left:3px solid #0B1F3A;padding:14px 18px;margin-bottom:18px;\">"
+        f"<div style=\"font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#0B1F3A;font-weight:600;\">Trainer invitation</div>"
+        f"<div style=\"margin-top:4px;font-size:18px;color:#0B1F3A;font-weight:700;\">Welcome aboard</div>"
+        f"<div style=\"margin-top:2px;color:#5a5040;font-size:13px;\">Invited by {inviter_label}</div>"
+        f"</div>"
+        f"<p>Hi {first},</p>"
+        f"<p><strong>{inviter_label}</strong> has invited you to join "
+        f"<strong>Viva Career Academy</strong> as a trainer. Accept the invitation "
+        f"and set up your account in a couple of minutes.</p>"
+        f"<p style=\"margin:18px 0;\">"
+        f"<a href=\"{accept_url}\" style=\"display:inline-block;background:#0B1F3A;color:#f5efe4;padding:12px 22px;border-radius:4px;text-decoration:none;font-weight:600;\">Accept invitation</a>"
+        f"</p>"
+        f"<p style=\"color:#5a5040;font-size:13px;\">This invitation expires on "
+        f"<strong>{expiry_label}</strong>. Once you accept, you'll choose a password "
+        f"and be guided through creating your trainer profile. After admin review your "
+        f"profile goes live on the public Trainers page.</p>"
+        f"<p style=\"color:#5a5040;font-size:13px;\">Questions? Reply to this email "
+        f"and ops will get back to you.</p>"
+        f"<p style=\"color:#2f3140;margin-top:24px;\">— Viva Career Academy</p>"
+        f"</div>"
+    )
+    return {"subject": subject, "html": html, "text": text}
+
+
+def render_trainer_profile_approved_email(
+    *,
+    trainer_name: str,
+    public_url: str,
+) -> Dict[str, str]:
+    """14th template — sent when an admin approves a trainer profile.
+
+    Short congrats note pointing to the public Trainers page (their card
+    is now live). Triggered from the approval endpoint inline.
+    """
+    first = _first_name(trainer_name)
+    subject = "Your trainer profile is live"
+    text = (
+        f"Hi {first},\n\n"
+        f"Good news — your trainer profile has been approved and is now live "
+        f"on the public Trainers page.\n\n"
+        f"View it here: {public_url}\n\n"
+        f"You can edit your profile any time from your trainer dashboard. "
+        f"Edits are re-reviewed before they go public.\n\n"
+        f"— Viva Career Academy"
+    )
+    html = (
+        f"<div style=\"font-family:'Helvetica Neue',Arial,sans-serif;color:#111d23;max-width:560px;margin:0 auto;\">"
+        f"<div style=\"background:rgba(31,122,58,0.08);border-left:3px solid #1f7a3a;padding:14px 18px;margin-bottom:18px;\">"
+        f"<div style=\"font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#1f7a3a;font-weight:600;\">Profile approved</div>"
+        f"<div style=\"margin-top:4px;font-size:18px;color:#0B1F3A;font-weight:700;\">Your profile is live</div>"
+        f"</div>"
+        f"<p>Hi {first},</p>"
+        f"<p>Good news — your trainer profile has been <strong>approved</strong> and is now live on "
+        f"the public Trainers page. Welcome aboard.</p>"
+        f"<p style=\"margin:18px 0;\">"
+        f"<a href=\"{public_url}\" style=\"display:inline-block;background:#0B1F3A;color:#f5efe4;padding:12px 22px;border-radius:4px;text-decoration:none;font-weight:600;\">View your profile</a>"
+        f"</p>"
+        f"<p style=\"color:#5a5040;font-size:13px;\">You can edit your profile any time from your "
+        f"trainer dashboard. Edits are re-reviewed before they go public.</p>"
+        f"<p style=\"color:#2f3140;margin-top:24px;\">— Viva Career Academy</p>"
+        f"</div>"
+    )
+    return {"subject": subject, "html": html, "text": text}
+
+
+def render_trainer_profile_changes_requested_email(
+    *,
+    trainer_name: str,
+    admin_note: str,
+    profile_url: str,
+) -> Dict[str, str]:
+    """15th template — sent when an admin asks for changes to a trainer
+    profile. Surfaces the admin's note verbatim and links back to the
+    profile editor.
+    """
+    first = _first_name(trainer_name)
+    note_clean = (admin_note or "").strip()
+    subject = "Trainer profile · changes requested"
+    note_block = ""
+    if note_clean:
+        note_block = (
+            f"<div style=\"margin:18px 0;padding:14px 18px;background:#fefcf6;border:1px solid #d8cfbe;border-radius:4px;\">"
+            f"<div style=\"font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#5a5040;font-weight:600;\">Admin notes</div>"
+            f"<p style=\"margin:8px 0 0;font-size:14px;line-height:1.6;color:#111d23;\">{note_clean}</p>"
+            f"</div>"
+        )
+    text = (
+        f"Hi {first},\n\n"
+        f"An admin has reviewed your trainer profile and asked for a few changes "
+        f"before it can go live on the public Trainers page.\n\n"
+        + (f"Admin notes:\n{note_clean}\n\n" if note_clean else "")
+        + f"Update your profile here: {profile_url}\n\n"
+        f"Once you save your edits the profile will be re-reviewed automatically.\n\n"
+        f"— Viva Career Academy"
+    )
+    html = (
+        f"<div style=\"font-family:'Helvetica Neue',Arial,sans-serif;color:#111d23;max-width:560px;margin:0 auto;\">"
+        f"<div style=\"background:rgba(184,134,11,0.10);border-left:3px solid #b8860b;padding:14px 18px;margin-bottom:18px;\">"
+        f"<div style=\"font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a6708;font-weight:600;\">Changes requested</div>"
+        f"<div style=\"margin-top:4px;font-size:18px;color:#0B1F3A;font-weight:700;\">A quick revision before going live</div>"
+        f"</div>"
+        f"<p>Hi {first},</p>"
+        f"<p>An admin has reviewed your trainer profile and asked for a few changes "
+        f"before it can go live on the public Trainers page.</p>"
+        f"{note_block}"
+        f"<p style=\"margin:18px 0;\">"
+        f"<a href=\"{profile_url}\" style=\"display:inline-block;background:#0B1F3A;color:#f5efe4;padding:12px 22px;border-radius:4px;text-decoration:none;font-weight:600;\">Update profile</a>"
+        f"</p>"
+        f"<p style=\"color:#5a5040;font-size:13px;\">Once you save your edits the profile "
+        f"will be re-reviewed automatically.</p>"
+        f"<p style=\"color:#2f3140;margin-top:24px;\">— Viva Career Academy</p>"
+        f"</div>"
+    )
+    return {"subject": subject, "html": html, "text": text}
+
+
 def render_recording_overdue_email(
     *,
     trainer_name: str,

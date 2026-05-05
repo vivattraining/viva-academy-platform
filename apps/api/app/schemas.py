@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -398,3 +398,41 @@ class CertificateIssueRequest(BaseModel):
 class CertificateRevokeRequest(BaseModel):
     tenant_name: str
     reason: str = ""
+
+
+# -------------------------------------------------------------------
+# Phase D — trainer self-serve onboarding.
+# Admin sends an invite (token, expiry); trainer accepts via the
+# public /onboarding/trainer page (token in URL). Trainer then fills
+# out a profile which goes through admin approval.
+# -------------------------------------------------------------------
+
+
+class TrainerInviteCreate(BaseModel):
+    tenant_name: str
+    email: str = Field(..., min_length=3)
+    full_name: str = Field(..., min_length=1)
+
+
+class TrainerInviteAccept(BaseModel):
+    tenant_name: str
+    token: str = Field(..., min_length=8)
+    password: str = Field(..., min_length=8)
+
+
+class TrainerProfileUpsert(BaseModel):
+    tenant_name: str
+    full_name: str = Field(..., min_length=1)
+    photo_url: str = ""
+    bio: str = ""
+    expertise: List[str] = []
+    specializations: List[str] = []
+    linkedin_url: str = ""
+    years_experience: int = 0
+    certifications: List[str] = []
+
+
+class TrainerProfileApproval(BaseModel):
+    tenant_name: str
+    status: Literal["approved", "changes_requested", "rejected"]
+    note: str = ""

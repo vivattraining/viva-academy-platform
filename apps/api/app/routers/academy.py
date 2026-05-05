@@ -40,6 +40,9 @@ from app.integrations import (
     render_test_failed_email,
     render_test_passed_email,
     render_trainer_feedback_email,
+    render_trainer_invite_email,
+    render_trainer_profile_approved_email,
+    render_trainer_profile_changes_requested_email,
     send_email,
 )
 from app.schemas import (
@@ -72,6 +75,10 @@ from app.schemas import (
     TestCreate,
     TestQuestionCreate,
     TestQuestionUpdate,
+    TrainerInviteAccept,
+    TrainerInviteCreate,
+    TrainerProfileApproval,
+    TrainerProfileUpsert,
     TrainerReviewCreate,
     ZoomProvisionRequest,
     ZoomWebhookAttendance,
@@ -143,6 +150,16 @@ from app.store import (  # noqa: I001
     update_branding,
     update_session,
     get_trainer_review_queue,
+    create_trainer_invite,
+    find_trainer_invite_by_email,
+    get_trainer_invite_by_token,
+    get_trainer_profile,
+    list_trainer_invites,
+    list_trainer_profiles,
+    mark_trainer_invite_accepted,
+    revoke_trainer_invite,
+    set_trainer_profile_approval,
+    upsert_trainer_profile,
     was_webhook_event_processed,
     record_webhook_event,
 )
@@ -2991,3 +3008,421 @@ def dispatch_message_secure(
         },
     )
     return {"ok": True, "item": item}
+
+
+# -------------------------------------------------------------------
+# Phase D — trainer self-serve onboarding.
+# Two surfaces:
+#   1. Trainer invites: admin sends an email-with-token; the prospective
+#      trainer accepts via a public page that creates their auth user.
+#   2. Trainer profiles: trainers fill in bio/expertise/certifications;
+#      admins approve/request-changes/reject; approved profiles power
+#      the public Trainers page.
+# Public endpoints are rate-limited via the `cert-verify` preset to
+# block token-enumeration scrapers (60 RPM/IP — same cap we use for
+# certificate verification, plenty for legitimate traffic).
+# -------------------------------------------------------------------
+
+# Roles that can access trainer-self-serve write endpoints
+# (own profile, accept invite, etc.).
+TRAINER_WRITE_ROLES = {"admin", "operations", "trainer"}
+
+
+def _trainer_invite_safe_view(invite: dict) -> dict:
+    """Project an invite record without leaking the token to admin
+    listing endpoints. The token must only be in the email body and the
+    public token-lookup endpoint."""
+    return {
+        "id": invite.get("id"),
+        "email": invite.get("email"),
+        "full_name": invite.get("full_name"),
+        "status": invite.get("status"),
+        "expires_at": invite.get("expires_at"),
+        "invited_by": invite.get("invited_by"),
+        "accepted_at": invite.get("accepted_at"),
+        "created_at": invite.get("created_at"),
+    }
+
+
+def _public_trainer_profile_view(profile: dict) -> dict:
+    """Public-safe projection — no email, no internal IDs beyond the
+    profile_id, no approval metadata."""
+    return {
+        "id": profile.get("id"),
+        "full_name": profile.get("full_name"),
+        "photo_url": profile.get("photo_url"),
+        "bio": profile.get("bio"),
+        "expertise": profile.get("expertise", []),
+        "specializations": profile.get("specializations", []),
+        "linkedin_url": profile.get("linkedin_url"),
+        "years_experience": profile.get("years_experience", 0),
+        "certifications": profile.get("certifications", []),
+    }
+
+
+@router.post("/trainers/invite/secure")
+def trainer_invite_create_secure(
+    payload: TrainerInviteCreate,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """Admin/ops issues a trainer invitation. Sends the 13th transactional
+    email with a tokenised accept URL that the prospective trainer uses
+    to set up their account."""
+    session = auth_dependency(
+        db, payload.tenant_name, x_academy_session, authorization, WRITE_ROLES
+    )
+    normalized_email = (payload.email or "").strip().lower()
+    if "@" not in normalized_email:
+        raise HTTPException(status_code=422, detail="Enter a valid email address")
+
+    # Reject if email already has an active user (any role) — they're
+    # already in the system; admin should adjust their role instead.
+    from app.models import AcademyUserCredential  # local import: avoid cycles
+
+    existing_user = (
+        db.query(AcademyUserCredential)
+        .filter(
+            AcademyUserCredential.tenant_name == payload.tenant_name,
+            AcademyUserCredential.email == normalized_email,
+        )
+        .first()
+    )
+    if existing_user is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="A user with this email already exists in the tenant",
+        )
+
+    # Reject if there's an unexpired pending invite — avoid duplicate
+    # tokens floating around.
+    active_invite = find_trainer_invite_by_email(
+        db, payload.tenant_name, normalized_email, only_active=True
+    )
+    if active_invite is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="An active invitation already exists for this email",
+        )
+
+    invite = create_trainer_invite(
+        db,
+        payload.tenant_name,
+        {
+            "email": normalized_email,
+            "full_name": payload.full_name,
+            "invited_by": session.get("email", ""),
+        },
+    )
+
+    accept_url = f"{settings.app_url}/onboarding/trainer?token={invite['token']}"
+    try:
+        meta = render_trainer_invite_email(
+            invitee_name=invite.get("full_name", ""),
+            inviter_name=session.get("full_name", "") or session.get("email", ""),
+            accept_url=accept_url,
+            expires_at=invite.get("expires_at", ""),
+        )
+        send_email(
+            to=invite["email"],
+            subject=meta["subject"],
+            html=meta["html"],
+            text=meta["text"],
+            db=db,
+            tenant_name=payload.tenant_name,
+        )
+    except Exception as email_err:  # noqa: BLE001
+        logger.warning(
+            "Trainer invite email failed for invite=%s err=%s",
+            invite.get("id"), email_err,
+        )
+
+    try:
+        record_event(
+            db,
+            payload.tenant_name,
+            event_type="trainer.invited",
+            actor=session.get("email", "system"),
+            target_id=invite.get("id"),
+            payload={
+                "email": invite.get("email"),
+                "full_name": invite.get("full_name"),
+            },
+        )
+    except Exception as evt_err:  # noqa: BLE001
+        logger.warning("trainer.invited event log failed err=%s", evt_err)
+
+    return {"ok": True, "item": _trainer_invite_safe_view(invite)}
+
+
+@router.get("/trainers/invites/secure")
+def trainer_invites_list_secure(
+    tenant_name: str,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_dependency(db, tenant_name, x_academy_session, authorization, WRITE_ROLES)
+    items = list_trainer_invites(db, tenant_name)
+    return {"items": [_trainer_invite_safe_view(item) for item in items]}
+
+
+@router.post("/trainers/invites/{invite_id}/revoke/secure")
+def trainer_invite_revoke_secure(
+    invite_id: str,
+    tenant_name: str,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_dependency(db, tenant_name, x_academy_session, authorization, WRITE_ROLES)
+    item = revoke_trainer_invite(db, tenant_name, invite_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Invite not found")
+    return {"ok": True, "item": _trainer_invite_safe_view(item)}
+
+
+@router.get("/trainers/invite/{token}")
+def trainer_invite_lookup_public(
+    token: str,
+    tenant_name: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Public endpoint: the onboarding page calls this to render
+    "Hi {name}". Rate-limited to block token enumeration."""
+    enforce_preset(request, "cert-verify")
+    invite = get_trainer_invite_by_token(db, tenant_name, token)
+    if invite is None:
+        raise HTTPException(status_code=404, detail="Invite not found")
+    if invite.get("status") != "pending":
+        raise HTTPException(status_code=404, detail="Invite is no longer active")
+    expires_at = invite.get("expires_at") or ""
+    if expires_at and expires_at < now_iso():
+        raise HTTPException(status_code=404, detail="Invite has expired")
+    return {
+        "full_name": invite.get("full_name"),
+        "email": invite.get("email"),
+        "expires_at": invite.get("expires_at"),
+    }
+
+
+@router.post("/trainers/invite/accept")
+def trainer_invite_accept_public(
+    payload: TrainerInviteAccept,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Public endpoint: accept an invite, create the trainer's auth
+    user, mark the invite accepted, and log them in. Email and full
+    name are bound to the invite (not the request body) so a stolen
+    token can't be used to claim a different identity."""
+    enforce_preset(request, "cert-verify")
+    invite = get_trainer_invite_by_token(db, payload.tenant_name, payload.token)
+    if invite is None:
+        raise HTTPException(status_code=404, detail="Invite not found")
+    if invite.get("status") != "pending":
+        raise HTTPException(status_code=409, detail="Invite is no longer active")
+    expires_at = invite.get("expires_at") or ""
+    if expires_at and expires_at < now_iso():
+        raise HTTPException(status_code=410, detail="Invite has expired")
+
+    # Bind the new user to the invite email + name. Never trust client.
+    create_credential(
+        db,
+        payload.tenant_name,
+        email=invite.get("email", ""),
+        full_name=invite.get("full_name", ""),
+        role="trainer",
+        password=payload.password,
+    )
+    mark_trainer_invite_accepted(db, payload.tenant_name, invite["id"])
+
+    try:
+        record_event(
+            db,
+            payload.tenant_name,
+            event_type="trainer.joined",
+            actor=invite.get("email", "system"),
+            target_id=invite.get("id"),
+            payload={
+                "email": invite.get("email"),
+                "full_name": invite.get("full_name"),
+            },
+        )
+    except Exception as evt_err:  # noqa: BLE001
+        logger.warning("trainer.joined event log failed err=%s", evt_err)
+
+    auth_session = login_user(
+        db,
+        payload.tenant_name,
+        invite.get("email", ""),
+        payload.password,
+        expected_role="trainer",
+    )
+    return {"ok": True, "session": auth_session}
+
+
+# -------------------------------------------------------------------
+# Trainer profile self-service.
+# -------------------------------------------------------------------
+
+
+@router.get("/trainers/me/profile/secure")
+def trainer_my_profile_get_secure(
+    tenant_name: str,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    session = auth_dependency(
+        db, tenant_name, x_academy_session, authorization, TRAINER_WRITE_ROLES
+    )
+    caller_email = (session or {}).get("email", "").strip().lower()
+    if not caller_email:
+        raise HTTPException(status_code=403, detail="Session has no email")
+    profile = get_trainer_profile(db, tenant_name, caller_email)
+    return {"item": profile}
+
+
+@router.post("/trainers/me/profile/secure")
+def trainer_my_profile_upsert_secure(
+    payload: TrainerProfileUpsert,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    session = auth_dependency(
+        db, payload.tenant_name, x_academy_session, authorization, TRAINER_WRITE_ROLES
+    )
+    caller_email = (session or {}).get("email", "").strip().lower()
+    if not caller_email:
+        raise HTTPException(status_code=403, detail="Session has no email")
+    item = upsert_trainer_profile(
+        db,
+        payload.tenant_name,
+        caller_email,
+        payload.model_dump(exclude={"tenant_name"}),
+    )
+    return {"ok": True, "item": item}
+
+
+@router.get("/trainers/profiles/secure")
+def trainer_profiles_list_secure(
+    tenant_name: str,
+    status: Optional[str] = None,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_dependency(db, tenant_name, x_academy_session, authorization, WRITE_ROLES)
+    items = list_trainer_profiles(db, tenant_name, status=status)
+    return {"items": items}
+
+
+@router.post("/trainers/profiles/{profile_id}/approval/secure")
+def trainer_profile_approval_secure(
+    profile_id: str,
+    payload: TrainerProfileApproval,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    session = auth_dependency(
+        db, payload.tenant_name, x_academy_session, authorization, WRITE_ROLES
+    )
+    try:
+        item = set_trainer_profile_approval(
+            db,
+            payload.tenant_name,
+            profile_id,
+            status=payload.status,
+            approver_email=session.get("email", ""),
+            note=payload.note,
+        )
+    except ValueError as err:
+        raise HTTPException(status_code=422, detail=str(err))
+    if item is None:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    public_url = f"{settings.app_url}/trainers"
+    profile_url = f"{settings.app_url}/trainer/profile"
+    if payload.status == "approved":
+        try:
+            meta = render_trainer_profile_approved_email(
+                trainer_name=item.get("full_name", ""),
+                public_url=public_url,
+            )
+            send_email(
+                to=item.get("user_email", ""),
+                subject=meta["subject"],
+                html=meta["html"],
+                text=meta["text"],
+                db=db,
+                tenant_name=payload.tenant_name,
+            )
+        except Exception as email_err:  # noqa: BLE001
+            logger.warning(
+                "Trainer-approved email failed for profile=%s err=%s",
+                profile_id, email_err,
+            )
+    elif payload.status == "changes_requested":
+        try:
+            meta = render_trainer_profile_changes_requested_email(
+                trainer_name=item.get("full_name", ""),
+                admin_note=payload.note,
+                profile_url=profile_url,
+            )
+            send_email(
+                to=item.get("user_email", ""),
+                subject=meta["subject"],
+                html=meta["html"],
+                text=meta["text"],
+                db=db,
+                tenant_name=payload.tenant_name,
+            )
+        except Exception as email_err:  # noqa: BLE001
+            logger.warning(
+                "Trainer-changes-requested email failed for profile=%s err=%s",
+                profile_id, email_err,
+            )
+
+    event_type_map = {
+        "approved": "trainer.profile_approved",
+        "changes_requested": "trainer.profile_changes_requested",
+        "rejected": "trainer.profile_rejected",
+    }
+    try:
+        record_event(
+            db,
+            payload.tenant_name,
+            event_type=event_type_map.get(payload.status, "trainer.profile_reviewed"),
+            actor=session.get("email", "system"),
+            target_id=profile_id,
+            payload={
+                "status": payload.status,
+                "note": payload.note,
+                "user_email": item.get("user_email"),
+            },
+        )
+    except Exception as evt_err:  # noqa: BLE001
+        logger.warning("trainer.profile_* event log failed err=%s", evt_err)
+
+    return {"ok": True, "item": item}
+
+
+@router.get("/trainers/public")
+def trainers_public_list(
+    tenant_name: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Public — read by the public /trainers page. Returns approved
+    profiles only, with public-safe fields. Rate-limited (same preset
+    as cert verification) so the route can't be used to mass-scrape
+    trainer info."""
+    enforce_preset(request, "cert-verify")
+    items = list_trainer_profiles(db, tenant_name, status="approved")
+    items.sort(key=lambda item: item.get("approved_at") or "", reverse=True)
+    return {"items": [_public_trainer_profile_view(item) for item in items]}
