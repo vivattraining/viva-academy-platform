@@ -34,19 +34,27 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.db import get_db
-from app.integrations import render_module_unlocked_email, send_email
+from app.integrations import (
+    render_module_unlocked_email,
+    render_recording_overdue_email,
+    send_email,
+)
 from app.store import (
     find_session_by_id,
+    find_user_by_full_name,
     get_course_outline,
     get_tenant_state,
     list_applications,
     list_attendance_for_session,
     list_batches,
     list_courses,
+    list_email_outbox,
     list_session_resources,
     list_sessions,
     mark_attendance,
+    record_event,
     save_tenant_state,
+    update_email_outbox_entry,
 )
 
 logger = logging.getLogger(__name__)
@@ -183,6 +191,25 @@ def cron_unlock_modules(
         progress["module_unlock_notified_at"] = notified
 
     save_tenant_state(db, tenant_name, state)
+
+    # §13.3 events timeline — log this run so ops can see at a glance
+    # how many emails went out and whether anything looked weird.
+    try:
+        record_event(
+            db,
+            tenant_name,
+            event_type="cron.unlock_modules",
+            actor="cron:unlock-modules",
+            target_id=None,
+            payload={
+                "sent": sent,
+                "skipped": skipped_already_notified,
+                "no_batch": no_batch,
+                "ran_at": today,
+            },
+        )
+    except Exception as evt_err:  # noqa: BLE001
+        logger.warning("record_event(cron.unlock_modules) failed err=%s", evt_err)
 
     return {
         "ok": True,
@@ -372,11 +399,13 @@ def cron_recording_deadline(
     """
     For every session that ended >48h ago (and <14 days ago — don't go
     backfill ancient cohorts) AND has no session_resources row of
-    kind='recording', flag it as overdue.
+    kind='recording', email the trainer a reminder.
 
-    Phase B punt: trainer-as-user migration isn't done yet, so we just
-    log and return the count for visibility. Once trainers are real
-    users, we'll resolve session.trainer_name → user → email.
+    §4.2 trainer-as-user: once `session.trainer_id` is populated, we
+    look up the auth user, render `render_recording_overdue_email`, and
+    send it to their email. Sessions still missing trainer_id (legacy
+    rows that haven't been back-filled) fall through to the old log-only
+    behaviour so ops still get visibility.
 
     Run daily at 07:00 IST.
     """
@@ -386,6 +415,8 @@ def cron_recording_deadline(
 
     sessions = list_sessions(db, tenant_name)
     overdue = 0
+    emailed = 0
+    no_trainer = 0
 
     for session_row in sessions:
         _, end_dt = _parse_session_window(session_row)
@@ -403,16 +434,169 @@ def cron_recording_deadline(
         if recordings:
             continue
         overdue += 1
-        # TODO: when trainer-as-user lands, look up trainer email here and
-        # send a "your recording is overdue" reminder + CC ops. For now
-        # we just emit a structured log line so ops can manually chase.
-        logger.warning(
-            "recording-overdue tenant=%s session=%s title=%r trainer=%r ended=%s",
-            tenant_name,
-            session_row.get("id"),
-            session_row.get("title"),
-            session_row.get("trainer_name"),
-            end_dt.isoformat(),
-        )
+        hours_overdue = int(age.total_seconds() // 3600)
 
-    return {"ok": True, "sessions_overdue": overdue}
+        trainer_id = (session_row.get("trainer_id") or "").strip()
+        trainer_email: Optional[str] = None
+        trainer_full_name = session_row.get("trainer_name") or ""
+
+        if trainer_id:
+            # Today trainer_id == trainer's auth email. Use it directly.
+            trainer_email = trainer_id
+        else:
+            # Fallback: try resolving via trainer_name → user lookup. If
+            # back-fill hasn't been run yet this catches the easy cases.
+            user = find_user_by_full_name(db, tenant_name, trainer_full_name)
+            if user is not None:
+                trainer_email = user.get("email")
+                trainer_full_name = user.get("full_name") or trainer_full_name
+
+        if not trainer_email:
+            no_trainer += 1
+            logger.warning(
+                "recording-overdue (no trainer email) tenant=%s session=%s title=%r trainer=%r ended=%s",
+                tenant_name,
+                session_row.get("id"),
+                session_row.get("title"),
+                session_row.get("trainer_name"),
+                end_dt.isoformat(),
+            )
+            continue
+
+        try:
+            meta = render_recording_overdue_email(
+                trainer_name=trainer_full_name or "trainer",
+                session_title=session_row.get("title") or "Live class",
+                session_date=session_row.get("session_date") or "",
+                hours_overdue=hours_overdue,
+            )
+            send_email(
+                to=trainer_email,
+                subject=meta["subject"],
+                html=meta["html"],
+                text=meta["text"],
+                db=db,
+                tenant_name=tenant_name,
+            )
+            emailed += 1
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "recording-overdue email failed session=%s err=%s",
+                session_row.get("id"), exc,
+            )
+
+    return {
+        "ok": True,
+        "sessions_overdue": overdue,
+        "emails_sent": emailed,
+        "missing_trainer": no_trainer,
+    }
+
+
+# -------------------------------------------------------------------
+# §13.1 email retry queue worker.
+# Hobby plan caps cron at 1/day so this fires once daily at 07:30 IST.
+# Picks up entries that send_email() previously enqueued onto
+# tenant_state['email_outbox'] with status='pending' and retries them
+# via Resend. After 3 attempts an entry flips to 'gave_up'.
+# -------------------------------------------------------------------
+
+
+@router.post("/email-retry")
+def cron_email_retry(
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    _require_cron_secret(authorization)
+    tenant_name = settings.tenant_name
+
+    pending = list_email_outbox(db, tenant_name, status="pending")
+    retried = 0
+    succeeded = 0
+    gave_up = 0
+
+    for entry in pending:
+        attempts = int(entry.get("attempts", 0) or 0)
+        if attempts >= 3:
+            # Defensive: list_email_outbox(status='pending') already
+            # excludes 'gave_up', but if a row's status got out of sync
+            # (manual edit, partial write) push it back to gave_up.
+            update_email_outbox_entry(
+                db, tenant_name, entry["id"],
+                {"status": "gave_up"},
+            )
+            gave_up += 1
+            continue
+
+        retried += 1
+        attempt_ts = datetime.now(timezone.utc).isoformat()
+
+        # IMPORTANT: pass enqueue_on_failure=False to the retry call so
+        # we don't infinitely re-queue ourselves. We update the existing
+        # row in-place instead.
+        send_kwargs = {
+            "to": entry.get("to") or "",
+            "subject": entry.get("subject") or "",
+            "html": entry.get("html") or "",
+            "text": entry.get("text"),
+            "reply_to": entry.get("reply_to"),
+            "enqueue_on_failure": False,
+        }
+        # Only forward `from_address` when the queued entry stored a
+        # custom value — otherwise let send_email apply DEFAULT_EMAIL_FROM.
+        if entry.get("from_address"):
+            send_kwargs["from_address"] = entry["from_address"]
+        result = send_email(**send_kwargs)
+
+        mode = (result or {}).get("mode")
+        next_attempts = attempts + 1
+        if mode == "live" or mode == "mock":
+            # Mock mode counts as a success — the retry queue exists for
+            # delivery failures, not for environments where Resend is off.
+            update_email_outbox_entry(
+                db, tenant_name, entry["id"],
+                {
+                    "status": "sent",
+                    "attempts": next_attempts,
+                    "last_attempt_at": attempt_ts,
+                    "last_error": "",
+                },
+            )
+            succeeded += 1
+        else:
+            # Failure path: increment attempts, write last_error. If
+            # we've now hit the cap, flip to 'gave_up' so we don't keep
+            # retrying forever.
+            patch = {
+                "attempts": next_attempts,
+                "last_attempt_at": attempt_ts,
+                "last_error": (result or {}).get("detail", "send failed"),
+            }
+            if next_attempts >= 3:
+                patch["status"] = "gave_up"
+                gave_up += 1
+            update_email_outbox_entry(db, tenant_name, entry["id"], patch)
+
+    # §13.3 events timeline.
+    try:
+        record_event(
+            db,
+            tenant_name,
+            event_type="cron.email_retry",
+            actor="cron:email-retry",
+            target_id=None,
+            payload={
+                "retried": retried,
+                "succeeded": succeeded,
+                "gave_up": gave_up,
+            },
+        )
+    except Exception as evt_err:  # noqa: BLE001
+        logger.warning("record_event(cron.email_retry) failed err=%s", evt_err)
+
+    return {
+        "ok": True,
+        "retried": retried,
+        "succeeded": succeeded,
+        "gave_up": gave_up,
+    }

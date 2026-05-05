@@ -60,6 +60,11 @@ def _ensure_lms_collections(state: dict) -> dict:
     # §10.4 inbound delivery telemetry from Resend webhooks.
     state.setdefault("email_events", [])
     state.setdefault("email_bounces", [])
+    # §13.1 retry queue — outbound emails that failed initial send.
+    state.setdefault("email_outbox", [])
+    # §13.3 unified events timeline (auto-attendance, recordings,
+    # cron runs, etc.) for ops debugging. Capped to last 5000 entries.
+    state.setdefault("events", [])
     return state
 
 
@@ -597,6 +602,11 @@ def list_batches(db: Session, tenant_name: str) -> list[dict]:
 def create_batch(db: Session, tenant_name: str, payload: dict) -> dict:
     state = get_tenant_state(db, tenant_name)
     current = now_iso()
+    # §4.2: trainer_id is optional — back-fill cron / find_user_by_full_name
+    # resolves the FK once trainer-as-user is wired. Empty string is
+    # normalised to None so list_email_outbox-style "is empty" checks work.
+    trainer_id_raw = payload.get("trainer_id")
+    trainer_id = (str(trainer_id_raw).strip() or None) if trainer_id_raw else None
     record = {
         "id": make_id("batch"),
         "tenant_name": tenant_name,
@@ -604,6 +614,7 @@ def create_batch(db: Session, tenant_name: str, payload: dict) -> dict:
         "course_name": payload["course_name"].strip(),
         "start_date": payload["start_date"].strip(),
         "trainer_name": payload["trainer_name"].strip(),
+        "trainer_id": trainer_id,
         "classroom_mode": payload.get("classroom_mode", "hybrid"),
         "classroom_link": payload.get("classroom_link", ""),
         "zoom_meeting_id": payload.get("zoom_meeting_id"),
@@ -1274,6 +1285,8 @@ def get_session(db: Session, tenant_name: str, session_id: str) -> Optional[dict
 def create_session(db: Session, tenant_name: str, payload: dict) -> dict:
     state = get_tenant_state(db, tenant_name)
     current = now_iso()
+    trainer_id_raw = payload.get("trainer_id")
+    trainer_id = (str(trainer_id_raw).strip() or None) if trainer_id_raw else None
     record = {
         "id": make_id("sess"),
         "tenant_name": tenant_name,
@@ -1283,6 +1296,7 @@ def create_session(db: Session, tenant_name: str, payload: dict) -> dict:
         "start_time": payload["start_time"].strip(),
         "end_time": payload["end_time"].strip(),
         "trainer_name": payload["trainer_name"].strip(),
+        "trainer_id": trainer_id,
         "classroom_link": payload.get("classroom_link", ""),
         "zoom_meeting_id": payload.get("zoom_meeting_id"),
         "zoom_join_url": payload.get("zoom_join_url"),
@@ -1985,3 +1999,227 @@ def record_webhook_event(
             .first()
         )
     return record
+
+
+# -------------------------------------------------------------------
+# §4.2 / §12.1 trainer-as-user migration helpers.
+# -------------------------------------------------------------------
+
+
+def find_user_by_full_name(db: Session, tenant_name: str, full_name: str) -> Optional[dict]:
+    """Look up an auth credential by full_name (case-insensitive trim).
+    Returns a plain dict or None — kept dict-shaped so callers don't
+    have to import the SQLAlchemy model.
+    """
+    if not full_name:
+        return None
+    # Local import to avoid a top-level circular (auth → store → auth).
+    from app.auth import list_credentials  # noqa: WPS433
+
+    target = full_name.strip().lower()
+    if not target:
+        return None
+    for cred in list_credentials(db, tenant_name):
+        if (cred.full_name or "").strip().lower() == target:
+            return {
+                "email": cred.email,
+                "full_name": cred.full_name,
+                "role": cred.role,
+                "created_at": cred.created_at,
+            }
+    return None
+
+
+def backfill_trainer_ids(db: Session, tenant_name: str) -> dict:
+    """One-shot back-fill: for every batch and session that has a
+    trainer_name but no trainer_id, resolve the name to an auth user
+    and stamp trainer_id. Returns a count summary plus the list of
+    names that didn't match any user — useful for the admin to know
+    which trainers still need an account created.
+    """
+    from app.auth import list_credentials  # noqa: WPS433
+
+    creds = list_credentials(db, tenant_name)
+    by_name = {(c.full_name or "").strip().lower(): c for c in creds if (c.full_name or "").strip()}
+
+    state = get_tenant_state(db, tenant_name)
+    batches_filled = 0
+    sessions_filled = 0
+    unmatched: set[str] = set()
+
+    def _trainer_id_missing(row: dict) -> bool:
+        existing = row.get("trainer_id")
+        if existing is None:
+            return True
+        return not str(existing).strip()
+
+    for row in state.get("batches", []):
+        if not _trainer_id_missing(row):
+            continue
+        name = (row.get("trainer_name") or "").strip()
+        if not name:
+            continue
+        match = by_name.get(name.lower())
+        if match is None:
+            unmatched.add(name)
+            continue
+        row["trainer_id"] = match.email
+        row["updated_at"] = now_iso()
+        batches_filled += 1
+
+    for row in state.get("sessions", []):
+        if not _trainer_id_missing(row):
+            continue
+        name = (row.get("trainer_name") or "").strip()
+        if not name:
+            continue
+        match = by_name.get(name.lower())
+        if match is None:
+            unmatched.add(name)
+            continue
+        row["trainer_id"] = match.email
+        row["updated_at"] = now_iso()
+        sessions_filled += 1
+
+    if batches_filled or sessions_filled:
+        save_tenant_state(db, tenant_name, state)
+
+    return {
+        "batches_filled": batches_filled,
+        "sessions_filled": sessions_filled,
+        "unmatched_names": sorted(unmatched),
+    }
+
+
+# -------------------------------------------------------------------
+# §13.1 email outbox / retry queue helpers.
+# -------------------------------------------------------------------
+
+
+def append_email_outbox_entry(db: Session, tenant_name: str, entry: dict) -> dict:
+    """Persist a (failed-or-pending) outbound email so the retry cron
+    can resend it later. Caller passes the same kwargs they'd pass to
+    send_email plus a `last_error` string. Defaults the queue fields
+    (status='pending', attempts=0).
+    """
+    state = get_tenant_state(db, tenant_name)
+    state.setdefault("email_outbox", [])
+    current = now_iso()
+    record = {
+        "id": make_id("outbox"),
+        "tenant_name": tenant_name,
+        "to": entry.get("to", ""),
+        "subject": entry.get("subject", ""),
+        "html": entry.get("html", ""),
+        "text": entry.get("text"),
+        "from_address": entry.get("from_address"),
+        "reply_to": entry.get("reply_to"),
+        "status": entry.get("status", "pending"),
+        "attempts": int(entry.get("attempts", 0) or 0),
+        "last_attempt_at": entry.get("last_attempt_at"),
+        "last_error": entry.get("last_error", ""),
+        "created_at": current,
+        "updated_at": current,
+    }
+    state["email_outbox"].append(record)
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def list_email_outbox(
+    db: Session,
+    tenant_name: str,
+    status: Optional[str] = None,
+) -> list[dict]:
+    """Return outbox entries, newest first. Pass status to filter."""
+    state = get_tenant_state(db, tenant_name)
+    items = list(state.get("email_outbox", []) or [])
+    # Back-fill missing fields on legacy rows so callers can rely on
+    # status/attempts being present without an extra .get(default) dance.
+    for item in items:
+        item.setdefault("status", "pending")
+        item.setdefault("attempts", 0)
+        item.setdefault("last_attempt_at", None)
+        item.setdefault("last_error", "")
+    if status:
+        items = [item for item in items if item.get("status") == status]
+    return sorted(items, key=lambda item: item.get("created_at", ""), reverse=True)
+
+
+def update_email_outbox_entry(
+    db: Session,
+    tenant_name: str,
+    entry_id: str,
+    patch: dict,
+) -> Optional[dict]:
+    state = get_tenant_state(db, tenant_name)
+    state.setdefault("email_outbox", [])
+    for index, item in enumerate(state["email_outbox"]):
+        if item.get("id") == entry_id:
+            state["email_outbox"][index] = {
+                **item,
+                **patch,
+                "updated_at": now_iso(),
+            }
+            save_tenant_state(db, tenant_name, state)
+            return state["email_outbox"][index]
+    return None
+
+
+# -------------------------------------------------------------------
+# §13.3 unified events timeline.
+# -------------------------------------------------------------------
+
+# Cap the events log to the most recent N entries so tenant_state
+# doesn't grow unboundedly. When the cap is hit we drop the oldest
+# entries (FIFO) — same log-trim pattern as request logs.
+EVENTS_LOG_LIMIT = 5000
+
+
+def record_event(
+    db: Session,
+    tenant_name: str,
+    event_type: str,
+    actor: str,
+    target_id: Optional[str] = None,
+    payload: Optional[dict] = None,
+) -> dict:
+    """Append a single ops-debug event to the timeline. Trims the log
+    when it exceeds EVENTS_LOG_LIMIT entries.
+    """
+    state = get_tenant_state(db, tenant_name)
+    state.setdefault("events", [])
+    record = {
+        "id": make_id("evt"),
+        "tenant_name": tenant_name,
+        "event_type": (event_type or "").strip(),
+        "actor": (actor or "system").strip(),
+        "target_id": target_id,
+        "payload": payload or {},
+        "created_at": now_iso(),
+    }
+    state["events"].append(record)
+    if len(state["events"]) > EVENTS_LOG_LIMIT:
+        # Drop the oldest entries so we keep the most recent EVENTS_LOG_LIMIT.
+        state["events"] = state["events"][-EVENTS_LOG_LIMIT:]
+    save_tenant_state(db, tenant_name, state)
+    return record
+
+
+def list_events(
+    db: Session,
+    tenant_name: str,
+    since: Optional[str] = None,
+    event_type: Optional[str] = None,
+    limit: int = 200,
+) -> list[dict]:
+    state = get_tenant_state(db, tenant_name)
+    items = list(state.get("events", []) or [])
+    if since:
+        items = [item for item in items if (item.get("created_at") or "") >= since]
+    if event_type:
+        items = [item for item in items if item.get("event_type") == event_type]
+    items.sort(key=lambda item: item.get("created_at", ""), reverse=True)
+    if limit and limit > 0:
+        items = items[:limit]
+    return items

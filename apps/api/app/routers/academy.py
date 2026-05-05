@@ -77,6 +77,9 @@ from app.schemas import (
     ZoomWebhookAttendance,
 )
 from app.store import (  # noqa: I001
+    backfill_trainer_ids,
+    list_events,
+    record_event,
     create_certificate,
     create_course_lesson,
     create_or_replace_test,
@@ -2550,6 +2553,25 @@ def create_session_resource_secure(
     }
     item = create_session_resource(db, payload.tenant_name, body)
 
+    # §13.3 events timeline — log recording publishes so ops can audit
+    # the recording-deadline cron's behaviour against ground truth.
+    if kind == "recording":
+        try:
+            record_event(
+                db,
+                payload.tenant_name,
+                event_type="recording.published",
+                actor=f"user:{session_ctx.get('email') or 'unknown'}",
+                target_id=session_id,
+                payload={
+                    "session_id": session_id,
+                    "resource_id": item["id"],
+                    "url": item.get("url"),
+                },
+            )
+        except Exception as evt_err:  # noqa: BLE001
+            logger.warning("record_event(recording.published) failed err=%s", evt_err)
+
     # Fan-out: notify every enrolled student on this batch when a recording
     # lands. Slides/handouts/transcripts don't trigger an email — too noisy.
     if kind == "recording":
@@ -2770,6 +2792,24 @@ def process_zoom_webhook(
             "note": payload.note or "Captured from Zoom join event.",
         },
     )
+    # §13.3 events timeline — log every auto-attendance row so ops can
+    # spot Zoom webhook anomalies in one place.
+    try:
+        record_event(
+            db,
+            payload.tenant_name,
+            event_type="attendance.auto_marked",
+            actor="system",
+            target_id=session["id"],
+            payload={
+                "application_id": application["id"],
+                "session_id": session["id"],
+                "join_source": "live-class",
+                "status": "auto-present",
+            },
+        )
+    except Exception as evt_err:  # noqa: BLE001
+        logger.warning("record_event(attendance.auto_marked) failed err=%s", evt_err)
     return {
         "ok": True,
         "session_id": session["id"],
@@ -2809,6 +2849,54 @@ def overwrite_full_state_secure(
 ):
     auth_dependency(db, tenant_name, x_academy_session, authorization, WRITE_ROLES)
     return save_tenant_state(db, tenant_name, payload)
+
+
+# -------------------------------------------------------------------
+# §4.2 / §12.1 trainer-as-user back-fill.
+# Admin-only one-shot to resolve every batch.trainer_name +
+# session.trainer_name to an auth user (matching by full_name) and
+# stamp trainer_id. Idempotent — re-running is a no-op once filled.
+# -------------------------------------------------------------------
+
+
+@router.post("/trainers/backfill/secure")
+def trainers_backfill_secure(
+    tenant_name: str,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_dependency(db, tenant_name, x_academy_session, authorization, WRITE_ROLES)
+    result = backfill_trainer_ids(db, tenant_name)
+    return {"ok": True, **result}
+
+
+# -------------------------------------------------------------------
+# §13.3 unified events timeline read endpoint.
+# Admin/operations only — same role gate as the rest of the ops surface.
+# -------------------------------------------------------------------
+
+
+@router.get("/events/secure")
+def read_events_secure(
+    tenant_name: str,
+    since: Optional[str] = None,
+    event_type: Optional[str] = None,
+    limit: int = 200,
+    x_academy_session: Optional[str] = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_dependency(db, tenant_name, x_academy_session, authorization, WRITE_ROLES)
+    capped_limit = max(1, min(int(limit or 200), 1000))
+    items = list_events(
+        db,
+        tenant_name,
+        since=since,
+        event_type=event_type,
+        limit=capped_limit,
+    )
+    return {"items": items, "count": len(items)}
 
 
 @router.get("/messages/secure")

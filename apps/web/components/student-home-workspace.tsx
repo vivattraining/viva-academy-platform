@@ -513,6 +513,9 @@ export function StudentHomeWorkspace() {
                 ) : (
                   <span className="editorial-status neutral">Link pending</span>
                 )}
+                <Link className="button-secondary" href="/student/calendar">
+                  View calendar →
+                </Link>
               </div>
             </>
           ) : (
@@ -523,6 +526,11 @@ export function StudentHomeWorkspace() {
               <p className="muted" style={{ marginTop: 8, fontSize: 13 }}>
                 Your trainer will publish the next live class here.
               </p>
+              <div className="button-row">
+                <Link className="button-secondary" href="/student/calendar">
+                  View calendar →
+                </Link>
+              </div>
             </>
           )}
         </article>
@@ -632,6 +640,26 @@ export function StudentHomeWorkspace() {
           </div>
         </article>
       </section>
+
+      <div
+        style={{
+          marginTop: 16,
+          display: "flex",
+          justifyContent: "flex-end",
+        }}
+      >
+        <Link
+          href="/student/settings"
+          style={{
+            color: "var(--muted, #5b6576)",
+            fontSize: 13,
+            textDecoration: "underline",
+            textUnderlineOffset: 4,
+          }}
+        >
+          Manage notification preferences →
+        </Link>
+      </div>
     </section>
   );
 }

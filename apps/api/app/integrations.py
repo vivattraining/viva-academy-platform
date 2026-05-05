@@ -3,13 +3,16 @@ from __future__ import annotations
 from base64 import b64encode
 from datetime import datetime
 import json
-from typing import Dict, Optional
+from typing import TYPE_CHECKING, Dict, Optional
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from uuid import uuid4
 
 from app.config import settings
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session  # noqa: F401
 
 
 def _json_request(url: str, *, method: str = "GET", headers: Optional[Dict[str, str]] = None, body: Optional[dict] = None) -> dict:
@@ -253,6 +256,9 @@ def send_email(
     text: Optional[str] = None,
     from_address: str = DEFAULT_EMAIL_FROM,
     reply_to: Optional[str] = None,
+    db: Optional["Session"] = None,
+    tenant_name: Optional[str] = None,
+    enqueue_on_failure: bool = True,
 ) -> Dict[str, str]:
     """Send a transactional email via Resend.
 
@@ -308,6 +314,33 @@ def send_email(
             "[email] delivery failed to=%s subject=%r err=%s",
             to, subject, send_err,
         )
+        # §13.1 retry queue: if the caller passed db+tenant_name, write
+        # the failed send onto tenant_state['email_outbox'] so the
+        # email-retry cron can pick it up tomorrow. Best-effort —
+        # never raise from here, the original send already failed.
+        if enqueue_on_failure and db is not None and tenant_name:
+            try:
+                from app.store import append_email_outbox_entry  # noqa: WPS433
+                append_email_outbox_entry(
+                    db,
+                    tenant_name,
+                    {
+                        "to": to,
+                        "subject": subject,
+                        "html": html,
+                        "text": text,
+                        "from_address": from_address,
+                        "reply_to": reply_to,
+                        "status": "pending",
+                        "attempts": 0,
+                        "last_error": str(send_err),
+                    },
+                )
+            except Exception as queue_err:  # noqa: BLE001
+                _email_logger.error(
+                    "[email] outbox enqueue failed to=%s err=%s",
+                    to, queue_err,
+                )
         return {"mode": "error", "detail": str(send_err)}
 
 
@@ -879,6 +912,63 @@ def render_module_unlocked_email(
         f"<p style=\"color:#5a5040;font-size:13px;\">If you miss the deadline, the module re-locks "
         f"after a short grace period and a small penalty fee is needed to unlock it again. "
         f"Your trainer is happy to help if you're stuck — message them through the workspace.</p>"
+        f"<p style=\"color:#2f3140;margin-top:24px;\">— Viva Career Academy</p>"
+        f"</div>"
+    )
+    return {"subject": subject, "html": html, "text": text}
+
+
+def render_recording_overdue_email(
+    *,
+    trainer_name: str,
+    session_title: str,
+    session_date: str,
+    hours_overdue: int,
+) -> Dict[str, str]:
+    """Sent by the daily `cron/recording-deadline` job when a session
+    ended >48h ago and still has no `recording` resource attached.
+
+    The cron looks up trainer.email via session.trainer_id (post §4.2
+    migration) and sends this nudge. CC ops manually if you want
+    escalation — keeping the template single-recipient for now.
+    """
+    first = _first_name(trainer_name)
+    upload_url = "https://www.vivacareeracademy.com/trainer/sessions"
+    days = hours_overdue // 24
+    overdue_label = (
+        f"{int(hours_overdue)} hours" if hours_overdue < 48 else f"{int(days)} days"
+    )
+    subject = f"Recording overdue · {session_title} ({session_date})"
+    text = (
+        f"Hi {first},\n\n"
+        f"The recording for your session is overdue by {overdue_label}.\n\n"
+        f"Session: {session_title}\n"
+        f"Date: {session_date}\n\n"
+        f"Please upload the recording from your trainer dashboard so the "
+        f"cohort can catch up:\n{upload_url}\n\n"
+        f"If the recording isn't available (Zoom failure, hardware issue, "
+        f"etc.), reply to this email with a brief note so ops can mark "
+        f"the session as recording-waived.\n\n"
+        f"— Viva Career Academy"
+    )
+    html = (
+        f"<div style=\"font-family:'Helvetica Neue',Arial,sans-serif;color:#111d23;max-width:560px;margin:0 auto;\">"
+        f"<div style=\"background:rgba(184,134,11,0.10);border-left:3px solid #b8860b;padding:14px 18px;margin-bottom:18px;\">"
+        f"<div style=\"font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a6708;font-weight:600;\">Recording overdue</div>"
+        f"<div style=\"margin-top:4px;font-size:18px;color:#0B1F3A;font-weight:700;\">{session_title}</div>"
+        f"<div style=\"margin-top:2px;color:#5a5040;font-size:13px;\">{session_date} · {overdue_label} late</div>"
+        f"</div>"
+        f"<p>Hi {first},</p>"
+        f"<p>The recording for your session is overdue by "
+        f"<strong>{overdue_label}</strong>. Please upload it so the cohort "
+        f"can catch up — students rely on the recording for revision and "
+        f"missed-class catch-up.</p>"
+        f"<p style=\"margin:18px 0;\">"
+        f"<a href=\"{upload_url}\" style=\"display:inline-block;background:#0B1F3A;color:#f5efe4;padding:12px 22px;border-radius:4px;text-decoration:none;font-weight:600;\">Upload recording</a>"
+        f"</p>"
+        f"<p style=\"color:#5a5040;font-size:13px;\">If the recording isn't available "
+        f"(Zoom failure, hardware issue, etc.), reply to this email with a brief note "
+        f"so ops can mark the session as recording-waived.</p>"
         f"<p style=\"color:#2f3140;margin-top:24px;\">— Viva Career Academy</p>"
         f"</div>"
     )

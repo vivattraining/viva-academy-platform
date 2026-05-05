@@ -80,6 +80,10 @@ class BatchCreate(BaseModel):
     course_name: str
     start_date: str
     trainer_name: str
+    # §4.2 trainer-as-user migration: optional FK to an auth user
+    # (AcademyUserCredential.email/id surrogate). None until a user
+    # row exists; back-fill cron resolves trainer_name → trainer_id.
+    trainer_id: Optional[str] = None
     classroom_mode: str = "hybrid"
     classroom_link: str = ""
     zoom_meeting_id: Optional[str] = None
@@ -94,6 +98,8 @@ class SessionCreate(BaseModel):
     start_time: str
     end_time: str
     trainer_name: str
+    # §4.2 trainer-as-user migration — see BatchCreate.trainer_id.
+    trainer_id: Optional[str] = None
     classroom_link: str = ""
     zoom_meeting_id: Optional[str] = None
     zoom_join_url: Optional[str] = None
