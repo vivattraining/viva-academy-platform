@@ -19,7 +19,7 @@
     },
     {
       "path": "/api/v1/cron/attendance-finalize",
-      "schedule": "0 * * * *"
+      "schedule": "30 17 * * *"
     },
     {
       "path": "/api/v1/cron/recording-deadline",
