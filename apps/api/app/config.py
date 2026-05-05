@@ -41,6 +41,11 @@ class Settings:
     # Comma-separated allowlist of frontend origins for CORS. When unset the
     # API falls back to the production domain only.
     cors_allowed_origins: str = os.getenv("CORS_ALLOWED_ORIGINS", "")
+    # Shared secret required by /api/v1/cron/* endpoints. Vercel Cron sends
+    # this in the Authorization header. If unset in production, the cron
+    # endpoints refuse all requests (the framework needs time-based jobs to
+    # be locked down — no public unlock-trigger surface).
+    cron_secret: str = os.getenv("CRON_SECRET", "")
 
 
 settings = Settings()

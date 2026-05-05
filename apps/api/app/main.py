@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.db import Base, engine
 from app import models  # noqa: F401
-from app.routers import academy, health
+from app.routers import academy, cron, health
 
 Base.metadata.create_all(bind=engine)
 
@@ -55,6 +55,7 @@ app.add_middleware(
 
 app.include_router(health.router, prefix="/api/v1", tags=["health"])
 app.include_router(academy.router, prefix="/api/v1/academy", tags=["academy"])
+app.include_router(cron.router, prefix="/api/v1/cron", tags=["cron"])
 
 
 @app.get("/")

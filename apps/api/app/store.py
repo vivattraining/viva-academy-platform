@@ -296,11 +296,16 @@ def _module_unlock_snapshot(course: dict, module: dict, batch: Optional[dict], p
     is_overdue = bool(deadline_date and today > deadline_date)
     is_relocked = bool(relock_date and today > relock_date and not unlock_override)
     penalty_ready = bool(is_relocked and str((progress or {}).get("penalty_status", "clear")) != "paid")
+    # Countdown for the front-end ("Unlocks in 3 days"). Negative when the
+    # module has already unlocked. None when there's no batch / start_date.
+    unlocks_in_days = (unlock_date - today).days if unlock_date else None
     return {
         "unlock_date": unlock_date.isoformat() if unlock_date else None,
         "deadline_date": deadline_date.isoformat() if deadline_date else None,
         "relock_date": relock_date.isoformat() if relock_date else None,
         "is_unlocked": is_unlocked,
+        "is_locked": not is_unlocked,
+        "unlocks_in_days": unlocks_in_days,
         "is_overdue": is_overdue,
         "is_relocked": is_relocked,
         "penalty_ready": penalty_ready,

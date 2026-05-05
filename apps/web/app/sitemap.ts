@@ -34,12 +34,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE}/accessibility`,   changeFrequency: "yearly",  priority: 0.3, lastModified: now },
   ];
 
-  // Course detail URLs — codes mirror apps/api/app/course_catalog.py.
-  // Pages don't exist yet (forward-compatible), so flag low priority
-  // until they ship.
-  const courseCodes = ["P · 01", "P · 02", "P · 03", "P · 04", "P · 05"];
-  const courseRoutes: MetadataRoute.Sitemap = courseCodes.map((code) => ({
-    url: `${SITE}/courses/${encodeURIComponent(code)}`,
+  // Course detail URLs — clean slugs (p01, p02, …) generated from codes
+  // in apps/api/app/course_catalog.py. The /courses/[code] page accepts
+  // either the clean slug or a URL-encoded full code, so old links stay
+  // valid; we publish the clean form.
+  const courseSlugs = ["p01", "p02", "p03", "p04", "p05"];
+  const courseRoutes: MetadataRoute.Sitemap = courseSlugs.map((slug) => ({
+    url: `${SITE}/courses/${slug}`,
     changeFrequency: "monthly" as const,
     priority: 0.85,
     lastModified: now,

@@ -11,5 +11,19 @@
       "src": "/(.*)",
       "dest": "api/index.py"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/v1/cron/unlock-modules",
+      "schedule": "30 0 * * *"
+    },
+    {
+      "path": "/api/v1/cron/attendance-finalize",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/v1/cron/recording-deadline",
+      "schedule": "30 1 * * *"
+    }
   ]
 }

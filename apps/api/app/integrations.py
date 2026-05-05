@@ -786,3 +786,56 @@ def render_reservation_confirmation_email(
         f"</div>"
     )
     return {"subject": subject, "html": html, "text": text}
+
+
+def render_module_unlocked_email(
+    *,
+    student_name: str,
+    course_title: str,
+    module_title: str,
+    week_number: int,
+    unlock_date: str,
+    application_id: str,
+) -> Dict[str, str]:
+    """Sent on the morning a module becomes available to a student.
+
+    Triggered by the daily `cron/unlock-modules` job. Idempotent — the cron
+    marks `module_unlock_notified_at[module_id]` after sending so a re-run on
+    the same day is a no-op.
+    """
+    first = _first_name(student_name)
+    week_label = f"Week {int(week_number):02d}" if week_number else "your next module"
+    workspace_url = f"https://www.vivacareeracademy.com/dashboard"
+    subject = f"{week_label} is unlocked · {module_title}"
+    text = (
+        f"Hi {first},\n\n"
+        f"{week_label} of {course_title} is now unlocked.\n\n"
+        f"Module: {module_title}\n"
+        f"Unlocked on: {unlock_date}\n\n"
+        f"Open the module workspace to start the week's chapters and "
+        f"submit your assignments before the next deadline.\n\n"
+        f"{workspace_url}\n\n"
+        f"— Viva Career Academy"
+    )
+    html = (
+        f"<div style=\"font-family:'Helvetica Neue',Arial,sans-serif;color:#111d23;max-width:560px;margin:0 auto;\">"
+        f"<div style=\"background:rgba(184,134,11,0.10);border-left:3px solid #b8860b;padding:14px 18px;margin-bottom:18px;\">"
+        f"<div style=\"font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a6708;font-weight:600;\">Module unlocked</div>"
+        f"<div style=\"margin-top:4px;font-size:18px;color:#0B1F3A;font-weight:700;\">{week_label} · {module_title}</div>"
+        f"</div>"
+        f"<p>Hi {first},</p>"
+        f"<p><strong>{week_label}</strong> of <strong>{course_title}</strong> is now "
+        f"available in your learner workspace.</p>"
+        f"<p>This week's chapters, readings, and submission window are live as of "
+        f"<strong>{unlock_date}</strong>. Submit your work before the deadline closes "
+        f"to keep your progression on track and stay eligible for the placement guarantee.</p>"
+        f"<p style=\"margin:18px 0;\">"
+        f"<a href=\"{workspace_url}\" style=\"display:inline-block;background:#0B1F3A;color:#f5efe4;padding:12px 22px;border-radius:4px;text-decoration:none;font-weight:600;\">Open module workspace</a>"
+        f"</p>"
+        f"<p style=\"color:#5a5040;font-size:13px;\">If you miss the deadline, the module re-locks "
+        f"after a short grace period and a small penalty fee is needed to unlock it again. "
+        f"Your trainer is happy to help if you're stuck — message them through the workspace.</p>"
+        f"<p style=\"color:#2f3140;margin-top:24px;\">— Viva Career Academy</p>"
+        f"</div>"
+    )
+    return {"subject": subject, "html": html, "text": text}

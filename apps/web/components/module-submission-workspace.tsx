@@ -37,15 +37,46 @@ type StudentLmsPayload = {
       id: string;
       title: string;
       status: string;
+      summary?: string;
+      week_number?: number;
       chapters: ChapterShape[];
       // 4-level layer (Path B): lessons within a module. When the
       // module has only one auto-created Main lesson, the LMS renders
       // chapters flat — see is_auto_grouped flag from backend.
       lessons?: LessonShape[];
       is_auto_grouped?: boolean;
+      // Progressive-release fields (server-computed in
+      // _module_unlock_snapshot from batch.start_date + unlock_offset_days).
+      is_unlocked?: boolean;
+      is_locked?: boolean;
+      unlock_date?: string | null;
+      unlocks_in_days?: number | null;
+      is_overdue?: boolean;
+      is_relocked?: boolean;
     }>;
   };
 };
+
+function formatUnlockDate(iso?: string | null): string {
+  if (!iso) return "soon";
+  try {
+    return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+function formatCountdown(days?: number | null): string {
+  if (days === null || days === undefined) return "";
+  if (days <= 0) return "Available now";
+  if (days === 1) return "Unlocks tomorrow";
+  return `Unlocks in ${days} days`;
+}
 
 export function ModuleSubmissionWorkspace({ moduleId }: { moduleId: string }) {
   const [payload, setPayload] = useState<StudentLmsPayload | null>(null);
@@ -172,6 +203,66 @@ export function ModuleSubmissionWorkspace({ moduleId }: { moduleId: string }) {
   // backwards-compat path for old data), render chapters flat.
   const lessons = activeModule.lessons || [];
   const useGrouping = lessons.length > 0 && !activeModule.is_auto_grouped;
+  // Progressive release: a locked module shows a read-only preview
+  // (title + summary + unlock date) instead of chapter content. Server
+  // computes is_unlocked from batch.start_date + unlock_offset_days.
+  const isLocked = activeModule.is_locked === true || activeModule.is_unlocked === false;
+
+  if (isLocked) {
+    return (
+      <section className="editorial-workbench">
+        <section className="editorial-workbench-card editorial-workbench-contrast">
+          <div className="eyebrow" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span aria-hidden style={{ fontSize: 14 }}>🔒</span>
+            <span>Locked · {formatCountdown(activeModule.unlocks_in_days)}</span>
+          </div>
+          <h2 className="editorial-workbench-title" style={{ marginTop: 12 }}>
+            {activeModule.title}
+          </h2>
+          <p className="editorial-workbench-subtitle">{payload.lms.course.title}</p>
+        </section>
+        <section className="editorial-workbench-card">
+          <div className="eyebrow">Unlocks on</div>
+          <div className="metric" style={{ marginTop: 12 }}>
+            {formatUnlockDate(activeModule.unlock_date)}
+          </div>
+          {activeModule.summary ? (
+            <p className="muted" style={{ marginTop: 18, fontSize: 15, lineHeight: 1.6 }}>
+              {activeModule.summary}
+            </p>
+          ) : (
+            <p className="muted" style={{ marginTop: 18 }}>
+              The full content for this module unlocks automatically on the date above. You will get an
+              email when it opens.
+            </p>
+          )}
+          <div
+            className="editorial-workbench-panel"
+            style={{
+              marginTop: 18,
+              background: "rgba(11, 31, 58, 0.04)",
+              borderLeft: "3px solid var(--accent, #b8860b)",
+              padding: "14px 18px",
+            }}
+          >
+            <strong>What you&apos;ll work on this week</strong>
+            <ul style={{ marginTop: 10, paddingLeft: 18, color: "var(--muted, #2f3140)" }}>
+              {(activeModule.chapters || []).slice(0, 8).map((chapter) => (
+                <li key={chapter.id} style={{ margin: "4px 0", listStyle: "disc" }}>
+                  {chapter.title}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="button-row" style={{ marginTop: 18 }}>
+            <Link className="button-secondary" href="/dashboard">
+              Back to dashboard
+            </Link>
+          </div>
+        </section>
+      </section>
+    );
+  }
 
   return (
     <section className="editorial-workbench">

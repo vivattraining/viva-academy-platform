@@ -75,9 +75,28 @@ type StudentPayload = {
       chapters_completed: number;
       chapters_total: number;
       penalty_ready?: boolean;
+      // Progressive-release fields (server-computed in
+      // _module_unlock_snapshot from batch.start_date + unlock_offset_days).
+      is_unlocked?: boolean;
+      is_locked?: boolean;
+      unlock_date?: string | null;
+      unlocks_in_days?: number | null;
+      week_number?: number;
     }>;
   } | null;
 };
+
+function formatUnlockDateShort(iso?: string | null): string {
+  if (!iso) return "—";
+  try {
+    return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+    });
+  } catch {
+    return iso;
+  }
+}
 
 export function StudentWorkspace() {
   const [payload, setPayload] = useState<StudentPayload | null>(null);
@@ -244,6 +263,54 @@ export function StudentWorkspace() {
               )}
             </div>
           </article>
+
+          {payload.lms?.modules && payload.lms.modules.length > 0 ? (
+            <article className="editorial-workbench-card">
+              <div className="eyebrow">Course progression</div>
+              <p className="muted" style={{ marginTop: 8, fontSize: 13 }}>
+                Each week unlocks automatically. Future weeks are visible as previews — content opens
+                on the dates below.
+              </p>
+              <div className="stack" style={{ marginTop: 14 }}>
+                {payload.lms.modules.map((mod, index) => {
+                  const locked = mod.is_locked === true || mod.is_unlocked === false;
+                  const isCurrent = mod.id === currentModule?.id;
+                  return (
+                    <div
+                      key={mod.id}
+                      className="editorial-workbench-panel"
+                      style={{
+                        opacity: locked ? 0.65 : 1,
+                        borderLeft: isCurrent ? "3px solid var(--accent, #b8860b)" : "3px solid transparent",
+                        paddingLeft: 14,
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
+                        <div style={{ minWidth: 0 }}>
+                          <div className="eyebrow">
+                            {locked ? "🔒 " : ""}Week {String(mod.week_number || index + 1).padStart(2, "0")}
+                          </div>
+                          <strong style={{ display: "block", marginTop: 6 }}>{mod.title}</strong>
+                          <p className="muted" style={{ marginTop: 4, fontSize: 12 }}>
+                            {locked
+                              ? `Unlocks ${formatUnlockDateShort(mod.unlock_date)}`
+                              : `${mod.chapters_completed}/${mod.chapters_total} chapters complete`}
+                          </p>
+                        </div>
+                        <span
+                          className={`editorial-status ${
+                            locked ? "neutral" : isCurrent ? "info" : mod.chapters_completed === mod.chapters_total && mod.chapters_total > 0 ? "success" : "neutral"
+                          }`}
+                        >
+                          {locked ? "Locked" : isCurrent ? "Current" : mod.chapters_completed === mod.chapters_total && mod.chapters_total > 0 ? "Done" : "Open"}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          ) : null}
 
           <article className="editorial-workbench-card">
             <div className="eyebrow">Recent updates</div>
