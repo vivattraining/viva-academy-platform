@@ -160,6 +160,11 @@ export const LIVE_SITE_FACULTY = [
     role: "Faculty Head · Co-Founder",
     bio: "Thirty years with large travel companies — including Cox & Kings, Kuoni and SOTC. Leads VIVA Career Academy's flagship Travel Management programme.",
   },
+  {
+    name: "Geeta Bhat",
+    role: "Senior Faculty",
+    bio: "35+ years across travel, hospitality, and events — including specialisation in inbound tourism. Former faculty at Sita Academy, Kuoni Academy, and YWCA.",
+  },
 ];
 
 export const AI_PLATFORM_PILLARS = [

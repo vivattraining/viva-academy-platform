@@ -108,6 +108,17 @@ const faculty: FacultyMember[] = [
       "Thirty years with large travel companies. Leads VIVA Career Academy's flagship Travel Management programme.",
     creds: ["Cox & Kings", "Kuoni", "SOTC"],
   },
+  {
+    code: "F · 02",
+    name: "Geeta Bhat",
+    image: "/faculty/geeta-bhat.jpg",
+    imageAlt: "Geeta Bhat",
+    label: "Senior Faculty",
+    role: "Travel · Hospitality · Inbound Tourism",
+    description:
+      "35+ years across travel, hospitality, and events — including specialisation in inbound tourism. Former faculty at Sita Academy, Kuoni Academy, and YWCA.",
+    creds: ["Sita Academy", "Kuoni Academy", "YWCA"],
+  },
 ];
 
 const faqs = [
