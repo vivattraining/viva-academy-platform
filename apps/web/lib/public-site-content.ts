@@ -162,7 +162,7 @@ export const LIVE_SITE_FACULTY = [
   },
   {
     name: "Geeta Bhat",
-    role: "Senior Faculty",
+    role: "Senior Faculty & Co Ordinator",
     bio: "35+ years across travel, hospitality, and events — including specialisation in inbound tourism. Former faculty at Sita Academy, Kuoni Academy, and YWCA.",
   },
 ];

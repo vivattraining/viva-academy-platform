@@ -113,7 +113,7 @@ const faculty: FacultyMember[] = [
     name: "Geeta Bhat",
     image: "/faculty/geeta-bhat.jpg",
     imageAlt: "Geeta Bhat",
-    label: "Senior Faculty",
+    label: "Senior Faculty & Co Ordinator",
     role: "Travel · Hospitality · Inbound Tourism",
     description:
       "35+ years across travel, hospitality, and events — including specialisation in inbound tourism. Former faculty at Sita Academy, Kuoni Academy, and YWCA.",
