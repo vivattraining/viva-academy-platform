@@ -62,6 +62,16 @@ const STATIC_FACULTY: PublicTrainer[] = [
     specializations: ["Tour & Travel Management", "Faculty Mentorship"],
     years_experience: 35,
   },
+  {
+    id: "static-ranjit-vig",
+    full_name: "Ranjit Vig",
+    photo_url: "/faculty/ranjit-vig.jpeg",
+    bio:
+      "Guest Faculty. Four decades in Indian travel and tourism. Founder of CAAIR Travels (1985), a luxury travel, MICE, and events firm headquartered in New Delhi and Gurugram, with the CEED events division delivering premium corporate events, incentive programmes, and luxury destination weddings. Past President of Skal International Delhi; Board Member of TAAI; National Treasurer of Skal International India. First appointed American Express representative in India (1993–2016) — recipient of the American Express Award of Excellence for the Asia Pacific region.",
+    expertise: ["Travel", "MICE", "Luxury Events"],
+    specializations: ["Corporate Travel", "Destination Weddings", "Incentive Programmes"],
+    years_experience: 40,
+  },
 ];
 
 function apiBaseUrl(): string {

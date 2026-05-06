@@ -165,6 +165,11 @@ export const LIVE_SITE_FACULTY = [
     role: "Senior Faculty & Co Ordinator",
     bio: "35+ years across travel, hospitality, and events — including specialisation in inbound tourism. Former faculty at Sita Academy, Kuoni Academy, and YWCA.",
   },
+  {
+    name: "Ranjit Vig",
+    role: "Guest Faculty",
+    bio: "Four decades in Indian travel and tourism. Founder of CAAIR Travels (1985) — luxury travel, MICE, and events. Past President of Skal International Delhi; Board Member of TAAI; National Treasurer of Skal International India. First appointed American Express representative in India (1993–2016).",
+  },
 ];
 
 export const AI_PLATFORM_PILLARS = [
