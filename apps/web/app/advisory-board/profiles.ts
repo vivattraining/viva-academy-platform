@@ -41,7 +41,8 @@ export const ADVISORS: AdvisorProfile[] = [
     company: "Hotel N Apartment (HNA) · PR Euro · National Coordinator, NIMA",
     description:
       "C-suite leader with 30+ years across travel management — procurement, operations, and global marketing. Holds one of India's first Ph.D.s in Film Tourism (Pondicherry University). Founded HNA in 2015 — a global corporate accommodation platform reaching 3M+ rooms across 120 countries — and PR Euro for European Permanent Residency. Appointed National Coordinator of NIMA in February 2025.",
-    image: null,
+    image: "/advisory-board/nitin-mittal.jpeg",
+    imageAlt: "Dr Nitin Mittal",
     creds: ["Strategy", "MICE", "Hospitality", "Education"],
   },
   {
@@ -51,7 +52,8 @@ export const ADVISORS: AdvisorProfile[] = [
     company: "EVENTEX · MICE TRAV · Thought Leaders Hub",
     description:
       "Entrepreneur, ecosystem builder, and global business networking strategist with 26+ years of industry experience. 3,000+ events delivered through EVENTEX. Drives the EVENTEX Startup Expo, MICE TRAV, and Thought Leaders Hub — connecting startups, investors, corporates, tourism boards, and industry leaders through high-impact collaborations and global opportunities.",
-    image: null,
+    image: "/advisory-board/anup-tarafdar.jpeg",
+    imageAlt: "Dr Anup Tarafdar",
     creds: ["MICE", "Events", "Networking", "Startups"],
   },
   {

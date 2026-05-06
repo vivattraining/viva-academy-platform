@@ -45,7 +45,7 @@ const STATIC_FACULTY: PublicTrainer[] = [
   {
     id: "static-vikas-khanduri",
     full_name: "Vikas Khanduri",
-    photo_url: null,
+    photo_url: "/faculty/vikas-khanduri-updated.png",
     bio:
       "Faculty Head and Co-Founder. Thirty years with large travel companies — including Cox & Kings, Kuoni and SOTC. Leads VIVA Career Academy's flagship Travel Management programme.",
     expertise: ["Travel", "Tourism", "Operations"],
@@ -55,7 +55,7 @@ const STATIC_FACULTY: PublicTrainer[] = [
   {
     id: "static-geeta-bhat",
     full_name: "Geeta Bhat",
-    photo_url: null,
+    photo_url: "/faculty/geeta-bhat.jpg",
     bio:
       "35+ years in the travel, hospitality, and events industry, including specialisation in inbound tourism. Former faculty at Sita Academy, Kuoni Academy, and YWCA. Combines industry expertise with structured training, equipping students with industry-relevant skills and a strong understanding of how the travel business operates.",
     expertise: ["Travel", "Hospitality", "Inbound Tourism"],
