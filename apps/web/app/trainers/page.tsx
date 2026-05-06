@@ -53,9 +53,9 @@ const STATIC_FACULTY: PublicTrainer[] = [
     years_experience: 30,
   },
   {
-    id: "static-geeta-bhat",
-    full_name: "Geeta Bhat",
-    photo_url: "/faculty/geeta-bhat.jpg",
+    id: "static-geeta-bhatt",
+    full_name: "Geeta Bhatt",
+    photo_url: "/faculty/geeta-bhatt.jpg",
     bio:
       "35+ years in the travel, hospitality, and events industry, including specialisation in inbound tourism. Former faculty at Sita Academy, Kuoni Academy, and YWCA. Combines industry expertise with structured training, equipping students with industry-relevant skills and a strong understanding of how the travel business operates.",
     expertise: ["Travel", "Hospitality", "Inbound Tourism"],

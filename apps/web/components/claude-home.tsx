@@ -110,9 +110,9 @@ const faculty: FacultyMember[] = [
   },
   {
     code: "F · 02",
-    name: "Geeta Bhat",
-    image: "/faculty/geeta-bhat.jpg",
-    imageAlt: "Geeta Bhat",
+    name: "Geeta Bhatt",
+    image: "/faculty/geeta-bhatt.jpg",
+    imageAlt: "Geeta Bhatt",
     label: "Senior Faculty & Co Ordinator",
     role: "Travel · Hospitality · Inbound Tourism",
     description:
