@@ -58,13 +58,14 @@ export const ADVISORS: AdvisorProfile[] = [
   },
   {
     code: "A · 03",
-    name: "Advisor Name",
-    title: "Industry Veteran",
-    company: "Tourism Board / Public Sector",
+    name: "Rajiv Duggal",
+    title: "Co-Founder · Director",
+    company: "Travel Specialists · Travelart Maestros · Event Specialists",
     description:
-      "Senior public-sector experience in tourism policy, destination marketing, and Indo-Pacific corridors. Helps Viva align curriculum with where the industry — and the country — is heading.",
-    image: null,
-    creds: ["Policy", "Destinations", "Strategy"],
+      "31+ years in senior leadership across tourism, hospitality, infrastructure, retail, and cruise development. CEO roles at ZEE's tourism division (launched India's first cruise liner — now Cordelia Cruises), LAVASA Corporation, Select CITYWALK New Delhi, and DOTW across the Indian Subcontinent and Asia Pacific. Senior leadership at KUONI (SITA & SOTC) and TUI AG. Award-winning industry leader recognised by UNWTO and international tourism bodies.",
+    image: "/advisory-board/rajiv-duggal.webp",
+    imageAlt: "Rajiv Duggal",
+    creds: ["Tourism", "Hospitality", "Cruise", "Strategy"],
   },
   {
     code: "A · 04",
