@@ -36,23 +36,23 @@ export type AdvisorProfile = {
 export const ADVISORS: AdvisorProfile[] = [
   {
     code: "A · 01",
-    name: "Advisor Name",
-    title: "Senior Industry Leader",
-    company: "Global Travel & Hospitality Brand",
+    name: "Dr Nitin Mittal",
+    title: "Founder · CEO",
+    company: "Hotel N Apartment (HNA) · PR Euro · National Coordinator, NIMA",
     description:
-      "Three decades of leadership across global travel, hospitality, and aviation. Brings depth in operational scale, brand discipline, and the talent pipelines that build a modern travel industry.",
+      "C-suite leader with 30+ years across travel management — procurement, operations, and global marketing. Holds one of India's first Ph.D.s in Film Tourism (Pondicherry University). Founded HNA in 2015 — a global corporate accommodation platform reaching 3M+ rooms across 120 countries — and PR Euro for European Permanent Residency. Appointed National Coordinator of NIMA in February 2025.",
     image: null,
-    creds: ["Strategy", "Operations", "Talent"],
+    creds: ["Strategy", "MICE", "Hospitality", "Education"],
   },
   {
     code: "A · 02",
-    name: "Advisor Name",
-    title: "Founder · Travel Technology",
-    company: "Indian Travel Tech Pioneer",
+    name: "Dr Anup Tarafdar",
+    title: "Founder · CEO",
+    company: "EVENTEX · MICE TRAV · Thought Leaders Hub",
     description:
-      "Built one of India's defining travel technology companies. Advises on the convergence of distribution, AI, and customer experience — and how academy curricula must evolve in response.",
+      "Entrepreneur, ecosystem builder, and global business networking strategist with 26+ years of industry experience. 3,000+ events delivered through EVENTEX. Drives the EVENTEX Startup Expo, MICE TRAV, and Thought Leaders Hub — connecting startups, investors, corporates, tourism boards, and industry leaders through high-impact collaborations and global opportunities.",
     image: null,
-    creds: ["Distribution", "Technology", "AI"],
+    creds: ["MICE", "Events", "Networking", "Startups"],
   },
   {
     code: "A · 03",

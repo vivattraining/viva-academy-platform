@@ -28,6 +28,42 @@ type PublicTrainer = {
   years_experience?: number | null;
 };
 
+/**
+ * Static fallback faculty roster.
+ *
+ * Renders when the API returns zero approved trainer profiles (e.g. fresh
+ * deploy, before the admin has invited and approved trainers via Phase D).
+ * Once trainers are onboarded through `/admin/invites` → `/trainer/profile`
+ * → `/admin/review/trainers`, their API entries take over and this list is
+ * ignored.
+ *
+ * Image guidance: drop photos at apps/web/public/faculty/<slug>.jpg and
+ * reference as `/faculty/<slug>.jpg` in `photo_url`. Until photos exist,
+ * leave `photo_url` as null — the card renders an initials portrait.
+ */
+const STATIC_FACULTY: PublicTrainer[] = [
+  {
+    id: "static-vikas-khanduri",
+    full_name: "Vikas Khanduri",
+    photo_url: null,
+    bio:
+      "Faculty Head and Co-Founder. Thirty years with large travel companies — including Cox & Kings, Kuoni and SOTC. Leads VIVA Career Academy's flagship Travel Management programme.",
+    expertise: ["Travel", "Tourism", "Operations"],
+    specializations: ["Foundation Programme", "Costing & Pricing"],
+    years_experience: 30,
+  },
+  {
+    id: "static-geeta-bhat",
+    full_name: "Geeta Bhat",
+    photo_url: null,
+    bio:
+      "35+ years in the travel, hospitality, and events industry, including specialisation in inbound tourism. Former faculty at Sita Academy, Kuoni Academy, and YWCA. Combines industry expertise with structured training, equipping students with industry-relevant skills and a strong understanding of how the travel business operates.",
+    expertise: ["Travel", "Hospitality", "Inbound Tourism"],
+    specializations: ["Tour & Travel Management", "Faculty Mentorship"],
+    years_experience: 35,
+  },
+];
+
 function apiBaseUrl(): string {
   const base =
     process.env.NEXT_PUBLIC_API_URL ||
@@ -68,7 +104,10 @@ function initials(name: string): string {
 }
 
 export default async function TrainersPage() {
-  const trainers = await fetchPublicTrainers();
+  const apiTrainers = await fetchPublicTrainers();
+  // Prefer the API roster when admin has approved profiles; otherwise show
+  // the static fallback so the public page always has known faculty visible.
+  const trainers = apiTrainers.length > 0 ? apiTrainers : STATIC_FACULTY;
   const hasTrainers = trainers.length > 0;
 
   return (
