@@ -218,6 +218,41 @@ const recruiters = [
   },
 ];
 
+// § 07 Placement Partners — wordmarks for the 12 partner brands.
+// `font: "serif" | "sans"` toggles family; `italic`, `weight`, and
+// `letterSpacing` give each name its own typographic character.
+// Logo image swap-in is a follow-up: drop a file at
+// apps/web/public/partners/<id>.png and add `image: "/partners/<id>.png"`.
+type PlacementPartner = {
+  id: string;
+  name: string;
+  font: "serif" | "sans";
+  weight: number;
+  letterSpacing: string;
+  italic?: boolean;
+  /**
+   * When true, the cell renders muted as a placeholder slot (no real logo
+   * yet). Real partners replace these as logos are received — flip this
+   * field to false and update the name + typography fields.
+   */
+  placeholder?: boolean;
+};
+
+const placementPartners: PlacementPartner[] = [
+  // Confirmed partners (text wordmarks for now; real logos drop in later).
+  { id: "caair",    name: "CAAIR Travels", font: "serif", weight: 500, letterSpacing: "0.02em", italic: true },
+  { id: "letsgo",   name: "LetsGoTrvl",    font: "sans",  weight: 600, letterSpacing: "0.02em" },
+  { id: "pristine", name: "Pristine",      font: "serif", weight: 500, letterSpacing: "0.04em" },
+  // Placeholder slots — additional partners + logos to be added in the
+  // coming weeks. Rendered muted so it's clear they're upcoming.
+  { id: "p04", name: "Partner · 04", font: "sans", weight: 400, letterSpacing: "0.18em", placeholder: true },
+  { id: "p05", name: "Partner · 05", font: "sans", weight: 400, letterSpacing: "0.18em", placeholder: true },
+  { id: "p06", name: "Partner · 06", font: "sans", weight: 400, letterSpacing: "0.18em", placeholder: true },
+  { id: "p07", name: "Partner · 07", font: "sans", weight: 400, letterSpacing: "0.18em", placeholder: true },
+  { id: "p08", name: "Partner · 08", font: "sans", weight: 400, letterSpacing: "0.18em", placeholder: true },
+  { id: "p09", name: "Partner · 09", font: "sans", weight: 400, letterSpacing: "0.18em", placeholder: true },
+];
+
 export function ClaudeHome({ programs }: { programs: Course[] }) {
   const [activeTab, setActiveTab] = useState(0);
 
@@ -697,10 +732,77 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
         </div>
       </section>
 
+      <section className={styles.section} id="placements">
+        <div className={styles.wrap}>
+          <div className={styles.secHead}>
+            <div className={styles.kicker}>§ 07 — Placement Partners</div>
+            <h2 className={styles.sectionTitle}>
+              The names you&rsquo;ll <em>work with</em>.
+            </h2>
+          </div>
+          <p className={styles.bodyText} style={{ maxWidth: 760, marginBottom: 28 }}>
+            Real partners. Real opportunities. VIVA graduates have hired into the
+            brands shaping modern Indian travel — across luxury, business, online,
+            and operations.
+          </p>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: 1,
+              background: "rgba(11, 31, 58, 0.10)",
+              border: "1px solid rgba(11, 31, 58, 0.10)",
+              borderRadius: 4,
+              overflow: "hidden",
+            }}
+          >
+            {placementPartners.map((p) => (
+              <div
+                key={p.id}
+                style={{
+                  background: p.placeholder
+                    ? "rgba(11, 31, 58, 0.025)"
+                    : "var(--cream, #f5efe4)",
+                  padding: "32px 24px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 100,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily:
+                      p.font === "serif"
+                        ? "'Libre Caslon Text', Georgia, 'Times New Roman', serif"
+                        : "'Helvetica Neue', Arial, sans-serif",
+                    fontWeight: p.weight,
+                    fontStyle: p.italic ? "italic" : "normal",
+                    letterSpacing: p.letterSpacing,
+                    fontSize: p.placeholder ? 12 : "clamp(15px, 1.5vw, 19px)",
+                    textTransform: p.placeholder ? "uppercase" : "none",
+                    color: p.placeholder ? "rgba(11, 31, 58, 0.35)" : "#0B1F3A",
+                    opacity: p.placeholder ? 1 : 0.78,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {p.name}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p style={{ marginTop: 18, fontSize: 13, color: "var(--muted, #2f3140)", fontStyle: "italic" }}>
+            Hiring partners include current employer relationships, alumni
+            placement records, and active recruitment partnerships. Logos and
+            additional partners are added as relationships are formalised.
+          </p>
+        </div>
+      </section>
+
       <section className={styles.admissions} id="admissions">
         <div className={`${styles.wrap} ${styles.admissionsBody}`}>
           <div>
-            <div className={`${styles.eyebrow} ${styles.eyebrowDark}`}>§ 07 — Admissions</div>
+            <div className={`${styles.eyebrow} ${styles.eyebrowDark}`}>§ 08 — Admissions</div>
             <h2 className={styles.admissionsTitle} style={{ marginTop: 20 }}>
               Your <em>career</em> begins with one application.
             </h2>
@@ -746,7 +848,7 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
       <section className={styles.faq} id="faq">
         <div className={styles.wrap}>
           <div className={styles.secHead}>
-            <div className={styles.kicker}>§ 08 — Questions</div>
+            <div className={styles.kicker}>§ 09 — Questions</div>
             <h2 className={styles.sectionTitle}>
               Before you <em>apply</em>.
             </h2>
@@ -788,7 +890,7 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
         <div className={styles.wrap}>
           <div className={styles.secHead}>
             <div className={styles.kicker} style={{ color: "var(--accent, #b8860b)" }}>
-              § 09 — Vision & Mission
+              § 10 — Vision & Mission
             </div>
             <h2 className={styles.sectionTitle} style={{ color: "var(--cream, #f5efe4)" }}>
               Bridging India&apos;s skill gap, one career at a time.
