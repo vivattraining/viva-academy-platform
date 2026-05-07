@@ -80,13 +80,14 @@ export const ADVISORS: AdvisorProfile[] = [
   },
   {
     code: "A · 05",
-    name: "Advisor Name",
-    title: "MICE & Corporate Travel Leader",
-    company: "Global Event Agency",
+    name: "Aman Kaushik",
+    title: "Founder · Fulcrum Push",
+    company: "Sales Culture · Leadership Development · Growth Advisory",
     description:
-      "Runs global event and corporate travel programmes for Fortune 500 brands. Mentors the MICE & Event Design specialisation and opens international hiring corridors.",
-    image: null,
-    creds: ["MICE", "Corporate Travel", "Hiring"],
+      "30+ years of leadership across travel, hospitality, consulting, customer experience, and B2B sales. Founder of Fulcrum Push — helping organisations strengthen sales culture, build leadership capability, and drive sustainable growth. Expertise in sales transformation, consultative selling, AI adoption for business productivity, channel partnerships, and commercial strategy. Practical approach blending business strategy, behavioural psychology, storytelling, and on-the-ground commercial experience.",
+    image: "/advisory-board/aman-kaushik.jpeg",
+    imageAlt: "Aman Kaushik",
+    creds: ["Sales Transformation", "Leadership", "Travel", "AI Adoption"],
   },
   {
     code: "A · 06",
