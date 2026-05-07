@@ -168,7 +168,7 @@ export const LIVE_SITE_FACULTY = [
   {
     name: "Ranjit Vig",
     role: "Guest Faculty",
-    bio: "Four decades in Indian travel and tourism. Founder of CAAIR Travels (1985) — luxury travel, MICE, and events. Past President of Skal International Delhi; Board Member of TAAI; National Treasurer of Skal International India. First appointed American Express representative in India (1993–2016).",
+    bio: "A distinguished name in Indian travel and tourism with a legacy spanning over four decades. Founder of CAAIR Travels (1985), a benchmark in luxury travel, tourism, and event management headquartered in New Delhi and Gurugram. Member of the TAAI Board; National Treasurer of Skål International India; Immediate Past President of Skål International Delhi. First appointed American Express representative in India (1993–2016).",
   },
 ];
 

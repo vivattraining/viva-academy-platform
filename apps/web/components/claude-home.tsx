@@ -122,13 +122,13 @@ const faculty: FacultyMember[] = [
   {
     code: "F · 03",
     name: "Ranjit Vig",
-    image: "/faculty/ranjit-vig.jpeg",
+    image: "/faculty/ranjit-vig.png",
     imageAlt: "Ranjit Vig",
     label: "Guest Faculty",
     role: "Founder · CAAIR Travels · CEED",
     description:
-      "Four decades in Indian travel and tourism. Founder of CAAIR Travels (1985), a luxury travel, MICE, and events firm headquartered in New Delhi and Gurugram. Past President of Skal International Delhi; Board Member of TAAI; National Treasurer of Skal International India. First appointed American Express representative in India (1993–2016).",
-    creds: ["TAAI", "Skal Intl", "American Express", "MICE"],
+      "A distinguished name in Indian travel and tourism with a legacy spanning over four decades. Founder of CAAIR Travels (1985) — a benchmark in luxury travel, tourism, and event management. Member of the TAAI Board; National Treasurer of Skål International India; Immediate Past President of Skål International Delhi.",
+    creds: ["TAAI", "Skål Intl", "American Express", "MICE"],
   },
 ];
 
