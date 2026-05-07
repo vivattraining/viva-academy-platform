@@ -225,32 +225,38 @@ const recruiters = [
 // apps/web/public/partners/<id>.png and add `image: "/partners/<id>.png"`.
 type PlacementPartner = {
   id: string;
-  name: string;
-  font: "serif" | "sans";
-  weight: number;
-  letterSpacing: string;
+  name: string; // alt text for image cells, or the wordmark string
+  /** Image variant — path under /public, takes precedence over wordmark fields. */
+  image?: string;
+  /** Multiply-blend mode for image cells with a white background (e.g. JPEGs). */
+  bleach?: boolean;
+  /** Wordmark variant — typography. */
+  font?: "serif" | "sans";
+  weight?: number;
+  letterSpacing?: string;
   italic?: boolean;
   /**
-   * When true, the cell renders muted as a placeholder slot (no real logo
-   * yet). Real partners replace these as logos are received — flip this
-   * field to false and update the name + typography fields.
+   * When true, the cell renders muted as a placeholder slot (no real
+   * brand). These are fictional dummy wordmarks held in place until real
+   * partners are confirmed and their logos arrive.
    */
   placeholder?: boolean;
 };
 
 const placementPartners: PlacementPartner[] = [
-  // Confirmed partners (text wordmarks for now; real logos drop in later).
-  { id: "caair",    name: "CAAIR Travels", font: "serif", weight: 500, letterSpacing: "0.02em", italic: true },
-  { id: "letsgo",   name: "LetsGoTrvl",    font: "sans",  weight: 600, letterSpacing: "0.02em" },
-  { id: "pristine", name: "Pristine",      font: "serif", weight: 500, letterSpacing: "0.04em" },
-  // Placeholder slots — additional partners + logos to be added in the
-  // coming weeks. Rendered muted so it's clear they're upcoming.
-  { id: "p04", name: "Partner · 04", font: "sans", weight: 400, letterSpacing: "0.18em", placeholder: true },
-  { id: "p05", name: "Partner · 05", font: "sans", weight: 400, letterSpacing: "0.18em", placeholder: true },
-  { id: "p06", name: "Partner · 06", font: "sans", weight: 400, letterSpacing: "0.18em", placeholder: true },
-  { id: "p07", name: "Partner · 07", font: "sans", weight: 400, letterSpacing: "0.18em", placeholder: true },
-  { id: "p08", name: "Partner · 08", font: "sans", weight: 400, letterSpacing: "0.18em", placeholder: true },
-  { id: "p09", name: "Partner · 09", font: "sans", weight: 400, letterSpacing: "0.18em", placeholder: true },
+  // Confirmed partners — real logo images.
+  { id: "caair",    name: "CAAIR Travels", image: "/partners/caair.png" },
+  { id: "letsgo",   name: "LetsGoTrvl",    image: "/partners/letsgo.png" },
+  { id: "pristine", name: "Pristine",      image: "/partners/pristine.jpeg", bleach: true },
+  // Placeholder slots — fictional dummy brand wordmarks, NOT real partners.
+  // Replace each entry with a real partner's name + image as relationships
+  // are formalised. Set `placeholder: false` and add `image: "/partners/<id>.png"`.
+  { id: "p04", name: "AERA Voyages",   font: "sans",  weight: 700, letterSpacing: "0.04em",  placeholder: true },
+  { id: "p05", name: "MERIDIA",        font: "sans",  weight: 600, letterSpacing: "0.22em",  placeholder: true },
+  { id: "p06", name: "Voyageur",       font: "serif", weight: 500, letterSpacing: "0.01em",  italic: true, placeholder: true },
+  { id: "p07", name: "Solis Travel",   font: "sans",  weight: 500, letterSpacing: "0.02em",  placeholder: true },
+  { id: "p08", name: "ALTA TOURS",     font: "sans",  weight: 700, letterSpacing: "0.18em",  placeholder: true },
+  { id: "p09", name: "Crescent Trips", font: "serif", weight: 400, letterSpacing: "0.02em",  placeholder: true },
 ];
 
 export function ClaudeHome({ programs }: { programs: Course[] }) {
@@ -763,31 +769,49 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
                   background: p.placeholder
                     ? "rgba(11, 31, 58, 0.025)"
                     : "var(--cream, #f5efe4)",
-                  padding: "32px 24px",
+                  padding: "28px 22px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  minHeight: 100,
+                  minHeight: 110,
                 }}
               >
-                <span
-                  style={{
-                    fontFamily:
-                      p.font === "serif"
-                        ? "'Libre Caslon Text', Georgia, 'Times New Roman', serif"
-                        : "'Helvetica Neue', Arial, sans-serif",
-                    fontWeight: p.weight,
-                    fontStyle: p.italic ? "italic" : "normal",
-                    letterSpacing: p.letterSpacing,
-                    fontSize: p.placeholder ? 12 : "clamp(15px, 1.5vw, 19px)",
-                    textTransform: p.placeholder ? "uppercase" : "none",
-                    color: p.placeholder ? "rgba(11, 31, 58, 0.35)" : "#0B1F3A",
-                    opacity: p.placeholder ? 1 : 0.78,
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {p.name}
-                </span>
+                {p.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    loading="lazy"
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: 64,
+                      width: "auto",
+                      height: "auto",
+                      objectFit: "contain",
+                      // Multiply blends a white-bg JPEG into the cream cell
+                      // so it doesn't read as a hard rectangle on the page.
+                      mixBlendMode: p.bleach ? "multiply" : "normal",
+                    }}
+                  />
+                ) : (
+                  <span
+                    style={{
+                      fontFamily:
+                        p.font === "serif"
+                          ? "'Libre Caslon Text', Georgia, 'Times New Roman', serif"
+                          : "'Helvetica Neue', Arial, sans-serif",
+                      fontWeight: p.weight,
+                      fontStyle: p.italic ? "italic" : "normal",
+                      letterSpacing: p.letterSpacing,
+                      fontSize: "clamp(15px, 1.5vw, 19px)",
+                      color: p.placeholder ? "rgba(11, 31, 58, 0.45)" : "#0B1F3A",
+                      opacity: p.placeholder ? 1 : 0.78,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {p.name}
+                  </span>
+                )}
               </div>
             ))}
           </div>
