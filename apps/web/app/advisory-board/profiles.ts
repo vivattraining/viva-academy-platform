@@ -85,7 +85,7 @@ export const ADVISORS: AdvisorProfile[] = [
     company: "Sales Culture · Leadership Development · Growth Advisory",
     description:
       "30+ years of leadership across travel, hospitality, consulting, customer experience, and B2B sales. Founder of Fulcrum Push — helping organisations strengthen sales culture, build leadership capability, and drive sustainable growth. Expertise in sales transformation, consultative selling, AI adoption for business productivity, channel partnerships, and commercial strategy. Practical approach blending business strategy, behavioural psychology, storytelling, and on-the-ground commercial experience.",
-    image: "/advisory-board/aman-kaushik.jpeg",
+    image: "/advisory-board/aman-kaushik.png",
     imageAlt: "Aman Kaushik",
     creds: ["Sales Transformation", "Leadership", "Travel", "AI Adoption"],
   },
