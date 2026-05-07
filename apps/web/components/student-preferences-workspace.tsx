@@ -49,19 +49,24 @@ export function StudentPreferencesWorkspace() {
   const [saving, setSaving] = useState(false);
   const [flash, setFlash] = useState("");
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
     setSessionToken(readSession()?.session_token || null);
+    setSessionChecked(true);
   }, []);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
+      if (!sessionChecked) return;
       if (!sessionToken) {
         setError("Sign in with a student account to manage notification preferences.");
         setLoading(false);
         return;
       }
+      setLoading(true);
+      setError("");
       try {
         const me = await apiRequest<StudentPayload>(
           `/api/v1/academy/students/me?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
@@ -78,6 +83,7 @@ export function StudentPreferencesWorkspace() {
           whatsapp: Boolean(prefs.whatsapp_notifications),
           sms: Boolean(prefs.sms_notifications),
         });
+        setError("");
       } catch (loadError) {
         if (!cancelled) {
           setError(
@@ -94,7 +100,7 @@ export function StudentPreferencesWorkspace() {
     return () => {
       cancelled = true;
     };
-  }, [sessionToken]);
+  }, [sessionChecked, sessionToken]);
 
   async function handleSave() {
     if (!sessionToken) {

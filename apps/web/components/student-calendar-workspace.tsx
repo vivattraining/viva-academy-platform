@@ -143,21 +143,26 @@ export function StudentCalendarWorkspace() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
   const [now, setNow] = useState<number>(() => Date.now());
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     setSessionToken(readSession()?.session_token || null);
+    setSessionChecked(true);
   }, []);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
+      if (!sessionChecked) return;
       if (!sessionToken) {
         setError("Sign in with a student account to open your calendar.");
         setLoading(false);
         return;
       }
+      setLoading(true);
+      setError("");
       try {
         const me = await apiRequest<StudentPayload>(
           `/api/v1/academy/students/me?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
@@ -165,6 +170,7 @@ export function StudentCalendarWorkspace() {
         );
         if (cancelled) return;
         setPayload(me);
+        setError("");
       } catch (loadError) {
         if (!cancelled) {
           setError(
@@ -181,7 +187,7 @@ export function StudentCalendarWorkspace() {
     return () => {
       cancelled = true;
     };
-  }, [sessionToken]);
+  }, [sessionChecked, sessionToken]);
 
   // Re-render every 30s so the countdown stays fresh.
   useEffect(() => {

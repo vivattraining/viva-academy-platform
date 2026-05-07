@@ -85,18 +85,23 @@ export function ModuleSubmissionWorkspace({ moduleId }: { moduleId: string }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
     setSessionToken(readSession()?.session_token || null);
+    setSessionChecked(true);
   }, []);
 
   useEffect(() => {
     async function load() {
+      if (!sessionChecked) return;
       if (!sessionToken) {
         setError("Student session required to open the module workspace.");
         setLoading(false);
         return;
       }
+      setLoading(true);
+      setError("");
       try {
         const data = await apiRequest<StudentLmsPayload>(
           `/api/v1/academy/students/me/lms?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
@@ -118,7 +123,7 @@ export function ModuleSubmissionWorkspace({ moduleId }: { moduleId: string }) {
       }
     }
     void load();
-  }, [sessionToken]);
+  }, [sessionChecked, sessionToken]);
 
   const activeModule = useMemo(
     () => payload?.lms.modules.find((item) => item.id === moduleId || item.id.endsWith(moduleId)) || payload?.lms.modules[0],

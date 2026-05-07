@@ -222,21 +222,26 @@ export function StudentHomeWorkspace() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
   const [now, setNow] = useState<number>(() => Date.now());
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     setSessionToken(readSession()?.session_token || null);
+    setSessionChecked(true);
   }, []);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
+      if (!sessionChecked) return;
       if (!sessionToken) {
         setError("Sign in with a student account to open the home dashboard.");
         setLoading(false);
         return;
       }
+      setLoading(true);
+      setError("");
       try {
         const me = await apiRequest<StudentPayload>(
           `/api/v1/academy/students/me?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`,
@@ -285,6 +290,7 @@ export function StudentHomeWorkspace() {
         const fallbackReviews = me.lms?.reviews || [];
         setReviews(secondaryReviews ?? fallbackReviews);
         setTestStatus(secondaryTest);
+        setError("");
       } catch (loadError) {
         if (!cancelled) {
           setError(
@@ -301,7 +307,7 @@ export function StudentHomeWorkspace() {
     return () => {
       cancelled = true;
     };
-  }, [sessionToken]);
+  }, [sessionChecked, sessionToken]);
 
   // Countdown ticker. Single 30s interval drives every consumer of
   // `now` — cleared on unmount so we never leak.

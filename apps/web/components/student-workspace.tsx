@@ -103,23 +103,29 @@ export function StudentWorkspace() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
     setSessionToken(readSession()?.session_token || null);
+    setSessionChecked(true);
   }, []);
 
   useEffect(() => {
     async function load() {
+      if (!sessionChecked) return;
       if (!sessionToken) {
         setError("Sign in with a student account to open the learner workspace.");
         setLoading(false);
         return;
       }
+      setLoading(true);
+      setError("");
       try {
         const data = await apiRequest<StudentPayload>(`/api/v1/academy/students/me?tenant_name=${encodeURIComponent(DEFAULT_TENANT)}`, {
           sessionToken,
         });
         setPayload(data);
+        setError("");
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : "Unable to load learner data.");
       } finally {
@@ -128,7 +134,7 @@ export function StudentWorkspace() {
     }
 
     void load();
-  }, [sessionToken]);
+  }, [sessionChecked, sessionToken]);
 
   if (loading) {
     return <section className="editorial-workbench-card">Loading student workspace...</section>;
