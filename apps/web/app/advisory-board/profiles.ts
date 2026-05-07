@@ -69,13 +69,14 @@ export const ADVISORS: AdvisorProfile[] = [
   },
   {
     code: "A · 04",
-    name: "Advisor Name",
-    title: "Hospitality Educator",
-    company: "Leading Hospitality School",
+    name: "Ashish Kumar",
+    title: "Co-Chairman · FICCI Travel Technology & Digital Committee",
+    company: "Member, FICCI Tourism Committee · Advisor, RankinLLM.ai · Formerly International Travel House (ITC Group)",
     description:
-      "Decades of academic experience designing and running hospitality programmes. Provides curriculum rigour and professional standards alignment for the Viva flagship and specialisations.",
-    image: null,
-    creds: ["Curriculum", "Pedagogy", "Standards"],
+      "Senior travel, tourism, and hospitality leader with nearly 45 years of industry experience. Held leadership roles at International Travel House (ITC Group) across corporate travel, hospitality, tourism, and travel technology. Co-Chairman of the FICCI Travel Technology & Digital Committee and Member of the FICCI Tourism Committee, shaping industry dialogue on digital transformation and AI adoption in travel. Advisor to RankinLLM.ai on AI-led discovery, generative search, and digital visibility for travel and hospitality brands.",
+    image: "/advisory-board/ashish-kumar.jpeg",
+    imageAlt: "Ashish Kumar",
+    creds: ["FICCI", "Travel Tech", "Hospitality", "AI Discovery"],
   },
   {
     code: "A · 05",
