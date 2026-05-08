@@ -72,6 +72,16 @@ const STATIC_FACULTY: PublicTrainer[] = [
     specializations: ["Corporate Travel", "Destination Weddings", "Incentive Programmes"],
     years_experience: 40,
   },
+  {
+    id: "static-gurjit-singh-ahuja",
+    full_name: "Gurjit Singh Ahuja",
+    photo_url: "/faculty/gurjit-singh-ahuja.jpeg",
+    bio:
+      "Guest Faculty · Travel Industry Consultant. Consulting Editor of TTJ – Travel Trade Journal, with 35+ years across airlines, cruise lines, car rentals, hospitality, luxury and experiential travel, and online travel — holding sales, marketing, and leadership roles across virtually every major travel vertical. One of the early visionaries who helped position the Indian market within the world of luxury cruising nearly three decades ago. Frequently invited as a speaker, thought leader, and commentator at industry forums, leadership summits, and training platforms — most recently at the World Buddhist Conclave in Kushinagar on the rise of Buddhist spiritual and heritage tourism circuits in India. Beyond the editorial desk, an avid global traveller, writer, poet, photographer, and food and beverage critic.",
+    expertise: ["Travel", "Cruise", "Luxury Travel"],
+    specializations: ["Editorial Strategy", "Cruise Positioning", "Industry Commentary"],
+    years_experience: 35,
+  },
 ];
 
 function apiBaseUrl(): string {

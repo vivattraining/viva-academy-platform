@@ -130,6 +130,17 @@ const faculty: FacultyMember[] = [
       "A distinguished name in Indian travel and tourism with a legacy spanning over four decades. Founder of CAAIR Travels (1985) — a benchmark in luxury travel, tourism, and event management. Member of the TAAI Board; National Treasurer of Skål International India; Immediate Past President of Skål International Delhi.",
     creds: ["TAAI", "Skål Intl", "American Express", "MICE"],
   },
+  {
+    code: "F · 04",
+    name: "Gurjit Singh Ahuja",
+    image: "/faculty/gurjit-singh-ahuja.jpeg",
+    imageAlt: "Gurjit Singh Ahuja",
+    label: "Guest Faculty",
+    role: "Travel Industry Consultant · Consulting Editor, TTJ",
+    description:
+      "Consulting Editor of TTJ – Travel Trade Journal and one of India's most respected voices in travel, tourism, and luxury cruising. 35+ years across airlines, cruise lines, car rentals, hospitality, luxury and experiential travel, and online travel — in sales, marketing, and leadership roles. An early visionary who helped position the Indian market within global luxury cruising.",
+    creds: ["Cruise", "Luxury Travel", "Editorial", "Strategy"],
+  },
 ];
 
 const faqs = [

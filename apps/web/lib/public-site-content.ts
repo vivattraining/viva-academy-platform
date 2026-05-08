@@ -170,6 +170,11 @@ export const LIVE_SITE_FACULTY = [
     role: "Guest Faculty",
     bio: "A distinguished name in Indian travel and tourism with a legacy spanning over four decades. Founder of CAAIR Travels (1985), a benchmark in luxury travel, tourism, and event management headquartered in New Delhi and Gurugram. Member of the TAAI Board; National Treasurer of Skål International India; Immediate Past President of Skål International Delhi. First appointed American Express representative in India (1993–2016).",
   },
+  {
+    name: "Gurjit Singh Ahuja",
+    role: "Guest Faculty · Travel Industry Consultant",
+    bio: "Consulting Editor of TTJ – Travel Trade Journal. 35+ years across airlines, cruise lines, car rentals, hospitality, luxury and experiential travel, and online travel — in sales, marketing, and leadership roles. An early voice in positioning the Indian market within global luxury cruising. Frequently invited as a speaker at industry forums and leadership summits.",
+  },
 ];
 
 export const AI_PLATFORM_PILLARS = [
