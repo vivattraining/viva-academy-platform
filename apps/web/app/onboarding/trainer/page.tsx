@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { readSession } from "../../../lib/auth";
 
 import { apiRequest, DEFAULT_TENANT } from "../../../lib/api";
 import { writeSession, type AcademySession } from "../../../lib/auth";
@@ -32,6 +33,16 @@ function OnboardingTrainerInner() {
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
+  useEffect(() => {
+    if (!token) {
+      const session = readSession();
+      if (!session || !["trainer", "admin"].includes(session.role)) {
+        router.replace("/internal/login");
+        return;
+      }
+    }
+  }, [token, router]);
 
   useEffect(() => {
     let cancelled = false;

@@ -18,17 +18,12 @@ function timingSafeEqual(a: Buffer, b: Buffer): boolean {
 
 /**
  * Resolve the JWT secret used to verify access tokens.
- * Mirrors the priority order in apps/api/app/auth.py:_jwt_secret.
+ * Mirrors apps/api/app/auth.py:_jwt_secret — ACADEMY_JWT_SECRET only,
+ * no legacy fallbacks. Minimum 32 chars to match the backend requirement.
  */
 function jwtSecret(): string | null {
-  const candidates = [
-    process.env.ACADEMY_JWT_SECRET,
-    process.env.RAZORPAY_WEBHOOK_SECRET,
-    process.env.ZOOM_CLIENT_SECRET,
-  ];
-  for (const candidate of candidates) {
-    if (candidate && candidate.length >= 16) return candidate;
-  }
+  const candidate = process.env.ACADEMY_JWT_SECRET;
+  if (candidate && candidate.length >= 32) return candidate;
   return null;
 }
 

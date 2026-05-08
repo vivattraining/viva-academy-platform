@@ -93,7 +93,7 @@ test.describe('Authenticated flows', () => {
       loginPath: '/internal/login',
       user: process.env.VIVA_INTERNAL_USER,
       pass: process.env.VIVA_INTERNAL_PASS,
-      expectAfterLogin: process.env.VIVA_INTERNAL_DASHBOARD || '/dashboard',
+      expectAfterLogin: process.env.VIVA_INTERNAL_DASHBOARD || '/admin',
     },
   ];
 
@@ -101,17 +101,21 @@ test.describe('Authenticated flows', () => {
     test(flow.label, async ({ page }, testInfo) => {
       test.skip(!flow.user || !flow.pass, `${flow.label}: credentials not configured`);
 
-      await page.goto(fullUrl(flow.loginPath), { waitUntil: 'domcontentloaded' });
+      await page.goto(fullUrl(flow.loginPath), { waitUntil: 'load' });
+      // Wait for React to hydrate before interacting — domcontentloaded is not
+      // enough; client-side event handlers aren't attached until JS executes.
+      await page.waitForLoadState('networkidle');
 
       const userField = page.locator('input[type="email"], input[name*="user" i], input[name*="email" i]').first();
       const passField = page.locator('input[type="password"]').first();
       await userField.fill(flow.user!);
       await passField.fill(flow.pass!);
 
-      await Promise.all([
-        page.waitForLoadState('networkidle'),
-        page.locator('button[type="submit"], input[type="submit"]').first().click(),
-      ]);
+      // Click submit then wait for URL to change away from the login page.
+      // waitForLoadState('networkidle') races the async fetch and resolves too
+      // early for JavaScript-driven login flows.
+      await page.locator('button[type="submit"], input[type="submit"]').first().click();
+      await page.waitForURL((url) => !url.pathname.includes('login'), { timeout: 15000 }).catch(() => {});
 
       const finalUrl = page.url();
       await testInfo.attach('post-login', {

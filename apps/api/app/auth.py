@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import base64
 import json
+import re
 from datetime import datetime, timedelta, timezone
 from hashlib import pbkdf2_hmac
 import hmac
 import secrets
 from typing import Optional, Set
+
+_EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 
 from fastapi import Header, HTTPException
 from sqlalchemy.orm import Session
@@ -181,7 +184,7 @@ def create_credential(db: Session, tenant_name: str, *, email: str, full_name: s
     normalized_email = email.strip().lower()
     normalized_role = role.strip().lower()
     cleaned_name = full_name.strip()
-    if "@" not in normalized_email:
+    if not _EMAIL_RE.match(normalized_email):
         raise HTTPException(status_code=422, detail="Enter a valid email address")
     if len(cleaned_name) < 2:
         raise HTTPException(status_code=422, detail="Full name must be at least 2 characters")
@@ -237,7 +240,7 @@ def ensure_student_credential(
     """
     normalized_email = email.strip().lower()
     cleaned_name = full_name.strip() or normalized_email.split("@")[0]
-    if "@" not in normalized_email:
+    if not _EMAIL_RE.match(normalized_email):
         return (None, None)  # type: ignore[return-value]
 
     existing = (
@@ -282,7 +285,7 @@ def update_credential(
     password: Optional[str] = None,
 ) -> AcademyUserCredential:
     normalized_email = email.strip().lower()
-    if "@" not in normalized_email:
+    if not _EMAIL_RE.match(normalized_email):
         raise HTTPException(status_code=422, detail="Enter a valid email address")
     record = (
         db.query(AcademyUserCredential)
@@ -400,7 +403,7 @@ def create_session(db: Session, tenant_name: str, credential: AcademyUserCredent
 
 def login_user(db: Session, tenant_name: str, email: str, password: str, expected_role: Optional[str] = None) -> dict:
     normalized_email = email.strip().lower()
-    if "@" not in normalized_email:
+    if not _EMAIL_RE.match(normalized_email):
         raise HTTPException(status_code=422, detail="Enter a valid email address")
     if len(password.strip()) < 8:
         raise HTTPException(status_code=422, detail="Password must be at least 8 characters")

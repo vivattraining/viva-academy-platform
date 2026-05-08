@@ -78,6 +78,25 @@ export function AdmissionsWorkbench() {
     }
   }
 
+  async function markPaid(id: string) {
+    if (!sessionToken) return;
+    setMessage("Marking payment as received...");
+    try {
+      await apiRequest(`/api/v1/academy/applications/${id}/status/secure`, {
+        method: "POST",
+        sessionToken,
+        body: JSON.stringify({
+          tenant_name: DEFAULT_TENANT,
+          payment_stage: "paid",
+        })
+      });
+      setMessage("Payment marked as received.");
+      await load();
+    } catch (markError) {
+      setMessage(markError instanceof Error ? markError.message : "Unable to mark payment.");
+    }
+  }
+
   async function markEnrolled(id: string) {
     if (!sessionToken) return;
     setMessage("Marking learner as enrolled...");
@@ -87,9 +106,8 @@ export function AdmissionsWorkbench() {
         sessionToken,
         body: JSON.stringify({
           tenant_name: DEFAULT_TENANT,
+          enrollment_stage: "active",
           application_stage: "enrolled",
-          payment_stage: "paid",
-          enrollment_stage: "active"
         })
       });
       setMessage("Learner marked as enrolled.");
@@ -148,20 +166,32 @@ export function AdmissionsWorkbench() {
                 <span className="editorial-workbench-chip">{humanize(item.enrollment_stage)}</span>
               </div>
               <div className="button-row">
-                <button
-                  className={isPaid ? "button-active" : "button-secondary"}
-                  aria-pressed={isPaid}
-                  onClick={() => void issuePaymentLink(item.id)}
-                  title={isPaid ? "Payment already received" : "Issue a Razorpay payment link"}
-                >
-                  {isPaid ? "Payment received" : "Issue payment link"}
-                </button>
+                {!isPaid ? (
+                  <>
+                    <button
+                      className="button-secondary"
+                      onClick={() => void issuePaymentLink(item.id)}
+                      title="Issue a Razorpay payment link"
+                    >
+                      Issue payment link
+                    </button>
+                    <button
+                      className="button-secondary"
+                      onClick={() => void markPaid(item.id)}
+                      title="Manually mark payment as received (cash / bank transfer)"
+                    >
+                      Mark as paid
+                    </button>
+                  </>
+                ) : (
+                  <span className="button-active" aria-label="Payment received">Payment received</span>
+                )}
                 <button
                   className={isEnrolled ? "button-active" : "button-primary"}
                   aria-pressed={isEnrolled}
                   onClick={() => void markEnrolled(item.id)}
                   title={isEnrolled ? "Already enrolled" : "Move this learner into an active batch"}
-                  disabled={isEnrolled}
+                  disabled={!isPaid || isEnrolled}
                 >
                   {isEnrolled ? "Enrolled" : "Mark enrolled"}
                 </button>

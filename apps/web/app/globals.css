@@ -391,6 +391,27 @@ main {
   background: rgba(245, 239, 228, 0.08);
 }
 
+/* Buttons on the dark contrast card need light text and border. */
+.editorial-workbench-contrast .button-secondary,
+.editorial-workbench-contrast .button-toggle {
+  color: #f5efe4;
+  border-color: rgba(245, 239, 228, 0.28);
+}
+.editorial-workbench-contrast .button-secondary {
+  background: rgba(245, 239, 228, 0.08);
+}
+.editorial-workbench-contrast .button-secondary:hover {
+  background: rgba(245, 239, 228, 0.14);
+}
+.editorial-workbench-contrast .button-toggle {
+  background: rgba(245, 239, 228, 0.06);
+  border-color: rgba(245, 239, 228, 0.22);
+}
+.editorial-workbench-contrast .button-toggle:hover {
+  background: rgba(245, 239, 228, 0.12);
+  border-color: rgba(245, 239, 228, 0.38);
+}
+
 .editorial-form-grid {
   display: grid;
   gap: 16px;

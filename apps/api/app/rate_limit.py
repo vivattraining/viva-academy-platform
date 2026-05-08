@@ -16,12 +16,16 @@ the API surface here doesn't change.
 
 from __future__ import annotations
 
+import os
 import threading
 import time
 from collections import defaultdict, deque
 from typing import Deque, Optional
 
 from fastapi import HTTPException, Request
+
+# Skip rate limiting in non-production environments (dev, CI, test runs).
+_ENFORCE = os.getenv("APP_ENV", "production") == "production"
 
 # Per-key sliding-window timestamps, keyed by (bucket, key).
 # Bucket is e.g. "login", "cert-verify", "payment-link".
@@ -56,6 +60,8 @@ def enforce(
     catches that) AND so legitimate retries from a shared NAT don't
     knock out other users (the per-email bucket catches that).
     """
+    if not _ENFORCE:
+        return
     ip = _client_ip(request)
     composite = f"{ip}:{extra_key}" if extra_key else ip
     key = (bucket, composite)

@@ -300,6 +300,9 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
           </div>
 
           <div className={styles.navCta}>
+            <Link className={styles.buttonGhost} href="/login">
+              Login
+            </Link>
             <a className={styles.button} href="#admissions">
               Apply Now <span className={styles.arrow}>↗</span>
             </a>

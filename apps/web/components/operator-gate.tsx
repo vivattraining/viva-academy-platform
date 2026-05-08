@@ -68,8 +68,11 @@ export function OperatorGate({
       writeSession(data.session);
       setSession(data.session);
     } catch {
-      writeSession(null);
-      setSession(null);
+      // Don't clear the session on error: the fetch is commonly aborted by the
+      // navigation that immediately follows a successful login. Wiping the session
+      // here would remove the cookie before the GET /admin request is made, forcing
+      // a redirect loop. requireInternalPageAccess verifies the JWT independently
+      // on every server-rendered page, so stale sessions are caught there.
     }
   }
 
@@ -182,33 +185,39 @@ export function OperatorGate({
           <span key={role} className="editorial-workbench-chip">{ROLE_LABELS[role] || role}</span>
         ))}
       </div>
-      <div className="editorial-form-grid" style={{ marginTop: 18 }}>
-        <label className="editorial-form-field">
-          <span>Email</span>
-          <input value={email} onChange={(event) => setEmail(event.target.value)} className="editorial-input" />
-        </label>
-        <label className="editorial-form-field">
-          <span>Password</span>
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                void login();
-              }
-            }}
-            className="editorial-input"
-          />
-        </label>
-      </div>
-      <div className="button-row">
-        <button className="button-primary" onClick={() => void login()} disabled={busy}>
-          {busy ? "Signing in" : "Open operator view"}
-        </button>
-      </div>
-      {message ? <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>{message}</div> : null}
+      <form
+        onSubmit={(event) => { event.preventDefault(); void login(); }}
+        autoComplete="on"
+      >
+        <div className="editorial-form-grid" style={{ marginTop: 18 }}>
+          <label className="editorial-form-field">
+            <span>Email</span>
+            <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="editorial-input" autoComplete="email" required />
+          </label>
+          <label className="editorial-form-field">
+            <span>Password</span>
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className="editorial-input"
+              autoComplete="current-password"
+              required
+            />
+          </label>
+        </div>
+        <div className="button-row">
+          <button
+            type="submit"
+            className="button-primary"
+            disabled={busy}
+            onClick={(event) => { event.preventDefault(); void login(); }}
+          >
+            {busy ? "Signing in" : "Open operator view"}
+          </button>
+        </div>
+      </form>
+      {message ? <div role="alert" className="editorial-workbench-panel" style={{ marginTop: 16 }}>{message}</div> : null}
     </section>
   );
 }

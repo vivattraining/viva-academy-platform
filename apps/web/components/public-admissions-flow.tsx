@@ -23,10 +23,14 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
   const selectedProgram = programs.find((p) => p.code === courseCode);
   const selectedIsComingSoon = Boolean(selectedProgram?.coming_soon);
 
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(studentEmail.trim());
+  const phoneValid = /^\+?[\d\s\-().]{7,15}$/.test(studentPhone.trim());
+  const nameValid = studentName.trim().length >= 3 && /[a-zA-Z]/.test(studentName);
+
   const formReady =
-    studentName.trim().length > 1 &&
-    studentEmail.trim().length > 3 &&
-    studentPhone.trim().length > 7 &&
+    nameValid &&
+    emailValid &&
+    phoneValid &&
     Boolean(selectedProgram) &&
     !selectedIsComingSoon;
 
@@ -106,6 +110,18 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
   }
 
   async function submit() {
+    if (!nameValid) {
+      setMessage("Name must be at least 3 characters and contain letters.");
+      return;
+    }
+    if (!emailValid) {
+      setMessage("Enter a valid email address (e.g. name@example.com).");
+      return;
+    }
+    if (!phoneValid) {
+      setMessage("Enter a valid phone number (7–15 digits).");
+      return;
+    }
     if (!formReady || !selectedProgram) {
       setMessage("Please fill all required details before continuing.");
       return;
@@ -200,15 +216,15 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
       <div className="editorial-form-grid">
         <label className="editorial-field">
           <span>Full Name</span>
-          <input placeholder="As per official documents" value={studentName} onChange={(event) => setStudentName(event.target.value)} />
+          <input placeholder="As per official documents" value={studentName} onChange={(event) => setStudentName(event.target.value)} maxLength={100} autoComplete="name" />
         </label>
         <label className="editorial-field">
           <span>Email Address</span>
-          <input placeholder="email@example.com" value={studentEmail} onChange={(event) => setStudentEmail(event.target.value)} />
+          <input type="email" placeholder="email@example.com" value={studentEmail} onChange={(event) => setStudentEmail(event.target.value)} maxLength={254} autoComplete="email" />
         </label>
         <label className="editorial-field">
           <span>Phone Number</span>
-          <input placeholder="+91 98765 43210" value={studentPhone} onChange={(event) => setStudentPhone(event.target.value)} />
+          <input type="tel" placeholder="+91 98765 43210" value={studentPhone} onChange={(event) => setStudentPhone(event.target.value)} maxLength={15} autoComplete="tel" />
         </label>
         <label className="editorial-field">
           <span>Highest Education</span>

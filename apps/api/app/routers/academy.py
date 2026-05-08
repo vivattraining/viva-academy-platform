@@ -2,7 +2,10 @@ import hashlib
 import hmac
 import json
 import logging
+import re
 from typing import Optional
+
+_EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 
@@ -455,7 +458,9 @@ def academy_update_user_secure(
     authorization: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    auth_dependency(db, payload.tenant_name, x_academy_session, authorization, {"admin"})
+    caller = auth_dependency(db, payload.tenant_name, x_academy_session, authorization, {"admin"})
+    if payload.role is not None and payload.email.strip().lower() == caller["email"]:
+        raise HTTPException(status_code=403, detail="Admins cannot change their own role")
     credential = update_credential(
         db,
         payload.tenant_name,
@@ -1442,6 +1447,26 @@ def create_application_route(payload: ApplicationCreate, request: Request, db: S
         body["reservation_paid_at"] = None
         body["balance_due_by"] = None
         body["balance_paid_at"] = None
+
+    # Duplicate guard: reject if same email already applied for same course.
+    normalized_email_dup = payload.student_email.strip().lower()
+    existing_applications = list_applications(db, payload.tenant_name)
+    duplicate = next(
+        (
+            a for a in existing_applications
+            if a.get("student_email") == normalized_email_dup
+            and a.get("course_code") == course.code
+        ),
+        None,
+    )
+    if duplicate:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"An application for {course.name} already exists for this email address. "
+                f"Application ID: {duplicate['id']}"
+            ),
+        )
 
     item = create_application(db, payload.tenant_name, body)
 
@@ -3074,7 +3099,7 @@ def trainer_invite_create_secure(
         db, payload.tenant_name, x_academy_session, authorization, WRITE_ROLES
     )
     normalized_email = (payload.email or "").strip().lower()
-    if "@" not in normalized_email:
+    if not _EMAIL_RE.match(normalized_email):
         raise HTTPException(status_code=422, detail="Enter a valid email address")
 
     # Reject if email already has an active user (any role) — they're
