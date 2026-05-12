@@ -123,78 +123,114 @@ function OnboardingTrainerInner() {
         padding: "48px 24px",
       }}
     >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 520,
-          background: "#fffaf2",
-          border: `1px solid ${GOLD}33`,
-          borderRadius: 18,
-          padding: "44px 36px",
-          boxShadow: "0 30px 80px rgba(11, 31, 58, 0.10)",
-        }}
-      >
+      {/* Without a valid invite, this page shows a minimal "invalid link"
+          panel — NOT the onboarding wizard chrome. Three layers of defense:
+          (1) wizard form only renders when `invite` resolves on the server,
+          (2) `submit()` early-returns if !invite, (3) the backend
+          POST /trainers/invite/accept verifies the token server-side. */}
+      {!loading && loadError ? (
         <div
           style={{
-            fontSize: 12,
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            color: GOLD,
-            fontFamily: "'Inter', system-ui, sans-serif",
-            fontWeight: 600,
+            width: "100%",
+            maxWidth: 480,
+            background: "#fffaf2",
+            border: `1px solid ${NAVY}1a`,
+            borderRadius: 14,
+            padding: "36px 32px",
+            boxShadow: "0 20px 60px rgba(11, 31, 58, 0.08)",
+            textAlign: "center",
           }}
         >
-          Trainer onboarding
-        </div>
-        <h1
-          style={{
-            fontSize: "2.1rem",
-            lineHeight: 1.15,
-            margin: "14px 0 6px",
-            color: NAVY,
-            fontWeight: 500,
-          }}
-        >
-          Activate your VIVA trainer account
-        </h1>
-
-        {loading ? (
-          <p style={{ marginTop: 24, color: "#42506a", fontSize: 16 }}>
-            Verifying your invite…
+          <div
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.20em",
+              textTransform: "uppercase",
+              color: "#6b7791",
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontWeight: 600,
+            }}
+          >
+            Invite required
+          </div>
+          <h1
+            style={{
+              fontSize: "1.5rem",
+              lineHeight: 1.2,
+              margin: "12px 0 14px",
+              color: NAVY,
+              fontWeight: 500,
+            }}
+          >
+            This invite link is not valid
+          </h1>
+          <p
+            style={{
+              fontSize: 14,
+              lineHeight: 1.55,
+              color: "#42506a",
+              fontFamily: "'Inter', system-ui, sans-serif",
+              margin: 0,
+            }}
+          >
+            {loadError}
           </p>
-        ) : loadError ? (
-          <>
-            <p
+          <div style={{ marginTop: 22 }}>
+            <Link
+              href="/"
               style={{
-                marginTop: 22,
-                color: "#7a3a3a",
-                background: "#f7e6e2",
-                border: "1px solid #e3b9b1",
-                borderRadius: 10,
-                padding: "14px 16px",
+                color: NAVY,
+                textDecoration: "underline",
                 fontFamily: "'Inter', system-ui, sans-serif",
-                fontSize: 14,
-                lineHeight: 1.5,
+                fontSize: 13,
               }}
             >
-              {loadError}
+              Return to vivacareeracademy.com
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <div
+          style={{
+            width: "100%",
+            maxWidth: 520,
+            background: "#fffaf2",
+            border: `1px solid ${GOLD}33`,
+            borderRadius: 18,
+            padding: "44px 36px",
+            boxShadow: "0 30px 80px rgba(11, 31, 58, 0.10)",
+          }}
+        >
+          <div
+            style={{
+              fontSize: 12,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              color: GOLD,
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontWeight: 600,
+            }}
+          >
+            Trainer onboarding
+          </div>
+          <h1
+            style={{
+              fontSize: "2.1rem",
+              lineHeight: 1.15,
+              margin: "14px 0 6px",
+              color: NAVY,
+              fontWeight: 500,
+            }}
+          >
+            Activate your VIVA trainer account
+          </h1>
+
+          {loading ? (
+            <p style={{ marginTop: 24, color: "#42506a", fontSize: 16 }}>
+              Verifying your invite…
             </p>
-            <div style={{ marginTop: 22 }}>
-              <Link
-                href="/"
-                style={{
-                  color: NAVY,
-                  textDecoration: "underline",
-                  fontFamily: "'Inter', system-ui, sans-serif",
-                  fontSize: 14,
-                }}
-              >
-                Return to vivacareeracademy.com
-              </Link>
-            </div>
-          </>
-        ) : invite ? (
-          <>
+          ) : invite ? (
+            <>
             <p
               style={{
                 marginTop: 14,
@@ -349,7 +385,8 @@ function OnboardingTrainerInner() {
             </p>
           </>
         ) : null}
-      </div>
+        </div>
+      )}
     </main>
   );
 }

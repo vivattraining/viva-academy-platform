@@ -62,6 +62,28 @@ export function RosterWorkbench() {
     if (!sessionToken) return;
     setMessage(`Issuing certificate for ${item.student_name}...`);
     try {
+      // Two-step issuance: create the cert record (which mints a
+      // 27-char URL-safe `verification_token`), then stamp the
+      // application's status/cert URL using THAT token. Earlier code
+      // built the URL from `item.id` (an `acad_…` application id),
+      // which the public verifier — keyed on verification_token —
+      // could never find, so the admin's "View certificate" link
+      // rendered "Certificate not found". (QA #66)
+      const issued = await apiRequest<{ item: { verification_token: string } }>(
+        "/api/v1/academy/certificates/issue/secure",
+        {
+          method: "POST",
+          sessionToken,
+          body: JSON.stringify({
+            tenant_name: DEFAULT_TENANT,
+            application_id: item.id,
+          }),
+        }
+      );
+      const token = issued?.item?.verification_token;
+      if (!token) {
+        throw new Error("Certificate was issued but no verification token was returned.");
+      }
       await apiRequest(`/api/v1/academy/applications/${item.id}/status/secure`, {
         method: "POST",
         sessionToken,
@@ -69,8 +91,8 @@ export function RosterWorkbench() {
           tenant_name: DEFAULT_TENANT,
           application_stage: "certificate_issued",
           enrollment_stage: "completed",
-          certificate_url: `https://www.vivacareeracademy.com/certificates/${item.id}`
-        })
+          certificate_url: `https://www.vivacareeracademy.com/certificates/${token}`,
+        }),
       });
       setMessage(`Certificate issued for ${item.student_name}.`);
       await load();
