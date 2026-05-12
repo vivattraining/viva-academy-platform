@@ -260,10 +260,14 @@ export async function auditPage(
     });
   }
 
-  // Full-page screenshot.
+  // Full-page screenshot — WebKit caps at 32767px so fall back to viewport shot.
   const shotName = `${safeFilename(opts.pageName)}__${device}.png`;
   const shotPath = path.join(ARTIFACT_DIR, shotName);
-  await page.screenshot({ path: shotPath, fullPage: true });
+  try {
+    await page.screenshot({ path: shotPath, fullPage: true });
+  } catch {
+    await page.screenshot({ path: shotPath, fullPage: false });
+  }
   await testInfo.attach(`screenshot-${device}`, { path: shotPath, contentType: 'image/png' });
 
   const result: AuditResult = {

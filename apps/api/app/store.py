@@ -531,6 +531,7 @@ def create_application(db: Session, tenant_name: str, payload: dict) -> dict:
         "student_name": payload["student_name"].strip(),
         "student_email": payload["student_email"].strip().lower(),
         "student_phone": payload.get("student_phone", "").strip(),
+        "course_code": payload.get("course_code", ""),
         "course_name": payload["course_name"].strip(),
         "source": payload.get("source", "website").strip(),
         "notes": payload.get("notes", "").strip(),
