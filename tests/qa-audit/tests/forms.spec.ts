@@ -66,7 +66,7 @@ for (const target of TARGETS) {
         await input.fill(value, { force: true }).catch(() => {});
       }
 
-      const filledShot = await page.screenshot({ fullPage: true });
+      const filledShot = await page.screenshot({ fullPage: false });
       await testInfo.attach(`${target.name}-filled`, { body: filledShot, contentType: 'image/png' });
 
       if (process.env.VIVA_SUBMIT_FORMS && (await submitBtn.count())) {
