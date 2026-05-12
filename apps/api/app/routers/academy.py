@@ -160,6 +160,7 @@ from app.store import (  # noqa: I001
     list_trainer_invites,
     list_trainer_profiles,
     mark_trainer_invite_accepted,
+    rename_trainer_profile,
     revoke_trainer_invite,
     set_trainer_profile_approval,
     upsert_trainer_profile,
@@ -469,6 +470,24 @@ def academy_update_user_secure(
         role=payload.role,
         password=payload.password,
     )
+    # Keep the public trainer profile's snapshotted full_name in sync with
+    # the credential. The /trainers page renders profile.full_name (a
+    # denormalised copy), so without this propagation an admin name edit
+    # would update the login record but leave the public listing stale.
+    # (QA #67)
+    if payload.full_name is not None:
+        try:
+            rename_trainer_profile(
+                db,
+                payload.tenant_name,
+                user_email=credential.email,
+                new_full_name=credential.full_name,
+            )
+        except Exception as rename_err:  # noqa: BLE001
+            logger.warning(
+                "Trainer profile rename propagation failed email=%s err=%s",
+                credential.email, rename_err,
+            )
     revoked_sessions = revoke_sessions_for_email(db, payload.tenant_name, payload.email) if payload.password else 0
     return {
         "ok": True,
