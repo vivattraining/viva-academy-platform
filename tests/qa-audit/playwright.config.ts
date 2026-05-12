@@ -29,7 +29,7 @@ export default defineConfig({
   use: {
     baseURL: process.env.VIVA_BASE_URL || 'https://www.vivacareeracademy.com',
     trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    screenshot: { mode: 'only-on-failure', fullPage: false },
     video: 'retain-on-failure',
     actionTimeout: 15_000,
     navigationTimeout: 30_000,
