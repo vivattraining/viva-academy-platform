@@ -81,6 +81,10 @@ export function OperatorGate({
       setMessage("Enter your email and password to continue.");
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setMessage("Enter a valid email address (e.g. name@example.com).");
+      return;
+    }
     setBusy(true);
     setMessage("Signing in...");
     try {

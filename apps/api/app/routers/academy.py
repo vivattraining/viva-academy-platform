@@ -517,16 +517,6 @@ def get_tenant(tenant_name: str, db: Session = Depends(get_db)):
     return {
         "tenant_name": tenant_name,
         "branding": state["branding"],
-        "counts": {
-            "applications": len(state["applications"]),
-            "batches": len(state["batches"]),
-            "sessions": len(state["sessions"]),
-            "attendance": len(state["attendance"]),
-            "courses": len(state.get("courses", [])),
-            "modules": len(state.get("course_modules", [])),
-            "chapters": len(state.get("course_chapters", [])),
-            "submissions": len(state.get("chapter_submissions", [])),
-        },
     }
 
 
@@ -543,7 +533,7 @@ def get_tenant_by_domain(domain: str, db: Session = Depends(get_db)):
 
 @router.post("/tenants/branding")
 def save_branding(payload: TenantBranding, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/tenants/branding/secure")
@@ -1299,7 +1289,7 @@ def verify_certificate_route(token: str, request: Request, db: Session = Depends
 
 @router.get("/applications")
 def read_applications(tenant_name: str, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.get("/applications/secure")
@@ -1500,7 +1490,7 @@ def create_application_route(payload: ApplicationCreate, request: Request, db: S
 
 @router.post("/applications/{application_id}/status")
 def update_application_status(application_id: str, payload: ApplicationStatusUpdate, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/applications/{application_id}/status/secure")
@@ -2356,7 +2346,7 @@ def create_review_secure(
 
 @router.get("/batches")
 def read_batches(tenant_name: str, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.get("/batches/secure")
@@ -2372,7 +2362,7 @@ def read_batches_secure(
 
 @router.post("/batches")
 def create_batch_route(payload: BatchCreate, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/batches/secure")
@@ -2388,7 +2378,7 @@ def create_batch_route_secure(
 
 @router.get("/sessions")
 def read_sessions(tenant_name: str, batch_id: Optional[str] = None, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.get("/sessions/secure")
@@ -2405,7 +2395,7 @@ def read_sessions_secure(
 
 @router.post("/sessions")
 def create_session_route(payload: SessionCreate, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/sessions/secure")
@@ -2421,7 +2411,7 @@ def create_session_route_secure(
 
 @router.get("/sessions/{session_id}/attendance")
 def read_session_attendance(session_id: str, tenant_name: str, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.get("/sessions/{session_id}/attendance/secure")
@@ -2438,7 +2428,7 @@ def read_session_attendance_secure(
 
 @router.post("/sessions/{session_id}/attendance")
 def write_session_attendance(session_id: str, payload: SessionAttendanceUpdate, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/sessions/{session_id}/attendance/secure")
@@ -2470,7 +2460,7 @@ def write_session_attendance_secure(
 
 @router.post("/sessions/{session_id}/zoom/provision")
 def provision_session_zoom(session_id: str, payload: ZoomProvisionRequest, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/sessions/{session_id}/zoom/provision/secure")
@@ -2512,7 +2502,7 @@ def provision_session_zoom_secure(
 
 @router.post("/sessions/{session_id}/zoom")
 def update_session_zoom_state(session_id: str, payload: SessionZoomUpdate, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/sessions/{session_id}/zoom/secure")
@@ -2862,7 +2852,7 @@ def process_zoom_webhook(
 
 @router.get("/state/{tenant_name}")
 def read_full_state(tenant_name: str, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.get("/state/{tenant_name}/secure")
@@ -2878,7 +2868,7 @@ def read_full_state_secure(
 
 @router.post("/state/{tenant_name}")
 def overwrite_full_state(tenant_name: str, payload: dict, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/state/{tenant_name}/secure")

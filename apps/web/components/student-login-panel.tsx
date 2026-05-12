@@ -34,6 +34,10 @@ export function StudentLoginPanel() {
       setMessage("Enter your student email and password to continue.");
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setMessage("Enter a valid email address (e.g. name@example.com).");
+      return;
+    }
     setBusy(true);
     setMessage("Opening learner workspace...");
     try {
@@ -65,7 +69,7 @@ export function StudentLoginPanel() {
       <div className="editorial-form-grid" style={{ marginTop: 18 }}>
         <label className="editorial-form-field">
           <span>Student email</span>
-          <input value={email} onChange={(event) => setEmail(event.target.value)} className="editorial-input" />
+          <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="editorial-input" autoComplete="email" />
         </label>
         <label className="editorial-form-field">
           <span>Password</span>

@@ -24,7 +24,8 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
   const selectedIsComingSoon = Boolean(selectedProgram?.coming_soon);
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(studentEmail.trim());
-  const phoneValid = /^\+?[\d\s\-().]{7,15}$/.test(studentPhone.trim());
+  const phoneDigits = studentPhone.replace(/\D/g, "");
+  const phoneValid = phoneDigits.length >= 7 && phoneDigits.length <= 15;
   const nameValid = studentName.trim().length >= 3 && /[a-zA-Z]/.test(studentName);
 
   const formReady =
