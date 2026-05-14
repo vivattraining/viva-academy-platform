@@ -99,6 +99,8 @@ export function SiteShell({
     };
   }, []);
 
+  const showPublicLoginCta = navVariant === "public" && !primaryCta && !secondaryCta && activeHref !== "/login" && activeHref !== "/internal/login";
+
   return (
     <main className={styles.page} data-nav-variant={navVariant}>
       <div className={styles.topBanner}>
@@ -127,6 +129,12 @@ export function SiteShell({
           <div className={styles.navCta}>
             {primaryCta ? <Link href={primaryCta.href} className={styles.button}>{primaryCta.label}</Link> : null}
             {secondaryCta ? <Link href={secondaryCta.href} className={styles.buttonGhost}>{secondaryCta.label}</Link> : null}
+            {showPublicLoginCta ? (
+              <>
+                <Link href="/login" className={styles.button}>Student Login</Link>
+                <Link href="/internal/login" className={styles.buttonGhost}>Admin Login</Link>
+              </>
+            ) : null}
           </div>
         </div>
       </nav>

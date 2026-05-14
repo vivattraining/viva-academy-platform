@@ -23,13 +23,16 @@ export function AdminUserManagement() {
   const [role, setRole] = useState<(typeof ROLE_OPTIONS)[number]>("operations");
   const [message, setMessage] = useState("");
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [activeEditEmail, setActiveEditEmail] = useState<string | null>(null);
   const [editFullName, setEditFullName] = useState("");
   const [editRole, setEditRole] = useState<(typeof ROLE_OPTIONS)[number]>("operations");
   const [editPassword, setEditPassword] = useState("");
 
   useEffect(() => {
-    setSessionToken(readSession()?.session_token || null);
+    const session = readSession();
+    setSessionToken(session?.session_token || null);
+    setCurrentUserEmail(session?.email || null);
   }, []);
 
   useEffect(() => {
@@ -100,8 +103,10 @@ export function AdminUserManagement() {
         tenant_name: DEFAULT_TENANT,
         email,
         full_name: editFullName,
-        role: editRole,
       };
+      if (email !== currentUserEmail) {
+        payload.role = editRole;
+      }
       if (editPassword.trim()) {
         if (editPassword.trim().length < 8) {
           setMessage("Reset passwords must be at least 8 characters.");
@@ -121,9 +126,14 @@ export function AdminUserManagement() {
           ? `User updated. ${data.item.revoked_sessions} active session(s) were revoked after password reset.`
           : "User updated."
       );
-      await loadUsers(sessionToken);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to update user.");
+      return;
+    }
+    try {
+      await loadUsers(sessionToken);
+    } catch {
+      // refresh failure — update already succeeded
     }
   }
 
@@ -167,47 +177,61 @@ export function AdminUserManagement() {
       {message ? <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>{message}</div> : null}
 
       <div className="stack" style={{ marginTop: 18 }}>
-        {items.map((item) => (
-          <div key={item.email} className="editorial-workbench-panel">
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center" }}>
-              <div>
-                <strong>{item.full_name}</strong>
-                <p className="muted" style={{ marginTop: 6 }}>{item.email}</p>
-              </div>
-              <div className="editorial-workbench-meta" style={{ marginTop: 0 }}>
-                <span className="editorial-workbench-chip">{item.role}</span>
-                <span className="editorial-workbench-chip">Created {item.created_at.slice(0, 10)}</span>
-              </div>
-            </div>
-            <div className="button-row" style={{ marginTop: 16 }}>
-              <button className="button-secondary" onClick={() => startEdit(item)}>Edit access</button>
-            </div>
-            {activeEditEmail === item.email ? (
-              <div className="editorial-form-grid" style={{ marginTop: 16 }}>
-                <label className="editorial-form-field">
-                  <span>Full name</span>
-                  <input className="editorial-input" value={editFullName} onChange={(event) => setEditFullName(event.target.value)} />
-                </label>
-                <label className="editorial-form-field">
-                  <span>Role</span>
-                  <select className="editorial-select" value={editRole} onChange={(event) => setEditRole(event.target.value as (typeof ROLE_OPTIONS)[number])}>
-                    {ROLE_OPTIONS.map((option) => (
-                      <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className="editorial-form-field" style={{ gridColumn: "1 / -1" }}>
-                  <span>Reset password</span>
-                  <input className="editorial-input" type="password" value={editPassword} onChange={(event) => setEditPassword(event.target.value)} placeholder="Leave blank to keep current password" />
-                </label>
-                <div className="button-row" style={{ marginTop: 0 }}>
-                  <button className="button-primary" onClick={() => void saveEdit(item.email)}>Save changes</button>
-                  <button className="button-secondary" onClick={() => setActiveEditEmail(null)}>Cancel</button>
+        {items.map((item) => {
+          const isSelf = item.email === currentUserEmail;
+          return (
+            <div key={item.email} className="editorial-workbench-panel">
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center" }}>
+                <div>
+                  <strong>{item.full_name}</strong>
+                  <p className="muted" style={{ marginTop: 6 }}>{item.email}</p>
+                </div>
+                <div className="editorial-workbench-meta" style={{ marginTop: 0 }}>
+                  <span className="editorial-workbench-chip">{item.role}</span>
+                  <span className="editorial-workbench-chip">Created {item.created_at.slice(0, 10)}</span>
                 </div>
               </div>
-            ) : null}
-          </div>
-        ))}
+              <div className="button-row" style={{ marginTop: 16 }}>
+                <button className="button-secondary" onClick={() => startEdit(item)}>Edit access</button>
+              </div>
+              {activeEditEmail === item.email ? (
+                <div className="editorial-form-grid" style={{ marginTop: 16 }}>
+                  <label className="editorial-form-field">
+                    <span>Full name</span>
+                    <input className="editorial-input" value={editFullName} onChange={(event) => setEditFullName(event.target.value)} />
+                  </label>
+                  <label className="editorial-form-field">
+                    <span>Role</span>
+                    <select
+                      className="editorial-select"
+                      value={editRole}
+                      onChange={(event) => setEditRole(event.target.value as (typeof ROLE_OPTIONS)[number])}
+                      disabled={isSelf}
+                      title={isSelf ? "You cannot change your own role" : undefined}
+                    >
+                      {ROLE_OPTIONS.map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                    {isSelf ? (
+                      <span style={{ fontSize: 12, color: "#6b7280", marginTop: 4, display: "block" }}>
+                        You cannot change your own role.
+                      </span>
+                    ) : null}
+                  </label>
+                  <label className="editorial-form-field" style={{ gridColumn: "1 / -1" }}>
+                    <span>Reset password</span>
+                    <input className="editorial-input" type="password" value={editPassword} onChange={(event) => setEditPassword(event.target.value)} placeholder="Leave blank to keep current password" />
+                  </label>
+                  <div className="button-row" style={{ marginTop: 0 }}>
+                    <button className="button-primary" onClick={() => void saveEdit(item.email)}>Save changes</button>
+                    <button className="button-secondary" onClick={() => setActiveEditEmail(null)}>Cancel</button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
       </div>
     </section>
   );

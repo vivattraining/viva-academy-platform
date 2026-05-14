@@ -6,6 +6,8 @@ import { useState } from "react";
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
 import type { Course } from "../lib/courses-data";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
   const [studentName, setStudentName] = useState("");
   const [studentEmail, setStudentEmail] = useState("");
@@ -19,14 +21,17 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
   const [paymentMode, setPaymentMode] = useState("");
   const [message, setMessage] = useState("");
   const [busyAction, setBusyAction] = useState<"submit" | "payment-link" | "checkout" | "">("");
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
 
   const selectedProgram = programs.find((p) => p.code === courseCode);
   const selectedIsComingSoon = Boolean(selectedProgram?.coming_soon);
 
-  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(studentEmail.trim());
+  const emailValid = EMAIL_RE.test(studentEmail.trim());
   const phoneDigits = studentPhone.replace(/\D/g, "");
   const phoneValid = phoneDigits.length >= 7 && phoneDigits.length <= 15;
-  const nameValid = studentName.trim().length >= 3 && /[a-zA-Z]/.test(studentName);
+  const nameValid = studentName.trim().length >= 3 && /[a-zA-Z]/.test(studentName) && !/\d/.test(studentName);
 
   const formReady =
     nameValid &&
@@ -38,6 +43,27 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
   const paymentLinkReady = Boolean(applicationId);
   const checkoutReady = Boolean(paymentUrl);
   const currentStep = checkoutReady ? 3 : paymentLinkReady ? 2 : 1;
+
+  function validateName(value: string) {
+    if (!value.trim()) { setNameError("Full name is required."); return; }
+    if (!/[a-zA-Z]/.test(value)) { setNameError("Name must contain letters."); return; }
+    if (/\d/.test(value)) { setNameError("Name must not contain numbers."); return; }
+    if (value.trim().length < 3) { setNameError("Name must be at least 3 characters."); return; }
+    setNameError("");
+  }
+
+  function validateEmail(value: string) {
+    if (!value.trim()) { setEmailError("Email address is required."); return; }
+    if (!EMAIL_RE.test(value.trim())) { setEmailError("Enter a valid email address (e.g. name@example.com)."); return; }
+    setEmailError("");
+  }
+
+  function validatePhone(value: string) {
+    const digits = value.replace(/\D/g, "");
+    if (!value.trim()) { setPhoneError("Phone number is required."); return; }
+    if (digits.length < 7 || digits.length > 15) { setPhoneError("Enter a valid phone number (7–15 digits)."); return; }
+    setPhoneError("");
+  }
 
   async function openCheckout() {
     if (!paymentUrl) return;
@@ -111,8 +137,11 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
   }
 
   async function submit() {
+    validateName(studentName);
+    validateEmail(studentEmail);
+    validatePhone(studentPhone);
     if (!nameValid) {
-      setMessage("Name must be at least 3 characters and contain letters.");
+      setMessage("Name must be at least 3 characters, contain letters, and not include numbers.");
       return;
     }
     if (!emailValid) {
@@ -134,10 +163,6 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
     setBusyAction("submit");
     setMessage("Submitting application...");
     try {
-      // We send the course_code only. The server resolves the canonical
-      // course name + fee from its catalog (apps/api/app/course_catalog.py)
-      // — the client cannot influence the price. amount_due is intentionally
-      // NOT sent: the server stamps the row using the catalog's value.
       const data = await apiRequest<{ item: { id: string } }>("/api/v1/academy/applications", {
         method: "POST",
         body: JSON.stringify({
@@ -214,18 +239,45 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
         <p>Please fill in your details accurately to initiate your enrollment with Viva Career Academy.</p>
       </div>
 
+      <form onSubmit={(event) => { event.preventDefault(); void submit(); }} autoComplete="on" noValidate>
       <div className="editorial-form-grid">
         <label className="editorial-field">
           <span>Full Name</span>
-          <input placeholder="As per official documents" value={studentName} onChange={(event) => setStudentName(event.target.value)} maxLength={100} autoComplete="name" />
+          <input
+            placeholder="As per official documents"
+            value={studentName}
+            onChange={(event) => { setStudentName(event.target.value); if (nameError) validateName(event.target.value); }}
+            onBlur={(event) => validateName(event.target.value)}
+            maxLength={100}
+            autoComplete="name"
+          />
+          {nameError ? <span style={{ color: "#a23a3a", fontSize: 12, marginTop: 4, display: "block" }}>{nameError}</span> : null}
         </label>
         <label className="editorial-field">
           <span>Email Address</span>
-          <input type="email" placeholder="email@example.com" value={studentEmail} onChange={(event) => setStudentEmail(event.target.value)} maxLength={254} autoComplete="email" />
+          <input
+            type="email"
+            placeholder="email@example.com"
+            value={studentEmail}
+            onChange={(event) => { setStudentEmail(event.target.value); if (emailError) validateEmail(event.target.value); }}
+            onBlur={(event) => validateEmail(event.target.value)}
+            maxLength={254}
+            autoComplete="email"
+          />
+          {emailError ? <span style={{ color: "#a23a3a", fontSize: 12, marginTop: 4, display: "block" }}>{emailError}</span> : null}
         </label>
         <label className="editorial-field">
           <span>Phone Number</span>
-          <input type="tel" placeholder="+91 98765 43210" value={studentPhone} onChange={(event) => setStudentPhone(event.target.value)} maxLength={15} autoComplete="tel" />
+          <input
+            type="tel"
+            placeholder="+91 98765 43210"
+            value={studentPhone}
+            onChange={(event) => { setStudentPhone(event.target.value); if (phoneError) validatePhone(event.target.value); }}
+            onBlur={(event) => validatePhone(event.target.value)}
+            maxLength={15}
+            autoComplete="tel"
+          />
+          {phoneError ? <span style={{ color: "#a23a3a", fontSize: 12, marginTop: 4, display: "block" }}>{phoneError}</span> : null}
         </label>
         <label className="editorial-field">
           <span>Highest Education</span>
@@ -314,10 +366,11 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
       </div>
 
       <div className="editorial-form-actions">
-        <button className="editorial-form-submit editorial-form-button" onClick={() => void submit()} disabled={!formReady || busyAction !== ""}>
+        <button type="submit" className="editorial-form-submit editorial-form-button" disabled={!formReady || busyAction !== ""}>
           {busyAction === "submit" ? "Submitting..." : "Step 1 · Submit Application"}
         </button>
         <button
+          type="button"
           className={`editorial-form-secondary editorial-form-button ${paymentLinkReady ? "is-ready" : ""}`}
           onClick={() => void continueToPayment()}
           disabled={!paymentLinkReady || busyAction !== ""}
@@ -325,6 +378,7 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
           {busyAction === "payment-link" ? "Generating..." : "Step 2 · Generate Payment Link"}
         </button>
         <button
+          type="button"
           className={`editorial-form-secondary editorial-form-button ${checkoutReady ? "is-ready" : ""}`}
           onClick={() => void openCheckout()}
           disabled={!checkoutReady || busyAction !== ""}
@@ -340,6 +394,7 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
           </Link>
         ) : null}
       </div>
+      </form>
       <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>
         <strong>What the fee unlocks</strong>
         <p className="muted" style={{ marginTop: 8 }}>
