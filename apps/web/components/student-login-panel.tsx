@@ -25,11 +25,14 @@ export function StudentLoginPanel() {
       );
       writeSession(data.session);
     } catch {
-      writeSession(null);
+      // Don't clear session on error — the fetch may be aborted by navigation
+      // that follows a successful login. requirePaidStudentAccess verifies the
+      // JWT independently on every server render.
     }
   }
 
-  async function login() {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     if (!email.trim() || !password.trim()) {
       setMessage("Enter your student email and password to continue.");
       return;
@@ -39,22 +42,22 @@ export function StudentLoginPanel() {
       return;
     }
     setBusy(true);
-    setMessage("Opening learner workspace...");
+    setMessage("Signing in...");
     try {
       const data = await apiRequest<{ session: AcademySession }>("/api/v1/academy/auth/login", {
         method: "POST",
         body: JSON.stringify({
           tenant_name: DEFAULT_TENANT,
-          email,
-          password,
+          email: email.trim(),
+          password: password.trim(),
           expected_role: "student",
         }),
       });
       writeSession(data.session);
+      setMessage("");
       window.location.href = defaultRouteForRole(data.session.role);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to sign in as student.");
-    } finally {
+      setMessage(error instanceof Error ? error.message : "Invalid email or password.");
       setBusy(false);
     }
   }
@@ -66,21 +69,23 @@ export function StudentLoginPanel() {
       <p className="editorial-workbench-subtitle">
         Use your student credentials to access schedule, attendance, and classroom visibility without admin clutter.
       </p>
-      <div className="editorial-form-grid" style={{ marginTop: 18 }}>
-        <label className="editorial-form-field">
-          <span>Student email</span>
-          <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="editorial-input" autoComplete="email" />
-        </label>
-        <label className="editorial-form-field">
-          <span>Password</span>
-          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="editorial-input" />
-        </label>
-      </div>
-      <div className="button-row">
-        <button className="button-primary" onClick={() => void login()} disabled={busy}>
-          {busy ? "Opening..." : "Enter learner workspace"}
-        </button>
-      </div>
+      <form onSubmit={handleSubmit} autoComplete="on">
+        <div className="editorial-form-grid" style={{ marginTop: 18 }}>
+          <label className="editorial-form-field">
+            <span>Student email</span>
+            <input type="email" name="email" value={email} onChange={(event) => setEmail(event.target.value)} className="editorial-input" autoComplete="email" required />
+          </label>
+          <label className="editorial-form-field">
+            <span>Password</span>
+            <input type="password" name="password" value={password} onChange={(event) => setPassword(event.target.value)} className="editorial-input" autoComplete="current-password" required />
+          </label>
+        </div>
+        <div className="button-row">
+          <button type="submit" className="button-primary" disabled={busy}>
+            {busy ? "Opening..." : "Enter learner workspace"}
+          </button>
+        </div>
+      </form>
       {message ? <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>{message}</div> : null}
     </section>
   );

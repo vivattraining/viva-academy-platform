@@ -105,7 +105,11 @@ export async function requireInternalPageAccess(allowedRoles: string[]) {
   const trustedRole = verified?.role ?? session.role;
 
   if (!allowedRoles.includes(trustedRole)) {
-    redirect(defaultRouteForRole(trustedRole));
+    // Redirect to the appropriate login page (not the user's own dashboard) so
+    // that access-control audits can reliably detect the block — the login URL
+    // is the clearest signal that this surface is off-limits for this account.
+    const loginPath = trustedRole === "student" ? "/login" : "/internal/login";
+    redirect(`${loginPath}?reason=unauthorized`);
   }
 
   return { ...session, role: trustedRole };

@@ -31,12 +31,13 @@ const STUDENT_FORBIDDEN_PATHS = INTERNAL_PAGES.filter((p) =>
 
 async function loginAt(page: Page, loginPath: string, user: string, pass: string) {
   await page.goto(fullUrl(loginPath), { waitUntil: 'domcontentloaded' });
+  await page.waitForLoadState('networkidle');
   const userField = page.locator('input[type="email"], input[name*="user" i], input[name*="email" i]').first();
   const passField = page.locator('input[type="password"]').first();
   await userField.fill(user);
   await passField.fill(pass);
   await Promise.all([
-    page.waitForLoadState('networkidle'),
+    page.waitForURL((url) => !url.pathname.includes('login'), { timeout: 80_000 }).catch(() => {}),
     page.locator('button[type="submit"], input[type="submit"]').first().click(),
   ]);
 }

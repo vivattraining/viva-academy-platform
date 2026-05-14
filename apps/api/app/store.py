@@ -2380,6 +2380,22 @@ def list_trainer_invites(db: Session, tenant_name: str) -> list[dict]:
 VALID_TRAINER_APPROVAL_STATUSES = {"approved", "changes_requested", "rejected"}
 
 
+def _sync_trainer_name_in_state(state: dict, trainer_email: str, new_name: str, timestamp: str) -> None:
+    """Update trainer_name in all batch and session records that belong to this
+    trainer (matched by trainer_id = email). Called on every profile save and
+    re-called on approval so the roster always reflects the current name."""
+    if not trainer_email or not new_name:
+        return
+    for batch in state.get("batches", []):
+        if _normalize_email(batch.get("trainer_id", "")) == trainer_email:
+            batch["trainer_name"] = new_name
+            batch["updated_at"] = timestamp
+    for session_record in state.get("sessions", []):
+        if _normalize_email(session_record.get("trainer_id", "")) == trainer_email:
+            session_record["trainer_name"] = new_name
+            session_record["updated_at"] = timestamp
+
+
 def _trainer_profile_field_defaults() -> dict:
     return {
         "full_name": "",
@@ -2420,6 +2436,7 @@ def upsert_trainer_profile(
         "years_experience": int(payload.get("years_experience") or 0),
         "certifications": list(payload.get("certifications") or []),
     }
+    new_name = cleaned.get("full_name", "")
     for idx, item in enumerate(state["trainer_profiles"]):
         if _normalize_email(item.get("user_email", "")) == target_email:
             updated = {**defaults, **item, **cleaned}
@@ -2429,6 +2446,7 @@ def upsert_trainer_profile(
             updated["approved_at"] = None
             updated["updated_at"] = current
             state["trainer_profiles"][idx] = updated
+            _sync_trainer_name_in_state(state, target_email, new_name, current)
             save_tenant_state(db, tenant_name, state)
             return deepcopy(updated)
     record = {
@@ -2445,6 +2463,7 @@ def upsert_trainer_profile(
         "updated_at": current,
     }
     state["trainer_profiles"].append(record)
+    _sync_trainer_name_in_state(state, target_email, new_name, current)
     save_tenant_state(db, tenant_name, state)
     return deepcopy(record)
 
@@ -2503,6 +2522,16 @@ def set_trainer_profile_approval(
             item["approved_at"] = current if normalized_status == "approved" else None
             item["updated_at"] = current
             state["trainer_profiles"][idx] = item
+            if normalized_status == "approved":
+                trainer_email = _normalize_email(item.get("user_email", ""))
+                new_name = (item.get("full_name") or "").strip()
+                if trainer_email and new_name:
+                    _sync_trainer_name_in_state(state, trainer_email, new_name, current)
+                    try:
+                        from app.auth import update_credential  # noqa: WPS433
+                        update_credential(db, tenant_name, email=trainer_email, full_name=new_name)
+                    except Exception:
+                        pass  # credential may not exist yet during onboarding
             save_tenant_state(db, tenant_name, state)
             return deepcopy(item)
     return None

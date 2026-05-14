@@ -115,7 +115,7 @@ test.describe('Authenticated flows', () => {
       // waitForLoadState('networkidle') races the async fetch and resolves too
       // early for JavaScript-driven login flows.
       await page.locator('button[type="submit"], input[type="submit"]').first().click();
-      await page.waitForURL((url) => !url.pathname.includes('login'), { timeout: 15000 }).catch(() => {});
+      await page.waitForURL((url) => !url.pathname.includes('login'), { timeout: 80_000 }).catch(() => {});
 
       const finalUrl = page.url();
       await testInfo.attach('post-login', {

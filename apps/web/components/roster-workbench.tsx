@@ -69,7 +69,6 @@ export function RosterWorkbench() {
           tenant_name: DEFAULT_TENANT,
           application_stage: "certificate_issued",
           enrollment_stage: "completed",
-          certificate_url: `https://www.vivacareeracademy.com/certificates/${item.id}`
         })
       });
       setMessage(`Certificate issued for ${item.student_name}.`);

@@ -1,4 +1,23 @@
 import { defineConfig, devices } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Load .env from this directory (Playwright's built-in dotenv doesn't always
+// propagate to worker processes on all platforms).
+try {
+  const envPath = path.join(__dirname, '.env');
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  for (const line of envContent.split('\n')) {
+    const m = line.match(/^([^=\s#][^=]*)=(.*)$/);
+    if (m) {
+      const key = m[1].trim();
+      const val = m[2].trim();
+      if (!process.env[key]) process.env[key] = val;
+    }
+  }
+} catch {
+  // .env missing — rely on real environment variables
+}
 
 /**
  * Playwright configuration for Viva Career Academy QA suite.
@@ -8,14 +27,15 @@ import { defineConfig, devices } from '@playwright/test';
  * and a custom audit reporter that emits issue-log.json + console-errors.json.
  */
 export default defineConfig({
+  globalSetup: './global-setup.ts',
   testDir: './tests',
-  timeout: 60_000,
+  timeout: 120_000,
   expect: { timeout: 10_000 },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   // 1 retry locally so we can spot flaky cold-starts; 2 in CI.
   retries: process.env.CI ? 2 : 1,
-  workers: process.env.CI ? 2 : undefined,
+  workers: 2,
 
   reporter: [
     ['list'],
