@@ -7,9 +7,10 @@ import { useState } from "react";
 import styles from "./claude-home.module.css";
 import type { Course } from "../lib/courses-data";
 
-const HERO_VIDEO_MP4 = "/hero/viva-career-academy-campus.mp4";
-const HERO_VIDEO_WEBM = "/hero/viva-career-academy-campus.webm";
-const HERO_VIDEO_POSTER = "/hero/viva-career-academy-travel-consultant.png";
+// Hero uses the static poster image only — the campus .mp4 / .webm video
+// files are not currently shipping. When live footage is available, drop the
+// files at apps/web/public/hero/ and swap this <img> back to a <video>.
+const HERO_IMAGE = "/hero/viva-career-academy-travel-consultant.png";
 
 type FacultyMember = {
   code: string;
@@ -347,17 +348,14 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
 
             <div className={styles.heroMedia}>
               <div className={styles.heroFrame}>
-                <video
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   className={styles.heroVideo}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  poster={HERO_VIDEO_POSTER}
-                >
-                  <source src={HERO_VIDEO_WEBM} type="video/webm" />
-                  <source src={HERO_VIDEO_MP4} type="video/mp4" />
-                </video>
+                  src={HERO_IMAGE}
+                  alt="Viva Career Academy — travel consultant training"
+                  loading="eager"
+                />
+
                 <div className={styles.heroVideoFallback} aria-hidden="true" />
                 <div className={styles.heroImageOverlay}>
                   <div className={styles.heroImageBadge}>Travel careers · Live academy</div>

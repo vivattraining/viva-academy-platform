@@ -2535,3 +2535,40 @@ def set_trainer_profile_approval(
             save_tenant_state(db, tenant_name, state)
             return deepcopy(item)
     return None
+
+
+def rename_trainer_profile(
+    db: Session,
+    tenant_name: str,
+    user_email: str,
+    new_full_name: str,
+) -> Optional[dict]:
+    """Propagate a credential-side name change into the trainer_profile
+    snapshot. The profile carries its own `full_name` (snapshotted at
+    submission time) which is what the public /trainers page renders;
+    without this, admin edits via /admin (User management) update the
+    auth credential but leave the public profile stuck on the old name.
+    (QA #67)
+
+    Returns the updated profile, or None if no profile exists for the
+    email. Approval state is preserved — a rename is a metadata fix,
+    not a content edit, so it should not force a re-review.
+    """
+    cleaned = (new_full_name or "").strip()
+    if not cleaned:
+        return None
+    state = get_tenant_state(db, tenant_name)
+    target = _normalize_email(user_email)
+    if not target:
+        return None
+    for idx, item in enumerate(state.get("trainer_profiles", []) or []):
+        if _normalize_email(item.get("user_email", "")) != target:
+            continue
+        if (item.get("full_name") or "") == cleaned:
+            return deepcopy(item)
+        item["full_name"] = cleaned
+        item["updated_at"] = now_iso()
+        state["trainer_profiles"][idx] = item
+        save_tenant_state(db, tenant_name, state)
+        return deepcopy(item)
+    return None
