@@ -195,12 +195,25 @@ test.describe('Demo — Issue #27: EmailStr validation on application create', (
 // ─── Demo 5 — Issues #25 / #28 / #31: Login flows & internal portals ─────────
 
 test.describe('Demo — Issues #25 #28 #31: Login flows and internal portals', () => {
-  const internalUser = process.env.VIVA_INTERNAL_USER!;
-  const internalPass = process.env.VIVA_INTERNAL_PASS!;
-  const publicUser = process.env.VIVA_PUBLIC_USER!;
-  const publicPass = process.env.VIVA_PUBLIC_PASS!;
+  // These are read at module load time. Using a non-null assertion (!) here
+  // would cast `undefined` to `string` — the test would then try to `fill('')`
+  // into the login form and fail at the .toContain('/admin') assertion,
+  // masquerading a missing-creds CI configuration as a production bug.
+  // Read as optional and gate with test.skip below so missing secrets surface
+  // as "skipped" (correct) instead of "failed" (misleading).
+  const internalUser = process.env.VIVA_INTERNAL_USER;
+  const internalPass = process.env.VIVA_INTERNAL_PASS;
+  const publicUser = process.env.VIVA_PUBLIC_USER;
+  const publicPass = process.env.VIVA_PUBLIC_PASS;
 
   test('Admin login reaches /admin; student login reaches /student', async ({ page }) => {
+    if (!internalUser || !internalPass || !publicUser || !publicPass) {
+      test.skip(
+        true,
+        'VIVA_INTERNAL_USER / VIVA_INTERNAL_PASS / VIVA_PUBLIC_USER / VIVA_PUBLIC_PASS not set — login-flow test needs all four',
+      );
+      return;
+    }
     // ── Admin login ──────────────────────────────────────────────────────────
     await page.goto(fullUrl('/internal/login'), { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('networkidle');
