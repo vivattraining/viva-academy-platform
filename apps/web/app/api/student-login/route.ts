@@ -70,8 +70,12 @@ export async function POST(request: NextRequest) {
 }
 
 // Also accept GET for accidental direct visits — redirect to /login.
-export async function GET() {
-  return NextResponse.redirect(new URL("/login", "http://localhost"), { status: 302 });
+// NB: must accept a Request so that we can resolve /login against the actual
+// production origin. The previous form used "http://localhost" as the base,
+// which produced a literal `Location: http://localhost/login` response in
+// production (mixed-content + dead host). Verified live before the fix.
+export async function GET(request: Request) {
+  return NextResponse.redirect(new URL("/login", request.url), { status: 302 });
 }
 
 export const dynamic = "force-dynamic";

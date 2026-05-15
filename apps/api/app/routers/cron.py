@@ -6,15 +6,16 @@ endpoint requires the shared `CRON_SECRET` in the Authorization header — both
 to keep the surface non-public and to make sure only Vercel's scheduler can
 trigger them.
 
-Endpoints:
-  POST /api/v1/cron/unlock-modules     daily 06:00 IST → emails students whose
+Endpoints (all GET — Vercel Cron invokes via GET, not POST):
+  GET /api/v1/cron/unlock-modules     daily 06:00 IST → emails students whose
                                         modules unlock today.
-  POST /api/v1/cron/attendance-finalize hourly → flips no-show enrolments to
+  GET /api/v1/cron/attendance-finalize hourly → flips no-show enrolments to
                                         `absent` after a session's window.
                                         (Stub for Phase A; expanded in Phase B.)
-  POST /api/v1/cron/recording-deadline  daily → reminds trainer when a
+  GET /api/v1/cron/recording-deadline  daily → reminds trainer when a
                                         session's recording is missing 48h
                                         post-session. (Stub for Phase A.)
+  GET /api/v1/cron/email-retry         daily → retries the failed-send outbox.
 
 Idempotency:
   - `unlock-modules` writes `module_unlock_notified_at[module_id]` onto the
@@ -87,7 +88,7 @@ def _today_iso() -> str:
     return datetime.now(timezone.utc).date().isoformat()
 
 
-@router.post("/unlock-modules")
+@router.get("/unlock-modules")
 def cron_unlock_modules(
     authorization: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
@@ -262,7 +263,7 @@ def _course_for_session(session_row: dict, courses: list[dict], batches: list[di
     )
 
 
-@router.post("/attendance-finalize")
+@router.get("/attendance-finalize")
 def cron_attendance_finalize(
     authorization: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
@@ -391,7 +392,7 @@ def cron_attendance_finalize(
     }
 
 
-@router.post("/recording-deadline")
+@router.get("/recording-deadline")
 def cron_recording_deadline(
     authorization: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
@@ -502,7 +503,7 @@ def cron_recording_deadline(
 # -------------------------------------------------------------------
 
 
-@router.post("/email-retry")
+@router.get("/email-retry")
 def cron_email_retry(
     authorization: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
