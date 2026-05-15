@@ -359,6 +359,41 @@ def academy_auth_status(tenant_name: str, db: Session = Depends(get_db)):
     }
 
 
+def _require_session_dependency(
+    x_academy_session: Optional[str] = Header(default=None, alias="X-Academy-Session"),
+    authorization: Optional[str] = Header(default=None),
+    db: Session = Depends(get_db),
+) -> None:
+    """FastAPI dependency that 401s anonymous callers BEFORE body validation.
+
+    Applied via ``dependencies=[Depends(_require_session_dependency)]`` on
+    every ``/secure`` route that accepts a Pydantic body. Without this gate,
+    FastAPI's body validation runs first and the 422 response leaks the
+    schema's required-field list to unauthenticated callers — the
+    audit-row-#47 defect class. PR #5 closed it on /auth/bootstrap-admin
+    via the same pattern; this dependency extends the fix to the rest of
+    the ``/secure`` surface (the 16 May internal-audit C1 finding).
+
+    The dependency intentionally does NOT check tenant or role — those
+    checks need ``payload.tenant_name`` and the route-specific role set,
+    which only ``auth_dependency()`` inside the handler can apply. This
+    gate just proves the caller is carrying SOMETHING valid. The handler's
+    existing ``auth_dependency(...)`` call then does the full tenant + role
+    check after body parse succeeds, so the contract is unchanged for
+    legitimate callers.
+
+    The gate uses ``resolve_session_token`` + ``get_session_record`` —
+    identical to ``require_session``'s first two checks. If the token is
+    absent or invalid: 401. If valid: pass through.
+    """
+    resolved = resolve_session_token(x_academy_session, authorization)
+    if not resolved:
+        raise HTTPException(status_code=401, detail="Session token required")
+    record = get_session_record(db, resolved)
+    if record is None:
+        raise HTTPException(status_code=401, detail="Invalid or expired session")
+
+
 def _bootstrap_token_gate(
     request: Request,
     x_bootstrap_token: Optional[str] = Header(default=None, alias="X-Bootstrap-Token"),
@@ -423,7 +458,10 @@ def academy_bootstrap_admin(
     }
 
 
-@router.post("/auth/users/secure")
+@router.post(
+    "/auth/users/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def academy_create_user_secure(
     payload: CredentialCreateRequest,
     x_academy_session: Optional[str] = Header(default=None),
@@ -472,7 +510,10 @@ def academy_list_users_secure(
     }
 
 
-@router.patch("/auth/users/secure")
+@router.patch(
+    "/auth/users/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def academy_update_user_secure(
     payload: CredentialUpdateRequest,
     x_academy_session: Optional[str] = Header(default=None),
@@ -575,7 +616,10 @@ def save_branding(payload: TenantBranding, db: Session = Depends(get_db)):
     raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
-@router.post("/tenants/branding/secure")
+@router.post(
+    "/tenants/branding/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def save_branding_secure(
     payload: TenantBranding,
     x_academy_session: Optional[str] = Header(default=None),
@@ -657,7 +701,10 @@ def read_course_catalog(db: Session = Depends(get_db)):
     return {"items": items}
 
 
-@router.post("/courses/import/p01/secure")
+@router.post(
+    "/courses/import/p01/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def import_p01_curriculum(
     tenant_name: str,
     force: bool = False,
@@ -899,7 +946,10 @@ def read_catalog_changes(
 # -----------------------------------------------------------------------
 
 
-@router.post("/tests/secure")
+@router.post(
+    "/tests/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def create_test_route(
     payload: TestCreate,
     x_academy_session: Optional[str] = Header(default=None),
@@ -932,7 +982,10 @@ def read_test_admin(
     return {"item": test, "questions": questions}
 
 
-@router.post("/tests/{test_id}/questions/secure")
+@router.post(
+    "/tests/{test_id}/questions/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def add_test_question(
     test_id: str,
     payload: TestQuestionCreate,
@@ -959,7 +1012,10 @@ def add_test_question(
     return {"ok": True, "item": item}
 
 
-@router.patch("/tests/questions/{question_id}/secure")
+@router.patch(
+    "/tests/questions/{question_id}/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def patch_test_question(
     question_id: str,
     payload: TestQuestionUpdate,
@@ -976,7 +1032,10 @@ def patch_test_question(
     return {"ok": True, "item": item}
 
 
-@router.delete("/tests/questions/{question_id}/secure")
+@router.delete(
+    "/tests/questions/{question_id}/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def remove_test_question(
     question_id: str,
     tenant_name: str,
@@ -1223,7 +1282,10 @@ def submit_attempt_route(
 # -----------------------------------------------------------------------
 
 
-@router.post("/certificates/issue/secure")
+@router.post(
+    "/certificates/issue/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def issue_certificate_route(
     payload: CertificateIssueRequest,
     x_academy_session: Optional[str] = Header(default=None),
@@ -1287,7 +1349,10 @@ def list_certificates_route(
     return {"items": items}
 
 
-@router.post("/certificates/{certificate_id}/revoke/secure")
+@router.post(
+    "/certificates/{certificate_id}/revoke/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def revoke_certificate_route(
     certificate_id: str,
     payload: CertificateRevokeRequest,
@@ -1570,7 +1635,10 @@ def update_application_status(application_id: str, payload: ApplicationStatusUpd
     raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
-@router.post("/applications/{application_id}/status/secure")
+@router.post(
+    "/applications/{application_id}/status/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def update_application_status_secure(
     application_id: str,
     payload: ApplicationStatusUpdate,
@@ -1603,7 +1671,10 @@ def update_application_attendance(application_id: str, payload: ApplicationAtten
     raise HTTPException(status_code=400, detail="Use session attendance routes instead")
 
 
-@router.post("/applications/{application_id}/attendance/secure")
+@router.post(
+    "/applications/{application_id}/attendance/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def update_application_attendance_secure(
     application_id: str,
     payload: ApplicationAttendanceUpdate,
@@ -2137,7 +2208,10 @@ def read_courses_secure(
     }
 
 
-@router.post("/courses/secure")
+@router.post(
+    "/courses/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def create_course_secure(
     payload: CourseCreate,
     x_academy_session: Optional[str] = Header(default=None),
@@ -2148,7 +2222,10 @@ def create_course_secure(
     return {"ok": True, "item": create_course(db, payload.tenant_name, payload.model_dump())}
 
 
-@router.post("/courses/{course_id}/modules/secure")
+@router.post(
+    "/courses/{course_id}/modules/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def create_course_module_secure(
     course_id: str,
     payload: CourseModuleCreate,
@@ -2166,7 +2243,10 @@ def create_course_module_secure(
     return {"ok": True, "item": item}
 
 
-@router.post("/courses/{course_id}/modules/{module_id}/chapters/secure")
+@router.post(
+    "/courses/{course_id}/modules/{module_id}/chapters/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def create_course_chapter_secure(
     course_id: str,
     module_id: str,
@@ -2189,7 +2269,10 @@ def create_course_chapter_secure(
 # ---------- Lessons (4-level hierarchy) ----------
 
 
-@router.post("/courses/{course_id}/modules/{module_id}/lessons/secure")
+@router.post(
+    "/courses/{course_id}/modules/{module_id}/lessons/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def create_course_lesson_route(
     course_id: str,
     module_id: str,
@@ -2227,7 +2310,10 @@ def read_course_lessons_route(
     return {"items": items}
 
 
-@router.patch("/course-lessons/{lesson_id}/secure")
+@router.patch(
+    "/course-lessons/{lesson_id}/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def patch_course_lesson_route(
     lesson_id: str,
     payload: CourseLessonUpdate,
@@ -2244,7 +2330,10 @@ def patch_course_lesson_route(
     return {"ok": True, "item": item}
 
 
-@router.delete("/course-lessons/{lesson_id}/secure")
+@router.delete(
+    "/course-lessons/{lesson_id}/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def delete_course_lesson_route(
     lesson_id: str,
     tenant_name: str,
@@ -2262,7 +2351,10 @@ def delete_course_lesson_route(
     return {"ok": True}
 
 
-@router.patch("/course-chapters/{chapter_id}/secure")
+@router.patch(
+    "/course-chapters/{chapter_id}/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def patch_course_chapter(
     chapter_id: str,
     payload: CourseChapterUpdate,
@@ -2302,7 +2394,10 @@ def read_learner_lms_secure(
     return item
 
 
-@router.post("/learners/{application_id}/progress/secure")
+@router.post(
+    "/learners/{application_id}/progress/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def update_learner_progress_secure(
     application_id: str,
     payload: LearnerProgressUpdate,
@@ -2338,7 +2433,10 @@ def read_submissions_secure(
     return {"items": list_chapter_submissions(db, tenant_name, application_id=application_id, module_id=module_id)}
 
 
-@router.post("/submissions/secure")
+@router.post(
+    "/submissions/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def create_submission_secure(
     payload: ChapterSubmissionCreate,
     x_academy_session: Optional[str] = Header(default=None),
@@ -2370,7 +2468,10 @@ def read_reviews_secure(
     }
 
 
-@router.post("/reviews/secure")
+@router.post(
+    "/reviews/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def create_review_secure(
     payload: TrainerReviewCreate,
     x_academy_session: Optional[str] = Header(default=None),
@@ -2461,7 +2562,10 @@ def create_batch_route(payload: BatchCreate, db: Session = Depends(get_db)):
     raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
-@router.post("/batches/secure")
+@router.post(
+    "/batches/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def create_batch_route_secure(
     payload: BatchCreate,
     x_academy_session: Optional[str] = Header(default=None),
@@ -2494,7 +2598,10 @@ def create_session_route(payload: SessionCreate, db: Session = Depends(get_db)):
     raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
-@router.post("/sessions/secure")
+@router.post(
+    "/sessions/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def create_session_route_secure(
     payload: SessionCreate,
     x_academy_session: Optional[str] = Header(default=None),
@@ -2527,7 +2634,10 @@ def write_session_attendance(session_id: str, payload: SessionAttendanceUpdate, 
     raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
-@router.post("/sessions/{session_id}/attendance/secure")
+@router.post(
+    "/sessions/{session_id}/attendance/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def write_session_attendance_secure(
     session_id: str,
     payload: SessionAttendanceUpdate,
@@ -2559,7 +2669,10 @@ def provision_session_zoom(session_id: str, payload: ZoomProvisionRequest, db: S
     raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
-@router.post("/sessions/{session_id}/zoom/provision/secure")
+@router.post(
+    "/sessions/{session_id}/zoom/provision/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def provision_session_zoom_secure(
     session_id: str,
     payload: ZoomProvisionRequest,
@@ -2601,7 +2714,10 @@ def update_session_zoom_state(session_id: str, payload: SessionZoomUpdate, db: S
     raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
-@router.post("/sessions/{session_id}/zoom/secure")
+@router.post(
+    "/sessions/{session_id}/zoom/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def update_session_zoom_state_secure(
     session_id: str,
     payload: SessionZoomUpdate,
@@ -2639,7 +2755,10 @@ def read_session_resources_secure(
     return {"items": list_session_resources(db, tenant_name, session_id=session_id)}
 
 
-@router.post("/sessions/{session_id}/resources/secure")
+@router.post(
+    "/sessions/{session_id}/resources/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def create_session_resource_secure(
     session_id: str,
     payload: SessionResourceCreate,
@@ -2741,7 +2860,10 @@ def create_session_resource_secure(
     return {"ok": True, "item": item}
 
 
-@router.delete("/session-resources/{resource_id}/secure")
+@router.delete(
+    "/session-resources/{resource_id}/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def delete_session_resource_secure(
     resource_id: str,
     tenant_name: str,
@@ -2967,7 +3089,10 @@ def overwrite_full_state(tenant_name: str, payload: dict, db: Session = Depends(
     raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
-@router.post("/state/{tenant_name}/secure")
+@router.post(
+    "/state/{tenant_name}/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def overwrite_full_state_secure(
     tenant_name: str,
     payload: dict,
@@ -2987,7 +3112,10 @@ def overwrite_full_state_secure(
 # -------------------------------------------------------------------
 
 
-@router.post("/trainers/backfill/secure")
+@router.post(
+    "/trainers/backfill/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def trainers_backfill_secure(
     tenant_name: str,
     x_academy_session: Optional[str] = Header(default=None),
@@ -3094,7 +3222,10 @@ def read_messages_secure(
     }
 
 
-@router.post("/messages/dispatch/secure")
+@router.post(
+    "/messages/dispatch/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def dispatch_message_secure(
     payload: dict,
     x_academy_session: Optional[str] = Header(default=None),
@@ -3171,7 +3302,10 @@ def _public_trainer_profile_view(profile: dict) -> dict:
     }
 
 
-@router.post("/trainers/invite/secure")
+@router.post(
+    "/trainers/invite/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def trainer_invite_create_secure(
     payload: TrainerInviteCreate,
     x_academy_session: Optional[str] = Header(default=None),
@@ -3279,7 +3413,10 @@ def trainer_invites_list_secure(
     return {"items": [_trainer_invite_safe_view(item) for item in items]}
 
 
-@router.post("/trainers/invites/{invite_id}/revoke/secure")
+@router.post(
+    "/trainers/invites/{invite_id}/revoke/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def trainer_invite_revoke_secure(
     invite_id: str,
     tenant_name: str,
@@ -3397,7 +3534,10 @@ def trainer_my_profile_get_secure(
     return {"item": profile}
 
 
-@router.post("/trainers/me/profile/secure")
+@router.post(
+    "/trainers/me/profile/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def trainer_my_profile_upsert_secure(
     payload: TrainerProfileUpsert,
     x_academy_session: Optional[str] = Header(default=None),
@@ -3432,7 +3572,10 @@ def trainer_profiles_list_secure(
     return {"items": items}
 
 
-@router.post("/trainers/profiles/{profile_id}/approval/secure")
+@router.post(
+    "/trainers/profiles/{profile_id}/approval/secure",
+    dependencies=[Depends(_require_session_dependency)],
+)
 def trainer_profile_approval_secure(
     profile_id: str,
     payload: TrainerProfileApproval,
