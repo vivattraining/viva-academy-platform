@@ -1,0 +1,161 @@
+name: PR pre-merge checks
+
+# H-I1 (16 May 2026): qa-release.yml only runs Playwright against the
+# already-deployed live URL — it cannot catch broken TS, a broken FastAPI
+# import, or a Next.js build failure BEFORE merge. The Day 1 outage
+# (email-validator missing from pyproject.toml) is the exact bug class
+# this gap permitted. This workflow adds three pre-merge gates that run
+# entirely in CI without touching production.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - "tests/qa-audit/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/pr-checks.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - "package.json"
+
+concurrency:
+  group: pr-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web-typecheck-and-build:
+    name: Web — TypeScript + next build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript — `tsc --noEmit`
+        working-directory: apps/web
+        run: npx --no-install tsc --noEmit
+
+      - name: Next.js build smoke
+        working-directory: apps/web
+        run: npm run build
+
+  api-import-and-parse:
+    name: API — Python import + ast.parse
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: apps/api/requirements.txt
+
+      - name: Install dependencies (production set — same as Vercel)
+        # pyproject.toml is what Vercel @vercel/python installs, so we use
+        # it here. requirements.txt is for Railway/nixpacks — we sync-check
+        # it in a separate step below.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: ast.parse — every Python file
+        run: |
+          python - <<'PYEOF'
+          import ast, sys, glob
+          errors = 0
+          for path in glob.glob("app/**/*.py", recursive=True):
+              try:
+                  ast.parse(open(path).read())
+              except SyntaxError as e:
+                  print(f"SYNTAX ERROR in {path}: {e}")
+                  errors += 1
+          print(f"ast.parse OK on {len(glob.glob('app/**/*.py', recursive=True))} files; {errors} errors")
+          sys.exit(1 if errors else 0)
+          PYEOF
+
+      - name: Runtime import — `from app.main import app`
+        # This is the gate that would have caught the 15 May email-validator
+        # outage. AST parse doesn't trigger module-level imports; this does.
+        run: python -c "from app.main import app; print(f'app imported, {len(list(app.routes))} routes')"
+
+      - name: requirements.txt ↔ pyproject.toml drift check
+        run: |
+          python - <<'PYEOF'
+          import re, sys, pathlib
+
+          def parse_requirements(text):
+              pkgs = {}
+              for line in text.splitlines():
+                  line = line.strip()
+                  if not line or line.startswith("#"):
+                      continue
+                  # split on first comparator
+                  match = re.match(r"([A-Za-z0-9_\-\.\[\]]+)\s*(.*)$", line)
+                  if not match:
+                      continue
+                  name, version = match.group(1).lower(), match.group(2).strip()
+                  pkgs[name] = version
+              return pkgs
+
+          def parse_pyproject(text):
+              pkgs = {}
+              in_deps = False
+              for line in text.splitlines():
+                  s = line.strip()
+                  if s.startswith("dependencies"):
+                      in_deps = True
+                      continue
+                  if in_deps and s == "]":
+                      break
+                  if not in_deps or not s.startswith('"'):
+                      continue
+                  body = s.strip().strip(",").strip('"')
+                  match = re.match(r"([A-Za-z0-9_\-\.\[\]]+)\s*(.*)$", body)
+                  if match:
+                      pkgs[match.group(1).lower()] = match.group(2).strip()
+              return pkgs
+
+          req = parse_requirements(pathlib.Path("requirements.txt").read_text())
+          pyp = parse_pyproject(pathlib.Path("pyproject.toml").read_text())
+
+          drift = []
+          for name, version in req.items():
+              if name not in pyp:
+                  drift.append(f"  - {name} {version}  — in requirements.txt but NOT in pyproject.toml")
+              elif version and pyp[name] != version:
+                  drift.append(f"  - {name}  version pin differs: requirements.txt={version} pyproject.toml={pyp[name]}")
+          for name, version in pyp.items():
+              if name not in req:
+                  drift.append(f"  - {name} {version}  — in pyproject.toml but NOT in requirements.txt")
+
+          if drift:
+              print("requirements.txt and pyproject.toml are out of sync:")
+              for d in drift:
+                  print(d)
+              print()
+              print("Both files must list the same runtime dependencies — Railway/nixpacks")
+              print("reads requirements.txt while Vercel @vercel/python reads pyproject.toml.")
+              print("The 15 May email-validator outage was caused by this exact drift.")
+              sys.exit(1)
+          print(f"OK: {len(req)} packages in sync across both manifests")
+          PYEOF
