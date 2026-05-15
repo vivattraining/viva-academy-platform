@@ -133,11 +133,12 @@ def verify_password(password: str, stored_hash: str) -> bool:
 
 
 def ensure_default_users(db: Session, tenant_name: str) -> None:
+    from .config import settings
     defaults = [
-        ("admin@viva.demo", "VIVA Admin", "admin", "VIVAadmin123"),
-        ("ops@viva.demo", "Operations Lead", "operations", "VIVAops123"),
-        ("trainer@viva.demo", "Lead Trainer", "trainer", "VIVAtrainer123"),
-        ("student@viva.demo", "Demo Student", "student", "VIVAstudent123"),
+        (settings.demo_admin_email,   "VIVA Admin",       "admin",      settings.demo_admin_password),
+        (settings.demo_ops_email,     "Operations Lead",  "operations", settings.demo_ops_password),
+        (settings.demo_trainer_email, "Lead Trainer",     "trainer",    settings.demo_trainer_password),
+        (settings.demo_student_email, "Demo Student",     "student",    settings.demo_student_password),
     ]
     current = now_iso()
     for email, full_name, role, password in defaults:

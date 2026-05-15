@@ -19,14 +19,27 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
   const [paymentReference, setPaymentReference] = useState("");
   const [receiptToken, setReceiptToken] = useState("");
   const [paymentMode, setPaymentMode] = useState("");
+  const [step1Submitted, setStep1Submitted] = useState(false);
   const [message, setMessage] = useState("");
   const [busyAction, setBusyAction] = useState<"submit" | "payment-link" | "checkout" | "">("");
   const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [step2Submitted, setStep2Submitted] = useState(false);
 
   const selectedProgram = programs.find((p) => p.code === courseCode);
   const selectedIsComingSoon = Boolean(selectedProgram?.coming_soon);
+
+  function resetFlow() {
+    setApplicationId("");
+    setPaymentUrl("");
+    setPaymentReference("");
+    setReceiptToken("");
+    setPaymentMode("");
+    setStep1Submitted(false);
+    setStep2Submitted(false);
+    setMessage("");
+  }
 
   const emailValid = EMAIL_RE.test(studentEmail.trim());
   const phoneDigits = studentPhone.replace(/\D/g, "");
@@ -43,6 +56,9 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
   const paymentLinkReady = Boolean(applicationId);
   const checkoutReady = Boolean(paymentUrl);
   const currentStep = checkoutReady ? 3 : paymentLinkReady ? 2 : 1;
+  const step1Disabled = step1Submitted || !formReady || busyAction !== "";
+  const step2Disabled = !paymentLinkReady || step2Submitted || busyAction !== "";
+  const step3Disabled = !checkoutReady || busyAction !== "";
 
   function validateName(value: string) {
     if (!value.trim()) { setNameError("Full name is required."); return; }
@@ -179,6 +195,7 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
       });
       setApplicationId(data.item.id);
       setReceiptToken((data.item as { public_receipt_token?: string }).public_receipt_token || "");
+      setStep1Submitted(true);
       setMessage("Application received. Step 2 is ready: generate your payment link.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to submit application.");
@@ -199,6 +216,7 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
       setPaymentUrl(data.payment.payment_url);
       setPaymentReference(data.payment.payment_reference);
       setPaymentMode(data.payment.mode);
+      setStep2Submitted(true);
       setMessage(
         data.payment.mode === "mock"
           ? "Checkout is ready in fallback mode."
@@ -246,7 +264,7 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
           <input
             placeholder="As per official documents"
             value={studentName}
-            onChange={(event) => { setStudentName(event.target.value); if (nameError) validateName(event.target.value); }}
+            onChange={(event) => { if (step1Submitted) resetFlow(); setStudentName(event.target.value); if (nameError) validateName(event.target.value); }}
             onBlur={(event) => validateName(event.target.value)}
             maxLength={100}
             autoComplete="name"
@@ -259,7 +277,7 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
             type="email"
             placeholder="email@example.com"
             value={studentEmail}
-            onChange={(event) => { setStudentEmail(event.target.value); if (emailError) validateEmail(event.target.value); }}
+            onChange={(event) => { if (step1Submitted) resetFlow(); setStudentEmail(event.target.value); if (emailError) validateEmail(event.target.value); }}
             onBlur={(event) => validateEmail(event.target.value)}
             maxLength={254}
             autoComplete="email"
@@ -272,7 +290,7 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
             type="tel"
             placeholder="+91 98765 43210"
             value={studentPhone}
-            onChange={(event) => { setStudentPhone(event.target.value); if (phoneError) validatePhone(event.target.value); }}
+            onChange={(event) => { if (step1Submitted) resetFlow(); setStudentPhone(event.target.value); if (phoneError) validatePhone(event.target.value); }}
             onBlur={(event) => validatePhone(event.target.value)}
             maxLength={15}
             autoComplete="tel"
@@ -281,7 +299,7 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
         </label>
         <label className="editorial-field">
           <span>Highest Education</span>
-          <select value={education} onChange={(event) => setEducation(event.target.value)}>
+          <select value={education} onChange={(event) => { if (step1Submitted) resetFlow(); setEducation(event.target.value); }}>
             <option value="">Select qualification</option>
             <option value="undergraduate">Graduate</option>
             <option value="postgraduate">Post Graduate</option>
@@ -290,7 +308,7 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
         </label>
         <label className="editorial-field editorial-field-full">
           <span>Programme</span>
-          <select value={courseCode} onChange={(event) => setCourseCode(event.target.value)}>
+          <select value={courseCode} onChange={(event) => { if (step1Submitted) resetFlow(); setCourseCode(event.target.value); }}>
             <option value="">Select a programme</option>
             {programs.map((program) => (
               <option
@@ -366,22 +384,28 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
       </div>
 
       <div className="editorial-form-actions">
-        <button type="submit" className="editorial-form-submit editorial-form-button" disabled={!formReady || busyAction !== ""}>
-          {busyAction === "submit" ? "Submitting..." : "Step 1 · Submit Application"}
+        <button
+          type="submit"
+          className="editorial-form-submit editorial-form-button"
+          disabled={step1Disabled}
+          title={selectedIsComingSoon ? "This programme is opening soon — pick a programme currently accepting applications." : step1Submitted ? "Change a field above to re-submit." : undefined}
+        >
+          {busyAction === "submit" ? "Submitting..." : step1Submitted ? "Submitted · Change a field to re-submit" : "Step 1 · Submit Application"}
         </button>
         <button
           type="button"
-          className={`editorial-form-secondary editorial-form-button ${paymentLinkReady ? "is-ready" : ""}`}
+          className={`editorial-form-secondary editorial-form-button ${paymentLinkReady && !step2Submitted ? "is-ready" : ""}`}
           onClick={() => void continueToPayment()}
-          disabled={!paymentLinkReady || busyAction !== ""}
+          disabled={step2Disabled}
+          title={step2Submitted ? "Payment link already generated. Proceed to Step 3." : undefined}
         >
-          {busyAction === "payment-link" ? "Generating..." : "Step 2 · Generate Payment Link"}
+          {busyAction === "payment-link" ? "Generating..." : step2Submitted ? "Generated · Proceed to Step 3" : "Step 2 · Generate Payment Link"}
         </button>
         <button
           type="button"
           className={`editorial-form-secondary editorial-form-button ${checkoutReady ? "is-ready" : ""}`}
           onClick={() => void openCheckout()}
-          disabled={!checkoutReady || busyAction !== ""}
+          disabled={step3Disabled}
         >
           {busyAction === "checkout" ? "Opening..." : "Step 3 · Open Checkout"}
         </button>

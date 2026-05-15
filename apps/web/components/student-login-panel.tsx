@@ -9,7 +9,17 @@ export function StudentLoginPanel() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+  const [retryAfter, setRetryAfter] = useState(0);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (retryAfter <= 0) return;
+    const timer = setInterval(() => {
+      setRetryAfter((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [retryAfter]);
 
   useEffect(() => {
     const session = readSession();
@@ -42,6 +52,7 @@ export function StudentLoginPanel() {
       return;
     }
     setBusy(true);
+    setIsError(false);
     setMessage("Signing in...");
     try {
       const data = await apiRequest<{ session: AcademySession }>("/api/v1/academy/auth/login", {
@@ -57,7 +68,15 @@ export function StudentLoginPanel() {
       setMessage("");
       window.location.href = defaultRouteForRole(data.session.role);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Invalid email or password.");
+      const msg = error instanceof Error ? error.message : "Invalid email or password.";
+      const isRateLimit = msg.toLowerCase().includes("too many") || msg.includes("429") || msg.toLowerCase().includes("rate limit");
+      setIsError(true);
+      if (isRateLimit) {
+        setRetryAfter(900);
+        setMessage("Too many sign-in attempts.");
+      } else {
+        setMessage(msg);
+      }
       setBusy(false);
     }
   }
@@ -81,12 +100,29 @@ export function StudentLoginPanel() {
           </label>
         </div>
         <div className="button-row">
-          <button type="submit" className="button-primary" disabled={busy}>
+          <button type="submit" className="button-primary" disabled={busy || retryAfter > 0}>
             {busy ? "Opening..." : "Enter learner workspace"}
           </button>
         </div>
       </form>
-      {message ? <div className="editorial-workbench-panel" style={{ marginTop: 16 }}>{message}</div> : null}
+      {retryAfter > 0 ? (
+        <div role="alert" className="editorial-workbench-panel" style={{ marginTop: 16, borderLeft: "3px solid #a23a3a", color: "#a23a3a" }}>
+          Too many sign-in attempts. Please wait{" "}
+          <strong>{Math.floor(retryAfter / 60)}:{String(retryAfter % 60).padStart(2, "0")}</strong>{" "}
+          before trying again.
+        </div>
+      ) : message && !busy ? (
+        <div
+          role="alert"
+          className="editorial-workbench-panel"
+          style={{
+            marginTop: 16,
+            ...(isError ? { borderLeft: "3px solid #a23a3a", color: "#a23a3a" } : {}),
+          }}
+        >
+          {message}
+        </div>
+      ) : null}
     </section>
   );
 }

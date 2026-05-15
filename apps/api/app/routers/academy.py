@@ -22,8 +22,10 @@ from app.auth import (
     bootstrap_admin_user,
     create_credential,
     ensure_student_credential,
+    get_session_record,
     list_credentials,
     login_user,
+    resolve_session_token,
     revoke_session,
     revoke_sessions_for_email,
     tenant_has_credentials,
@@ -1319,12 +1321,17 @@ def read_applications_secure(
     authorization: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    # Auth checked BEFORE param validation (Issue #34 fix)
-    token = (x_academy_session or "").strip() or (authorization or "").strip()
-    if not token:
+    # Auth before param validation — if tenant_name is omitted, fall back to
+    # the session's own tenant so trainers/ops don't get a 400 instead of
+    # the correct role-based response (Issue #35).
+    resolved = resolve_session_token(x_academy_session, authorization)
+    if not resolved:
         raise HTTPException(status_code=401, detail="Authentication required")
     if not tenant_name:
-        raise HTTPException(status_code=400, detail="tenant_name is required")
+        record = get_session_record(db, resolved)
+        if record is None:
+            raise HTTPException(status_code=401, detail="Invalid or expired session")
+        tenant_name = record.tenant_name
     auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES)
     return {"items": list_applications(db, tenant_name)}
 
@@ -2418,12 +2425,16 @@ def read_batches_secure(
     authorization: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    # Auth checked BEFORE param validation (Issue #34 fix)
-    token = (x_academy_session or "").strip() or (authorization or "").strip()
-    if not token:
+    # Auth before param validation — fall back to session tenant when
+    # tenant_name is omitted (Issue #35 fix).
+    resolved = resolve_session_token(x_academy_session, authorization)
+    if not resolved:
         raise HTTPException(status_code=401, detail="Authentication required")
     if not tenant_name:
-        raise HTTPException(status_code=400, detail="tenant_name is required")
+        record = get_session_record(db, resolved)
+        if record is None:
+            raise HTTPException(status_code=401, detail="Invalid or expired session")
+        tenant_name = record.tenant_name
     auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES)
     return {"items": list_batches(db, tenant_name)}
 

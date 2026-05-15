@@ -151,7 +151,7 @@ export function StudentTestRunner({ courseId, applicationId }: { courseId: strin
       <section className="editorial-workbench-card" style={{ padding: 24 }}>
         <h3 className="editorial-workbench-title">No certification test configured for this course yet.</h3>
         <p className="muted" style={{ marginTop: 8 }}>Faculty will publish the test before week 15. Check back closer to the cohort end.</p>
-        <Link className="button-secondary" href="/student" style={{ marginTop: 16, display: "inline-block" }}>Back to dashboard</Link>
+        <Link className="button-secondary" href="/student" style={{ marginTop: 16, display: "inline-flex" }}>← Back to dashboard</Link>
       </section>
     );
   }
@@ -180,7 +180,7 @@ export function StudentTestRunner({ courseId, applicationId }: { courseId: strin
               . Your certificate will still be issued, but the placement guarantee requires {data.item.pass_score}% on the test.
             </p>
           )}
-          <Link className="button-secondary" href="/student" style={{ marginTop: 18, display: "inline-block" }}>Back to dashboard</Link>
+          <Link className="button-secondary" href="/student" style={{ marginTop: 18, display: "inline-flex" }}>← Back to dashboard</Link>
         </section>
       </section>
     );
@@ -199,7 +199,7 @@ export function StudentTestRunner({ courseId, applicationId }: { courseId: strin
               ? `Next attempt available on ${formatDate(data.can_attempt_after)}.`
               : "Please come back later."}
         </p>
-        <Link className="button-secondary" href="/student" style={{ marginTop: 16, display: "inline-block" }}>Back to dashboard</Link>
+        <Link className="button-secondary" href="/student" style={{ marginTop: 16, display: "inline-flex" }}>← Back to dashboard</Link>
       </section>
     );
   }
@@ -276,7 +276,7 @@ export function StudentTestRunner({ courseId, applicationId }: { courseId: strin
         <button className="button-primary" onClick={() => void submit()} disabled={busy}>
           {busy ? "Submitting…" : "Submit test"}
         </button>
-        <Link className="button-secondary" href="/student">Cancel</Link>
+        <Link className="button-secondary" href="/student">← Cancel</Link>
       </div>
       {error ? <p style={{ marginTop: 12, fontSize: 13, color: "#9b1c2c" }}>{error}</p> : null}
     </section>

@@ -263,7 +263,7 @@ export function StudentCalendarWorkspace() {
           </p>
           <div className="button-row">
             <Link className="button-secondary" href="/student">
-              Back to home
+              ← Back to home
             </Link>
           </div>
         </article>
@@ -314,7 +314,7 @@ export function StudentCalendarWorkspace() {
               <span className="editorial-status neutral">Join link pending</span>
             )}
             <Link className="button-secondary" href="/student">
-              Back to home
+              ← Back to home
             </Link>
           </div>
         </article>

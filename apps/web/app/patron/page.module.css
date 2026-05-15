@@ -16,6 +16,21 @@
   }
 }
 
+@media (max-width: 720px) {
+  .lead {
+    font-size: 18px;
+  }
+
+  .body {
+    font-size: 15px;
+  }
+
+  .closing {
+    max-width: 100%;
+    margin-top: 32px;
+  }
+}
+
 .lead {
   margin: 0;
   font-family: "Libre Caslon Text", "Times New Roman", serif;

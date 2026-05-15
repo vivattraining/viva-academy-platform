@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import os
 from datetime import date, datetime, timedelta, timezone
 import secrets
 from typing import Optional
@@ -343,7 +344,7 @@ def default_state(tenant_name: str) -> dict:
                 "tenant_name": tenant_name,
                 "batch_id": batch_id,
                 "student_name": "Demo Student",
-                "student_email": "student@viva.demo",
+                "student_email": os.getenv("DEMO_STUDENT_EMAIL", ""),
                 "student_phone": "+91 98765 43210",
                 "course_name": "Travel Professional Certification",
                 "source": "internal-demo",
@@ -430,7 +431,7 @@ def default_state(tenant_name: str) -> dict:
                 "session_id": "sess_viva_01",
                 "application_id": demo_application_id,
                 "student_name": "Demo Student",
-                "student_email": "student@viva.demo",
+                "student_email": os.getenv("DEMO_STUDENT_EMAIL", ""),
                 "status": "present",
                 "marked_by": "system",
                 "join_source": "seeded-demo",

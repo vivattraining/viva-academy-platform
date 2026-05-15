@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
+import { readSession } from "../lib/auth";
 
 type ReceiptItem = {
   id: string;
@@ -32,22 +33,34 @@ export function PaymentReceipt({ applicationId, tenantName }: { applicationId: s
   const [item, setItem] = useState<ReceiptItem | null>(null);
   const [error, setError] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
+    setSessionToken(readSession()?.session_token || null);
+    setSessionChecked(true);
+  }, []);
+
+  useEffect(() => {
+    if (!sessionChecked) return;
+
     async function load(triggerVerification = false) {
       try {
         const token = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("token") : null;
         const tenant = tenantName || DEFAULT_TENANT;
+        const authOpt = sessionToken ? { sessionToken } : undefined;
         const data = triggerVerification && token
           ? await apiRequest<{ item: ReceiptItem }>(
               `/api/v1/academy/applications/${encodeURIComponent(applicationId)}/payment/verify`,
               {
                 method: "POST",
                 body: JSON.stringify({ tenant_name: tenant, token }),
+                ...authOpt,
               }
             )
           : await apiRequest<{ item: ReceiptItem }>(
-              `/api/v1/academy/applications/${encodeURIComponent(applicationId)}?tenant_name=${encodeURIComponent(tenant)}${token ? `&token=${encodeURIComponent(token)}` : ""}`
+              `/api/v1/academy/applications/${encodeURIComponent(applicationId)}?tenant_name=${encodeURIComponent(tenant)}${token ? `&token=${encodeURIComponent(token)}` : ""}`,
+              authOpt
             );
         setItem(data.item);
         setError("");
@@ -57,7 +70,7 @@ export function PaymentReceipt({ applicationId, tenantName }: { applicationId: s
     }
 
     void load(true);
-  }, [applicationId, tenantName]);
+  }, [applicationId, tenantName, sessionChecked, sessionToken]);
 
   async function refreshStatus() {
     setIsRefreshing(true);
@@ -68,6 +81,7 @@ export function PaymentReceipt({ applicationId, tenantName }: { applicationId: s
         {
           method: "POST",
           body: JSON.stringify({ tenant_name: tenantName || DEFAULT_TENANT, token }),
+          ...(sessionToken ? { sessionToken } : undefined),
         }
       );
       setItem(data.item);

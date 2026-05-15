@@ -4,8 +4,8 @@
  *   cd tests/qa-audit
  *   $env:VIVA_BASE_URL="http://localhost:3000"
  *   $env:NEXT_PUBLIC_API_URL="http://localhost:8000"
- *   $env:VIVA_INTERNAL_USER="admin@viva.demo"
- *   $env:VIVA_INTERNAL_PASS="VIVAadmin123"
+ *   $env:VIVA_INTERNAL_USER="<admin email from DEMO_ADMIN_EMAIL>"
+ *   $env:VIVA_INTERNAL_PASS="<password from DEMO_ADMIN_PASSWORD in apps/api/.env>"
  *   npx playwright test tests/p1-audit.spec.ts --project=desktop-chromium --reporter=list
  */
 

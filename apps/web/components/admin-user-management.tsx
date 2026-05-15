@@ -51,13 +51,23 @@ export function AdminUserManagement() {
     setItems(data.items || []);
   }
 
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   async function createUser() {
     if (!sessionToken) {
       setMessage("Admin session required.");
       return;
     }
-    if (!fullName.trim() || !email.trim() || password.trim().length < 8) {
-      setMessage("Enter a full name, valid email, and a password with at least 8 characters.");
+    if (!fullName.trim()) {
+      setMessage("Enter the user's full name.");
+      return;
+    }
+    if (!EMAIL_RE.test(email.trim())) {
+      setMessage("Enter a valid email address (e.g. name@example.com).");
+      return;
+    }
+    if (password.trim().length < 8) {
+      setMessage("Password must be at least 8 characters.");
       return;
     }
     setMessage("Creating user...");
