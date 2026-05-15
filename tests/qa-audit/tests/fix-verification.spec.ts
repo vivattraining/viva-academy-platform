@@ -23,7 +23,11 @@ test.use({
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.VIVA_BASE_URL || 'http://localhost:3001').replace(':3001', ':8000');
+  (process.env.VIVA_BASE_URL || 'http://localhost:3001')
+    // Local dev: web on :3001, api on :8000.
+    .replace(':3001', ':8000')
+    // Production: web on www.<domain>, api on api.<domain>.
+    .replace('://www.', '://api.');
 
 const TENANT = 'Viva Career Academy';
 const ACTIVE_COURSE_CODE = 'P · 01';

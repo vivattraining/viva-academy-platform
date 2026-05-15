@@ -14,7 +14,15 @@ import { fullUrl } from './helpers/pages';
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
-const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+// API URL resolution: prefer the explicit env var; otherwise derive from
+// VIVA_BASE_URL by mapping www.<domain> -> api.<domain> (production) or
+// :3000 -> :8000 (local dev); else fall back to localhost:8000.
+const API = (
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.VIVA_BASE_URL || 'http://localhost:8000')
+    .replace(':3000', ':8000')
+    .replace('://www.', '://api.')
+).replace(/\/+$/, '');
 const BASE = (process.env.VIVA_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 const TENANT = 'Viva Career Academy';
 const COURSE_CODE = 'P · 01';
