@@ -46,20 +46,32 @@ function writeSessionCookie(session: AcademySession | null) {
 export function readSession() {
   if (typeof window === "undefined") return null;
   try {
-    const active = window.localStorage.getItem(KEY);
-    if (active) return JSON.parse(active) as AcademySession;
+    // Cookie is the source of truth (partial C2, 16 May 2026 — the full
+    // architectural migration to a server-only httpOnly cookie is on the
+    // Tier 1 backlog). Legacy localStorage / sessionStorage values are
+    // cleared on read so they stop being readable to any future XSS.
     const cookie = document.cookie
       .split("; ")
       .find((item) => item.startsWith(`${SESSION_COOKIE}=`))
       ?.slice(SESSION_COOKIE.length + 1);
-    if (cookie) return parseSessionCookie(cookie);
-    // Migrate any session previously stored in sessionStorage
-    const legacy = window.sessionStorage.getItem(KEY);
+    if (cookie) {
+      // Best-effort cleanup of legacy storage. The cookie is authoritative.
+      try { window.localStorage.removeItem(KEY); } catch { /* noop */ }
+      try { window.sessionStorage.removeItem(KEY); } catch { /* noop */ }
+      return parseSessionCookie(cookie);
+    }
+    // Migration path: if we still have a session in localStorage from a
+    // pre-C2 deployment, restore it into the cookie and clear local
+    // storage so subsequent reads use the cookie. After every existing
+    // user has cycled through this path, this branch becomes dead code.
+    const legacyLocal = window.localStorage.getItem(KEY);
+    const legacySession = window.sessionStorage.getItem(KEY);
+    const legacy = legacyLocal || legacySession;
     if (!legacy) return null;
-    window.localStorage.setItem(KEY, legacy);
-    window.sessionStorage.removeItem(KEY);
     const session = JSON.parse(legacy) as AcademySession;
     writeSessionCookie(session);
+    try { window.localStorage.removeItem(KEY); } catch { /* noop */ }
+    try { window.sessionStorage.removeItem(KEY); } catch { /* noop */ }
     return session;
   } catch {
     return null;
@@ -74,15 +86,14 @@ export function isSessionExpired(session: AcademySession | null) {
 
 export function writeSession(session: AcademySession | null) {
   if (typeof window === "undefined") return;
-  if (!session) {
-    window.localStorage.removeItem(KEY);
-    window.sessionStorage.removeItem(KEY);
-    writeSessionCookie(null);
-    window.dispatchEvent(new Event("academy-session-changed"));
-    return;
-  }
-  window.localStorage.setItem(KEY, JSON.stringify(session));
-  window.sessionStorage.removeItem(KEY);
+  // Partial C2 (16 May 2026): cookie only. Always clear localStorage /
+  // sessionStorage on write so any pre-C2 deployment artefacts stop
+  // being readable by JS. Cookie remains JS-readable (httpOnly: false)
+  // for now because OperatorGate / StudentLoginPanel / nav components
+  // all call readSession() client-side. The full architectural
+  // migration to httpOnly cookie + /api/me endpoint is Tier 1 backlog.
+  try { window.localStorage.removeItem(KEY); } catch { /* noop */ }
+  try { window.sessionStorage.removeItem(KEY); } catch { /* noop */ }
   writeSessionCookie(session);
   window.dispatchEvent(new Event("academy-session-changed"));
 }
