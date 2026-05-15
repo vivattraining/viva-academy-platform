@@ -359,26 +359,22 @@ def academy_auth_status(tenant_name: str, db: Session = Depends(get_db)):
     }
 
 
-@router.post("/auth/bootstrap-admin")
-def academy_bootstrap_admin(
-    payload: BootstrapAdminRequest,
+def _bootstrap_token_gate(
     request: Request,
     x_bootstrap_token: Optional[str] = Header(default=None, alias="X-Bootstrap-Token"),
-    db: Session = Depends(get_db),
-):
-    # Rate limit: 3 attempts / hour per IP. Bootstrap is a rare, high-stakes
-    # action — anything more than this is suspicious.
-    enforce_preset(request, "bootstrap")
-    """Bootstrap the first admin for a tenant.
+) -> None:
+    """FastAPI dependency that enforces the X-Bootstrap-Token check.
 
-    Hardened:
-      - Requires the X-Bootstrap-Token header to match ACADEMY_BOOTSTRAP_TOKEN.
-        Without that env var configured, the endpoint is disabled outright in
-        any environment that isn't local development.
-      - Constant-time comparison via hmac.compare_digest.
-      - bootstrap_admin_user already raises 409 if the tenant already has any
-        credential, providing a second layer of protection.
+    Lifted out of the path handler so it runs BEFORE Pydantic body validation.
+    Previously the body schema was validated first, which leaked the expected
+    field list via 422 responses to unauthenticated callers (defense-in-depth
+    weakness flagged during the 14 May 2026 audit of Issue #47).
+
+    Rate limit happens here too so anonymous probes consume the bootstrap
+    bucket (3 attempts / hour / IP) instead of waiting until after body parse.
     """
+    enforce_preset(request, "bootstrap")
+
     expected_token = settings.academy_bootstrap_token
     if not expected_token:
         if settings.app_env == "production":
@@ -387,13 +383,34 @@ def academy_bootstrap_admin(
                 detail="Bootstrap is disabled. Set ACADEMY_BOOTSTRAP_TOKEN to enable.",
             )
         # Allow open bootstrap in local/dev only when no token is configured.
-    else:
-        if not x_bootstrap_token or not hmac.compare_digest(
-            x_bootstrap_token.encode("utf-8"),
-            expected_token.encode("utf-8"),
-        ):
-            raise HTTPException(status_code=403, detail="Invalid bootstrap token")
+        return
 
+    if not x_bootstrap_token or not hmac.compare_digest(
+        x_bootstrap_token.encode("utf-8"),
+        expected_token.encode("utf-8"),
+    ):
+        raise HTTPException(status_code=403, detail="Invalid bootstrap token")
+
+
+@router.post(
+    "/auth/bootstrap-admin",
+    dependencies=[Depends(_bootstrap_token_gate)],
+)
+def academy_bootstrap_admin(
+    payload: BootstrapAdminRequest,
+    db: Session = Depends(get_db),
+):
+    """Bootstrap the first admin for a tenant.
+
+    Token + rate-limit gates run in the _bootstrap_token_gate dependency,
+    which executes BEFORE the request body is validated. By the time this
+    handler runs, the caller has already proven possession of the bootstrap
+    token, so body-schema 422s no longer leak the field list to anonymous
+    probes.
+
+    bootstrap_admin_user itself raises 409 if the tenant already has any
+    credential — second layer of protection against repeat bootstraps.
+    """
     return {
         "ok": True,
         "session": bootstrap_admin_user(

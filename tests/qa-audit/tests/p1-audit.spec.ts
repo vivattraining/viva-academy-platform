@@ -345,7 +345,11 @@ test.describe('Issue #47 — Bootstrap endpoint requires token', () => {
     await page.waitForLoadState('networkidle');
 
     const resp = await page.evaluate(async ({ api, tenant }: { api: string; tenant: string }) => {
-      const r = await fetch(`${api}/api/v1/academy/bootstrap`, {
+      // Correct route is /api/v1/academy/auth/bootstrap-admin (not /bootstrap).
+      // Body intentionally minimal — the token gate must reject the call
+      // BEFORE the body schema is validated, so 401/403 should fire even
+      // when full_name/email/password are absent.
+      const r = await fetch(`${api}/api/v1/academy/auth/bootstrap-admin`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tenant_name: tenant }),
       });
