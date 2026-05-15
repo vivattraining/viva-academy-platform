@@ -24,7 +24,11 @@ test.use({
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.VIVA_BASE_URL || 'http://localhost:3001').replace(':3001', ':8000');
+  (process.env.VIVA_BASE_URL || 'http://localhost:3001')
+    // Local dev: web on :3001, api on :8000.
+    .replace(':3001', ':8000')
+    // Production: web on www.<domain>, api on api.<domain>.
+    .replace('://www.', '://api.');
 
 async function pause(ms = 1200) {
   return new Promise((r) => setTimeout(r, ms));

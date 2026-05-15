@@ -30,6 +30,10 @@ on:
         description: 'Base URL to audit (default: production)'
         required: false
         default: 'https://www.vivacareeracademy.com'
+      api_url:
+        description: 'API URL to audit (default: production api)'
+        required: false
+        default: 'https://api.vivacareeracademy.com'
 
 concurrency:
   group: qa-audit-${{ github.ref }}
@@ -45,6 +49,11 @@ jobs:
         working-directory: tests/qa-audit
     env:
       VIVA_BASE_URL: ${{ github.event.inputs.base_url || 'https://www.vivacareeracademy.com' }}
+      # API URL is required for spec files that call the backend directly.
+      # Without this, p1-audit.spec.ts falls back to http://localhost:8000
+      # (connection refused in CI) and issue-demo/fix-verification.spec.ts
+      # fall back to www.vivacareeracademy.com/api/... (404 from the web host).
+      NEXT_PUBLIC_API_URL: ${{ github.event.inputs.api_url || 'https://api.vivacareeracademy.com' }}
       VIVA_FAIL_ON_CRITICAL: '1'
       VIVA_PERF_BUDGET_MS: '3000'
       # Auth flows run only if creds are configured. Add these as repo secrets
