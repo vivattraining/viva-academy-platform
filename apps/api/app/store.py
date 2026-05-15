@@ -578,7 +578,34 @@ def update_application(db: Session, tenant_name: str, application_id: str, patch
     return None
 
 
-def find_application_by_reference(db: Session, reference: str) -> Optional[dict]:
+def find_application_by_reference(
+    db: Session,
+    reference: str,
+    *,
+    tenant_name: Optional[str] = None,
+) -> Optional[dict]:
+    """Look up an application by `payment_reference` or row id.
+
+    H-B3 (16 May 2026): when `tenant_name` is provided, the lookup is
+    constrained to that tenant. The old cross-tenant scan is a latent
+    tenant-confusion risk — a payment event whose reference collides
+    with another tenant's id would route money/credentials into the
+    wrong tenant once a second tenant onboards. The Razorpay webhook
+    flow now always passes the configured tenant.
+    """
+    if tenant_name is not None:
+        record = db.query(AcademyTenantState).filter_by(tenant_name=tenant_name).first()
+        if record is None:
+            return None
+        for item in (record.state or {}).get("applications", []):
+            if item.get("payment_reference") == reference or item.get("id") == reference:
+                return deepcopy(item)
+        return None
+    # Legacy callers (none expected after H-B3). Logged so any regression surfaces.
+    import logging as _logging
+    _logging.getLogger(__name__).warning(
+        "find_application_by_reference called without tenant_name — cross-tenant scan",
+    )
     for record in db.query(AcademyTenantState).all():
         state = record.state or {}
         for item in state.get("applications", []):
@@ -587,7 +614,28 @@ def find_application_by_reference(db: Session, reference: str) -> Optional[dict]
     return None
 
 
-def find_application_by_order_id(db: Session, order_id: str) -> Optional[dict]:
+def find_application_by_order_id(
+    db: Session,
+    order_id: str,
+    *,
+    tenant_name: Optional[str] = None,
+) -> Optional[dict]:
+    """Look up an application by Razorpay `order_id`.
+
+    Same H-B3 tenant-scoping contract as find_application_by_reference.
+    """
+    if tenant_name is not None:
+        record = db.query(AcademyTenantState).filter_by(tenant_name=tenant_name).first()
+        if record is None:
+            return None
+        for item in (record.state or {}).get("applications", []):
+            if item.get("payment_order_id") == order_id:
+                return deepcopy(item)
+        return None
+    import logging as _logging
+    _logging.getLogger(__name__).warning(
+        "find_application_by_order_id called without tenant_name — cross-tenant scan",
+    )
     for record in db.query(AcademyTenantState).all():
         state = record.state or {}
         for item in state.get("applications", []):
