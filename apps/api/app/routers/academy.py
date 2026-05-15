@@ -6,8 +6,10 @@ import re
 from typing import Optional
 
 _EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+_NAME_RE = re.compile(r"^[A-Za-z ]+$")
+_PHONE_RE = re.compile(r"^[0-9]+$")
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 
 from app.rate_limit import enforce_preset
 from sqlalchemy.orm import Session
@@ -20,8 +22,10 @@ from app.auth import (
     bootstrap_admin_user,
     create_credential,
     ensure_student_credential,
+    get_session_record,
     list_credentials,
     login_user,
+    resolve_session_token,
     revoke_session,
     revoke_sessions_for_email,
     tenant_has_credentials,
@@ -184,10 +188,7 @@ def _apply_payment_state_transition(item: dict, patch: dict) -> dict:
     application_stage = next_item.get("application_stage", item.get("application_stage"))
     enrollment_stage = next_item.get("enrollment_stage", item.get("enrollment_stage"))
 
-    if payment_stage == "paid":
-        next_item["application_stage"] = "enrolled"
-        next_item["enrollment_stage"] = "active"
-    elif payment_stage in {"order_created", "verification_pending", "payment_failed", "not_started"}:
+    if payment_stage in {"order_created", "verification_pending", "payment_failed", "not_started"}:
         if application_stage == "enrolled":
             next_item["application_stage"] = "payment_pending"
         if enrollment_stage == "active":
@@ -220,6 +221,8 @@ def _save_payment_transition(db: Session, tenant_name: str, application_id: str,
     current = get_application(db, tenant_name, application_id)
     if current is None:
         return None
+    if patch.get("application_stage") == "enrolled" and current.get("payment_stage") != "paid":
+        patch = {**patch, "payment_stage": "paid"}
     _validate_application_transition(current, patch)
     next_patch = _apply_payment_state_transition(current, patch)
     next_patch.pop("id", None)
@@ -536,16 +539,6 @@ def get_tenant(tenant_name: str, db: Session = Depends(get_db)):
     return {
         "tenant_name": tenant_name,
         "branding": state["branding"],
-        "counts": {
-            "applications": len(state["applications"]),
-            "batches": len(state["batches"]),
-            "sessions": len(state["sessions"]),
-            "attendance": len(state["attendance"]),
-            "courses": len(state.get("courses", [])),
-            "modules": len(state.get("course_modules", [])),
-            "chapters": len(state.get("course_chapters", [])),
-            "submissions": len(state.get("chapter_submissions", [])),
-        },
     }
 
 
@@ -562,7 +555,7 @@ def get_tenant_by_domain(domain: str, db: Session = Depends(get_db)):
 
 @router.post("/tenants/branding")
 def save_branding(payload: TenantBranding, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/tenants/branding/secure")
@@ -1318,16 +1311,27 @@ def verify_certificate_route(token: str, request: Request, db: Session = Depends
 
 @router.get("/applications")
 def read_applications(tenant_name: str, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.get("/applications/secure")
 def read_applications_secure(
-    tenant_name: str,
+    tenant_name: Optional[str] = Query(default=None),
     x_academy_session: Optional[str] = Header(default=None),
     authorization: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
 ):
+    # Auth before param validation — if tenant_name is omitted, fall back to
+    # the session's own tenant so trainers/ops don't get a 400 instead of
+    # the correct role-based response (Issue #35).
+    resolved = resolve_session_token(x_academy_session, authorization)
+    if not resolved:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    if not tenant_name:
+        record = get_session_record(db, resolved)
+        if record is None:
+            raise HTTPException(status_code=401, detail="Invalid or expired session")
+        tenant_name = record.tenant_name
     auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES)
     return {"items": list_applications(db, tenant_name)}
 
@@ -1391,6 +1395,16 @@ def create_application_route(payload: ApplicationCreate, request: Request, db: S
       5. The webhook validates the captured amount equals `course_fee`
          in paise (a fraud check).
     """
+    normalized_email = payload.student_email.strip().lower()
+    normalized_name = payload.student_name.strip()
+    normalized_phone = payload.student_phone.strip()
+    if not _EMAIL_RE.match(normalized_email):
+        raise HTTPException(status_code=422, detail="Enter a valid email address")
+    if not _NAME_RE.match(normalized_name):
+        raise HTTPException(status_code=422, detail="Enter a valid name")
+    if not _PHONE_RE.match(normalized_phone):
+        raise HTTPException(status_code=422, detail="Enter a valid phone number")
+
     course = find_course(code=payload.course_code, name=payload.course_name)
     if course is None:
         raise HTTPException(
@@ -1467,10 +1481,11 @@ def create_application_route(payload: ApplicationCreate, request: Request, db: S
         body["balance_due_by"] = None
         body["balance_paid_at"] = None
 
-    # Duplicate guard: reject if same email already applied for same course.
+    # Duplicate guard: reject if same email or same phone already applied for same course.
     normalized_email_dup = payload.student_email.strip().lower()
+    normalized_phone_dup = payload.student_phone.strip()
     existing_applications = list_applications(db, payload.tenant_name)
-    duplicate = next(
+    duplicate_email = next(
         (
             a for a in existing_applications
             if a.get("student_email") == normalized_email_dup
@@ -1478,12 +1493,28 @@ def create_application_route(payload: ApplicationCreate, request: Request, db: S
         ),
         None,
     )
-    if duplicate:
+    if duplicate_email:
         raise HTTPException(
             status_code=409,
             detail=(
                 f"An application for {course.name} already exists for this email address. "
-                f"Application ID: {duplicate['id']}"
+                f"Application ID: {duplicate_email['id']}"
+            ),
+        )
+    duplicate_phone = next(
+        (
+            a for a in existing_applications
+            if a.get("student_phone") == normalized_phone_dup
+            and a.get("course_code") == course.code
+        ),
+        None,
+    )
+    if duplicate_phone:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"An application for {course.name} already exists for this phone number. "
+                f"Application ID: {duplicate_phone['id']}"
             ),
         )
 
@@ -1519,7 +1550,7 @@ def create_application_route(payload: ApplicationCreate, request: Request, db: S
 
 @router.post("/applications/{application_id}/status")
 def update_application_status(application_id: str, payload: ApplicationStatusUpdate, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/applications/{application_id}/status/secure")
@@ -1533,11 +1564,20 @@ def update_application_status_secure(
     auth_dependency(db, payload.tenant_name, x_academy_session, authorization, WRITE_ROLES)
     patch = payload.model_dump(exclude_none=True)
     patch.pop("tenant_name", None)
+    # Certificate URL must come from the cert record (verification_token), not the client.
+    patch.pop("certificate_url", None)
     item = _save_payment_transition(db, payload.tenant_name, application_id, patch)
     if item is None:
         raise HTTPException(status_code=404, detail="Application not found")
     if item.get("application_stage") == "enrolled":
         item = assign_first_batch_if_needed(db, payload.tenant_name, application_id) or item
+    if item.get("application_stage") == "certificate_issued":
+        existing = list_certificates(db, payload.tenant_name, application_id=application_id)
+        active = next((c for c in existing if not c.get("revoked_at")), None)
+        cert = active or create_certificate(db, payload.tenant_name, application_id)
+        token = cert.get("verification_token", "")
+        cert_url = f"https://www.vivacareeracademy.com/certificates/{token}"
+        item = update_application(db, payload.tenant_name, application_id, {"certificate_url": cert_url}) or item
     return {"ok": True, "item": item}
 
 
@@ -2375,23 +2415,33 @@ def create_review_secure(
 
 @router.get("/batches")
 def read_batches(tenant_name: str, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.get("/batches/secure")
 def read_batches_secure(
-    tenant_name: str,
+    tenant_name: Optional[str] = Query(default=None),
     x_academy_session: Optional[str] = Header(default=None),
     authorization: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
 ):
+    # Auth before param validation — fall back to session tenant when
+    # tenant_name is omitted (Issue #35 fix).
+    resolved = resolve_session_token(x_academy_session, authorization)
+    if not resolved:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    if not tenant_name:
+        record = get_session_record(db, resolved)
+        if record is None:
+            raise HTTPException(status_code=401, detail="Invalid or expired session")
+        tenant_name = record.tenant_name
     auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES)
     return {"items": list_batches(db, tenant_name)}
 
 
 @router.post("/batches")
 def create_batch_route(payload: BatchCreate, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/batches/secure")
@@ -2407,7 +2457,7 @@ def create_batch_route_secure(
 
 @router.get("/sessions")
 def read_sessions(tenant_name: str, batch_id: Optional[str] = None, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.get("/sessions/secure")
@@ -2424,7 +2474,7 @@ def read_sessions_secure(
 
 @router.post("/sessions")
 def create_session_route(payload: SessionCreate, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/sessions/secure")
@@ -2440,7 +2490,7 @@ def create_session_route_secure(
 
 @router.get("/sessions/{session_id}/attendance")
 def read_session_attendance(session_id: str, tenant_name: str, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.get("/sessions/{session_id}/attendance/secure")
@@ -2457,7 +2507,7 @@ def read_session_attendance_secure(
 
 @router.post("/sessions/{session_id}/attendance")
 def write_session_attendance(session_id: str, payload: SessionAttendanceUpdate, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/sessions/{session_id}/attendance/secure")
@@ -2489,7 +2539,7 @@ def write_session_attendance_secure(
 
 @router.post("/sessions/{session_id}/zoom/provision")
 def provision_session_zoom(session_id: str, payload: ZoomProvisionRequest, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/sessions/{session_id}/zoom/provision/secure")
@@ -2531,7 +2581,7 @@ def provision_session_zoom_secure(
 
 @router.post("/sessions/{session_id}/zoom")
 def update_session_zoom_state(session_id: str, payload: SessionZoomUpdate, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/sessions/{session_id}/zoom/secure")
@@ -2881,7 +2931,7 @@ def process_zoom_webhook(
 
 @router.get("/state/{tenant_name}")
 def read_full_state(tenant_name: str, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.get("/state/{tenant_name}/secure")
@@ -2897,7 +2947,7 @@ def read_full_state_secure(
 
 @router.post("/state/{tenant_name}")
 def overwrite_full_state(tenant_name: str, payload: dict, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=400, detail="Secure endpoint required")
+    raise HTTPException(status_code=401, detail="Authentication required. Use the /secure endpoint.")
 
 
 @router.post("/state/{tenant_name}/secure")

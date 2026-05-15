@@ -273,6 +273,8 @@ const placementPartners: PlacementPartner[] = [
 
 export function ClaudeHome({ programs }: { programs: Course[] }) {
   const [activeTab, setActiveTab] = useState(0);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <main className={styles.page}>
@@ -301,14 +303,37 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
           </div>
 
           <div className={styles.navCta}>
-            <Link className={styles.buttonGhost} href="/login">
+            <Link className={`${styles.buttonGhost} ${styles.navCtaLogin}`} href="/login">
               Login
             </Link>
             <a className={styles.button} href="#admissions">
               Apply Now <span className={styles.arrow}>↗</span>
             </a>
           </div>
+
+          <button
+            className={styles.hamburger}
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? "✕" : "☰"}
+          </button>
         </div>
+
+        {menuOpen && (
+          <div className={styles.mobileMenu}>
+            <a href="#programs" onClick={() => setMenuOpen(false)}>Programs</a>
+            <a href="#curriculum" onClick={() => setMenuOpen(false)}>Curriculum</a>
+            <a href="#faculty" onClick={() => setMenuOpen(false)}>Faculty</a>
+            <Link href="/advisory-board" onClick={() => setMenuOpen(false)}>Advisory Board</Link>
+            <Link href="/patron" onClick={() => setMenuOpen(false)}>Patron</Link>
+            <a href="#outcomes" onClick={() => setMenuOpen(false)}>Outcomes</a>
+            <a href="#admissions" onClick={() => setMenuOpen(false)}>Admissions</a>
+            <Link href="/login" onClick={() => setMenuOpen(false)}>Login</Link>
+            <a href="#admissions" className={styles.mobileMenuApply} onClick={() => setMenuOpen(false)}>Apply Now ↗</a>
+          </div>
+        )}
       </nav>
 
       <header className={styles.hero}>
@@ -494,7 +519,7 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
                       <span>{program.format_label}</span>
                     </div>
                     <div className={styles.metaRow}>
-                      <span>Next cohort</span>
+                      <span>Cohort</span>
                       <span>{program.cohort_label}</span>
                     </div>
                     <div className={styles.metaRow}>
@@ -901,13 +926,20 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
             </div>
             <div className={styles.faqList}>
               {faqs.map((faq, index) => (
-                <details className={styles.faqItem} key={faq.question} open={index === 0}>
-                  <summary className={styles.faqQuestion}>
+                <div className={styles.faqItem} key={faq.question}>
+                  <button
+                    className={styles.faqQuestion}
+                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                    aria-expanded={openFaq === index}
+                    type="button"
+                  >
                     {faq.question}
-                    <span className={styles.faqPlus}>+</span>
-                  </summary>
-                  <div className={styles.faqAnswer}>{faq.answer}</div>
-                </details>
+                    <span className={styles.faqPlus}>{openFaq === index ? "−" : "+"}</span>
+                  </button>
+                  {openFaq === index ? (
+                    <div className={styles.faqAnswer}>{faq.answer}</div>
+                  ) : null}
+                </div>
               ))}
             </div>
           </div>
@@ -1154,9 +1186,9 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
           <div className={styles.footerBottom}>
             <div>© 2026 Viva Career Academy of Travel, Tourism & Hospitality. All rights reserved.</div>
             <div className={styles.footerSocial}>
-              <a href="#">Instagram</a>
-              <a href="#">LinkedIn</a>
-              <a href="#">YouTube</a>
+              <a href="https://www.instagram.com/vivacareeracademy" target="_blank" rel="noopener noreferrer">Instagram</a>
+              <a href="https://www.linkedin.com/company/vivacareeracademy" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+              <a href="https://www.youtube.com/@vivacareeracademy" target="_blank" rel="noopener noreferrer">YouTube</a>
             </div>
           </div>
         </div>

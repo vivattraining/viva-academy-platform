@@ -24,6 +24,13 @@
   --gutter: clamp(20px, 3vw, 56px);
   background: var(--cream);
   color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.pageContent {
+  flex: 1;
 }
 
 .wrap {
@@ -62,6 +69,14 @@
   background: rgba(245, 239, 228, 0.92);
   backdrop-filter: saturate(1.2) blur(10px);
   border-bottom: 1px solid var(--rule-soft);
+}
+
+.hamburger {
+  display: none;
+}
+
+.mobileMenu {
+  display: none;
 }
 
 .navInner {
@@ -142,9 +157,11 @@
   flex-wrap: wrap;
 }
 
+/* Fix #1: prevent nav links from wrapping onto a second row at 14" laptop viewport widths */
 .navLinks {
   justify-self: center;
-  gap: 32px;
+  gap: 24px;
+  flex-wrap: nowrap;
 }
 
 .navLinks a {
@@ -152,6 +169,7 @@
   font-weight: 500;
   color: var(--navy);
   padding: 6px 0;
+  white-space: nowrap; /* Fix #1: keep each link label on one line */
 }
 
 .navLinks a:hover,
@@ -513,7 +531,7 @@
   grid-template-columns: 220px 1fr;
   gap: 28px;
   align-items: start;
-  margin-bottom: 40px;
+  margin-bottom: 28px;
 }
 
 .kicker,
@@ -537,6 +555,7 @@
   font-size: clamp(34px, 4vw, 62px);
   line-height: 1.02;
   color: var(--navy);
+  margin: 0;
 }
 
 /* Internal + student workspaces are operational tools — not marketing
@@ -692,6 +711,25 @@
   flex-shrink: 0;
 }
 
+/* Fix #2: program card metadata (duration · format · cohort) rendered on one inline row */
+.metaInline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+
+/* Fix #2: faint dot separator between metadata items */
+.metaSep {
+  color: var(--accent);
+  opacity: 0.5;
+  font-weight: 300;
+}
+
 .formatGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -762,7 +800,7 @@
 }
 
 .statGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .stat {
@@ -1191,18 +1229,19 @@
 }
 
 .faqQuestion {
-  list-style: none;
   cursor: pointer;
   color: var(--navy);
   font-size: 18px;
   font-weight: 500;
+  font-family: inherit;
   display: flex;
   justify-content: space-between;
   gap: 16px;
-}
-
-.faqQuestion::-webkit-details-marker {
-  display: none;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
 }
 
 .faqPlus {
@@ -1216,7 +1255,8 @@
 
 .footer {
   background: var(--paper);
-  padding-top: 56px;
+  padding-top: 40px;
+  padding-bottom: 28px;
 }
 
 .footerTop {
@@ -1262,8 +1302,62 @@
   font-size: 13px;
 }
 
+/* Medium laptops (1100–1280px): 7 nav items at 32px gap can overflow.
+   Tighten the gaps so the nav stays on one line without collapsing to
+   the mobile single-column layout. */
+@media (max-width: 1280px) {
+  .navInner {
+    gap: 24px;
+  }
+
+  .navLinks {
+    gap: 20px;
+  }
+
+  .navLinks a {
+    font-size: 13px;
+  }
+}
+
+/* Narrow medium range (1100–1180px): catches 14" laptops at Windows 125% DPI
+   which render ~1093 CSS pixels at 100% browser zoom. Reduces gaps and font
+   further so all 7 nav items stay on one line. */
+@media (max-width: 1180px) {
+  .navInner {
+    gap: 14px;
+  }
+
+  .navLinks {
+    gap: 10px;
+  }
+
+  .navLinks a {
+    font-size: 12px;
+  }
+
+  .button,
+  .buttonGhost {
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+
+  .brandName {
+    font-size: 15px;
+  }
+
+  /* Hide the brandTag sub-label (e.g. "Est. 2011" or the tenant domain) so
+     the brand column stays compact and doesn't push nav items off the line.
+     The domain string can be 20+ chars wide at monospace font, which is wider
+     than the brandName itself at narrow viewports. */
+  .brandTag {
+    display: none;
+  }
+}
+
 @media (max-width: 1100px) {
-  .navInner,
+  /* Nav stays horizontal — only full-page content sections collapse to single
+     column. This prevents the navbar from stacking on 14" laptops where
+     Windows display scaling renders ~1093 CSS pixels at 100% browser zoom. */
   .heroGrid,
   .secHead,
   .outcomesHead,
@@ -1272,19 +1366,30 @@
   .admissionsBody,
   .curricLayout,
   .testimonialBody,
-  .footerTop,
   .formatGrid,
   .statGrid {
     grid-template-columns: 1fr;
   }
 
+  /* Footer: 5 columns → 2 columns at tablet so it stays readable
+     without wasting width; collapses fully to 1 column at 720px. */
+  .footerTop {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .navInner {
-    padding: 16px 0;
+    gap: 8px;
+    padding: 10px 0;
+    min-height: 60px;
   }
 
   .navLinks {
-    justify-self: start;
-    gap: 18px;
+    justify-self: center;
+    gap: 8px;
+  }
+
+  .navLinks a {
+    font-size: 12px;
   }
 
   .programGrid,
@@ -1304,27 +1409,106 @@
   }
 }
 
+/* Mobile fix: pin the announcement banner and nav bar to the top of the
+   viewport so they stay visible when the user scrolls down the page.
+   The page itself gets matching padding-top so content isn't hidden under
+   the two fixed layers (banner ~54px + nav ~56px = 110px). */
 @media (max-width: 720px) {
+  .topBanner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 52;
+  }
+
+  .nav {
+    position: fixed;
+    top: 54px; /* sits directly below the fixed banner */
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+
+  .page {
+    padding-top: 110px; /* clears banner (54px) + nav (56px) */
+  }
+
   .navInner {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    padding-top: 16px;
-    padding-bottom: 16px;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    min-height: 56px;
   }
 
-  .navLinks {
-    gap: 18px;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    justify-self: stretch;
-  }
-
-  .navLinks a {
-    font-size: 13px;
-  }
-
+  /* All nav links and the CTA buttons are hidden — everything lives inside
+     the hamburger dropdown on mobile. */
+  .navLinks,
   .navCta {
-    justify-self: stretch;
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1.5px solid rgba(11, 31, 58, 0.3);
+    border-radius: 6px;
+    padding: 6px 11px;
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--navy);
+  }
+
+  .hamburger:hover {
+    background: rgba(11, 31, 58, 0.06);
+  }
+
+  .mobileMenu {
+    display: flex;
+    flex-direction: column;
+    background: rgba(245, 239, 228, 0.98);
+    border-top: 1px solid var(--rule-soft);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    padding: 0 24px 16px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 48;
+  }
+
+  .mobileMenu a {
+    display: block;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--navy);
+    text-decoration: none;
+  }
+
+  .mobileMenu a:last-child {
+    border-bottom: none;
+  }
+
+  .mobileMenu a:hover {
+    color: var(--accent-deep);
+  }
+
+  .mobileMenuApply {
+    margin-top: 8px;
+    background: var(--navy);
+    color: var(--cream) !important;
+    border-radius: 6px;
+    padding: 13px 16px !important;
+    border-bottom: none !important;
+    font-weight: 600;
+    text-align: center;
   }
 
   /* Hide the navCta entirely when nothing's been passed in (e.g. on
@@ -1370,15 +1554,33 @@
   }
 
   .curricTab,
-  .formatCard,
   .programCard,
   .facultyCard {
     padding-left: 0;
     padding-right: 0;
   }
 
+  /* formatCard is a dark full-bleed card — keep horizontal padding so
+     text doesn't sit at the card edge on narrow phones. */
+  .formatCard {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .formatCard h3 {
+    font-size: clamp(24px, 7vw, 34px);
+  }
+
+  .price {
+    font-size: clamp(22px, 6vw, 28px);
+  }
+
+  .curricPane h3 {
+    font-size: clamp(26px, 7vw, 36px);
+  }
+
   .wrap {
-    padding: 0 20px;
+    padding: 0 24px;
   }
 
   .sectionTitle,
@@ -1394,10 +1596,33 @@
     font-size: clamp(20px, 5vw, 28px);
   }
 
+  .footerTop {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Brand description spans both columns; link columns sit in pairs below it */
+  .footerBrand {
+    grid-column: 1 / -1;
+  }
+
   .footerBottom {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+
+  /* Program card title is 32px at desktop — reduce for single-column
+     mobile cards so long titles don't dominate the card. */
+  .programTitle {
+    font-size: clamp(22px, 5.5vw, 28px);
+  }
+
+  /* Admissions steps: the 3-column step grid (number | body | when)
+     is already collapsed to 1fr at 1100px; ensure stepWhen is visually
+     de-emphasised so it doesn't compete with the body text. */
+  .stepWhen {
+    font-size: 12px;
+    color: var(--muted);
   }
 }
 

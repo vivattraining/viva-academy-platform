@@ -13,6 +13,11 @@
  */
 import { CertificateView } from "../../../components/certificate-view";
 
+// Defined inline — cannot import from lib/api because that module is "use client".
+function apiBaseUrl(): string {
+  return (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/+$/, "");
+}
+
 type Verification = {
   valid: boolean;
   student_name?: string;
@@ -24,19 +29,18 @@ type Verification = {
   verification_token?: string;
 };
 
-function apiBaseUrl(): string {
-  return (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/+$/, "");
-}
-
 async function verifyToken(token: string): Promise<Verification> {
+  const url = `${apiBaseUrl()}/api/v1/academy/certificates/verify/${encodeURIComponent(token)}`;
   try {
-    const res = await fetch(
-      `${apiBaseUrl()}/api/v1/academy/certificates/verify/${encodeURIComponent(token)}`,
-      { cache: "no-store" }
-    );
-    if (!res.ok) return { valid: false };
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.error(`[certificates] verify failed — ${res.status} from ${url}: ${body}`);
+      return { valid: false };
+    }
     return (await res.json()) as Verification;
-  } catch {
+  } catch (err) {
+    console.error(`[certificates] verify error — fetch to ${url} threw:`, err);
     return { valid: false };
   }
 }

@@ -89,6 +89,7 @@ jobs:
           name: playwright-html-report
           path: tests/qa-audit/reports/html
           retention-days: 14
+          if-no-files-found: warn
 
       - name: Upload audit artefacts
         if: always()
@@ -103,6 +104,7 @@ jobs:
             tests/qa-audit/reports/viva_links.html
             tests/qa-audit/reports/artifacts
           retention-days: 30
+          if-no-files-found: warn
 
       - name: Post summary to job page
         if: always()
@@ -112,7 +114,7 @@ jobs:
           fi
 
       - name: Comment summary on PR
-        if: github.event_name == 'pull_request' && always()
+        if: github.event_name == 'pull_request' && always() && hashFiles('tests/qa-audit/reports/summary.md') != ''
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           path: tests/qa-audit/reports/summary.md

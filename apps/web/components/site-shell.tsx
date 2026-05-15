@@ -14,6 +14,7 @@ const NAV_BY_VARIANT: Record<NavVariant, ReadonlyArray<{ label: string; href: st
   student: STUDENT_NAV,
 };
 import { apiRequest, DEFAULT_TENANT } from "../lib/api";
+import { isSessionExpired, readSession, writeSession, type AcademySession } from "../lib/auth";
 import styles from "./claude-home.module.css";
 
 type BrandingState = {
@@ -61,6 +62,37 @@ export function SiteShell({
 }) {
   const navItems = NAV_BY_VARIANT[navVariant];
   const [branding, setBranding] = useState<BrandingState>(DEFAULT_BRANDING);
+  const [session, setSession] = useState<AcademySession | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const sync = () => {
+      const current = readSession();
+      if (!current || isSessionExpired(current)) {
+        setSession(null);
+        return;
+      }
+      setSession(current);
+    };
+    sync();
+    window.addEventListener("academy-session-changed", sync);
+    return () => window.removeEventListener("academy-session-changed", sync);
+  }, []);
+
+  async function signOut() {
+    const current = readSession();
+    if (current?.tenant_name) {
+      try {
+        await apiRequest(`/api/v1/academy/auth/logout?tenant_name=${encodeURIComponent(current.tenant_name)}`, {
+          method: "POST",
+          session: current,
+        });
+      } catch {}
+    }
+    writeSession(null);
+    setSession(null);
+    window.location.href = navVariant === "student" ? "/login" : "/internal/login";
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -99,6 +131,8 @@ export function SiteShell({
     };
   }, []);
 
+  const showPublicLoginCta = navVariant === "public" && !primaryCta && !secondaryCta && activeHref !== "/login" && activeHref !== "/internal/login";
+
   return (
     <main className={styles.page} data-nav-variant={navVariant}>
       <div className={styles.topBanner}>
@@ -125,10 +159,70 @@ export function SiteShell({
               ))}
           </div>
           <div className={styles.navCta}>
-            {primaryCta ? <Link href={primaryCta.href} className={styles.button}>{primaryCta.label}</Link> : null}
-            {secondaryCta ? <Link href={secondaryCta.href} className={styles.buttonGhost}>{secondaryCta.label}</Link> : null}
+            {primaryCta && navVariant === "public" ? <Link href={primaryCta.href} className={styles.button}>{primaryCta.label}</Link> : null}
+            {secondaryCta && navVariant === "public" ? <Link href={secondaryCta.href} className={styles.buttonGhost}>{secondaryCta.label}</Link> : null}
+            {showPublicLoginCta ? (
+              <>
+                <Link href="/login" className={styles.button}>Student Login</Link>
+                <Link href="/internal/login" className={styles.buttonGhost}>Admin Login</Link>
+              </>
+            ) : null}
+            {(navVariant === "internal" || navVariant === "student") && session ? (
+              <>
+                <span style={{ fontSize: 13, color: "var(--muted)", whiteSpace: "nowrap" }}>
+                  {session.full_name}
+                </span>
+                <button
+                  className={styles.buttonGhost}
+                  onClick={() => void signOut()}
+                  style={{ fontSize: 13 }}
+                  type="button"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : null}
           </div>
+          <button
+            className={styles.hamburger}
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            type="button"
+          >
+            {menuOpen ? "✕" : "☰"}
+          </button>
         </div>
+        {menuOpen && (
+          <div className={styles.mobileMenu}>
+            {navItems.map((item) => (
+              <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}
+                style={{ color: item.href === activeHref ? "var(--accent-deep)" : undefined }}>
+                {item.label}
+              </Link>
+            ))}
+            {showPublicLoginCta ? (
+              <>
+                <Link href="/login" onClick={() => setMenuOpen(false)}>Student Login</Link>
+                <Link href="/internal/login" onClick={() => setMenuOpen(false)}>Admin Login</Link>
+              </>
+            ) : null}
+            {(navVariant === "internal" || navVariant === "student") && session ? (
+              <>
+                <span style={{ fontSize: 13, color: "var(--muted)", padding: "13px 0", borderBottom: "1px solid var(--rule-soft)" }}>
+                  {session.full_name}
+                </span>
+                <button
+                  style={{ textAlign: "left", background: "none", border: "none", padding: "13px 0", fontSize: 15, fontWeight: 500, color: "var(--navy)", cursor: "pointer" }}
+                  onClick={() => { setMenuOpen(false); void signOut(); }}
+                  type="button"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : null}
+          </div>
+        )}
       </nav>
 
       <section className={styles.section} style={{ paddingTop: "56px" }}>
@@ -138,6 +232,12 @@ export function SiteShell({
             <div>
               <h1 className={styles.sectionTitle}>{title}</h1>
               <p className={styles.bodyText} style={{ marginTop: 20, maxWidth: 760 }}>{description}</p>
+              {(primaryCta || secondaryCta) && navVariant !== "public" ? (
+                <div className={styles.heroCtas} style={{ marginTop: 24 }}>
+                  {primaryCta ? <Link href={primaryCta.href} className={styles.button}>{primaryCta.label}</Link> : null}
+                  {secondaryCta ? <Link href={secondaryCta.href} className={styles.buttonGhost}>{secondaryCta.label}</Link> : null}
+                </div>
+              ) : null}
               <div className={styles.footerSocial} style={{ marginTop: 22 }}>
                 <span className={styles.chip}><span className={styles.dot} /> {branding.academy_name}</span>
                 <span className={styles.chip}>Own domain</span>

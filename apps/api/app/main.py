@@ -36,7 +36,12 @@ def _resolve_cors_origins() -> list[str]:
         origins = ["https://www.vivacareeracademy.com"]
 
     if settings.app_env != "production":
-        for local in ("http://localhost:3000", "http://127.0.0.1:3000"):
+        for local in (
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:3001",
+            "http://127.0.0.1:3001",
+        ):
             if local not in origins:
                 origins.append(local)
     return origins

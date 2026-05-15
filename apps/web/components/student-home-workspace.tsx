@@ -616,7 +616,7 @@ export function StudentHomeWorkspace() {
             </p>
           ) : null}
           <div className="button-row">
-            <Link className="button-secondary" href="/dashboard">
+            <Link className="button-secondary" href={`/payment/receipt/${payload.application.id}?tenant=${encodeURIComponent(DEFAULT_TENANT)}`}>
               View statement
             </Link>
           </div>

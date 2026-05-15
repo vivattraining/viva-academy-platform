@@ -40,6 +40,7 @@ export function MarketingShell({
   secondaryCta?: { label: string; href: string };
 }) {
   const [branding, setBranding] = useState<BrandingState>(DEFAULT_BRANDING);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,10 +97,29 @@ export function MarketingShell({
               Apply Now <span className={styles.arrow}>↗</span>
             </Link>
           </div>
+
+          <button
+            className={styles.hamburger}
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? "✕" : "☰"}
+          </button>
         </div>
+
+        {menuOpen && (
+          <div className={styles.mobileMenu}>
+            {PUBLIC_NAV.map((item) => (
+              <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        )}
       </nav>
 
-      {children}
+      <div className={styles.pageContent}>{children}</div>
 
       <footer className={styles.footer}>
         <div className={styles.wrap}>
@@ -138,6 +158,9 @@ export function MarketingShell({
           <div className={styles.footerBottom}>
             <div>© 2026 Viva Career Academy. All rights reserved.</div>
             <div className={styles.footerSocial}>
+              <a href="https://www.instagram.com/vivacareeracademy" target="_blank" rel="noopener noreferrer">Instagram</a>
+              <a href="https://www.linkedin.com/company/vivacareeracademy" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+              <a href="https://www.youtube.com/@vivacareeracademy" target="_blank" rel="noopener noreferrer">YouTube</a>
               <a href="/login">Student Portal</a>
               <a href="/apply">Admissions</a>
             </div>

@@ -36,6 +36,17 @@ class Settings:
     whatsapp_api_token: str = os.getenv("WHATSAPP_API_TOKEN", "")
     whatsapp_phone_id: str = os.getenv("WHATSAPP_PHONE_ID", "")
 
+    # Demo seed credentials — only used when ALLOW_DEMO_AUTH=true (local dev only).
+    # Override in .env to use different values; never set in production.
+    demo_admin_email:      str = os.getenv("DEMO_ADMIN_EMAIL",      "")
+    demo_admin_password:   str = os.getenv("DEMO_ADMIN_PASSWORD",   "")
+    demo_ops_email:        str = os.getenv("DEMO_OPS_EMAIL",        "")
+    demo_ops_password:     str = os.getenv("DEMO_OPS_PASSWORD",     "")
+    demo_trainer_email:    str = os.getenv("DEMO_TRAINER_EMAIL",    "")
+    demo_trainer_password: str = os.getenv("DEMO_TRAINER_PASSWORD", "")
+    demo_student_email:    str = os.getenv("DEMO_STUDENT_EMAIL",    "")
+    demo_student_password: str = os.getenv("DEMO_STUDENT_PASSWORD", "")
+
     # Dedicated secret for signing academy auth JWTs. If unset in production
     # the API refuses to issue tokens (see app.auth._jwt_secret).
     academy_jwt_secret: str = os.getenv("ACADEMY_JWT_SECRET", "")

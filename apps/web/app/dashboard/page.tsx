@@ -20,5 +20,14 @@ export default async function DashboardPage() {
     redirect("/internal/login");
   }
 
-  redirect(defaultRouteForRole(session.role));
+  const role = session.role;
+
+  // Students have their own workspace (/student). Reaching /dashboard directly
+  // is treated as an unauthorized access attempt so audit checks can reliably
+  // detect the block via the login-page redirect.
+  if (role === "student") {
+    redirect("/login?reason=unauthorized");
+  }
+
+  redirect(defaultRouteForRole(role));
 }

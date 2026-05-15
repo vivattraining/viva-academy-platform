@@ -260,10 +260,27 @@ export async function auditPage(
     });
   }
 
-  // Full-page screenshot.
+  // Full-page screenshot — Playwright hard-caps at 32767px on any dimension.
   const shotName = `${safeFilename(opts.pageName)}__${device}.png`;
   const shotPath = path.join(ARTIFACT_DIR, shotName);
-  await page.screenshot({ path: shotPath, fullPage: true });
+  const pageSize = await page.evaluate(() => ({
+    width: document.documentElement.scrollWidth,
+    height: document.documentElement.scrollHeight,
+  }));
+  const MAX_DIM = 32000;
+  try {
+    if (pageSize.height > MAX_DIM || pageSize.width > MAX_DIM) {
+      await page.screenshot({
+        path: shotPath,
+        clip: { x: 0, y: 0, width: Math.min(pageSize.width, MAX_DIM), height: Math.min(pageSize.height, MAX_DIM) },
+      });
+    } else {
+      await page.screenshot({ path: shotPath, fullPage: true });
+    }
+  } catch (err) {
+    console.warn(`Screenshot failed (${(err as Error).message}), falling back to viewport`);
+    await page.screenshot({ path: shotPath });
+  }
   await testInfo.attach(`screenshot-${device}`, { path: shotPath, contentType: 'image/png' });
 
   const result: AuditResult = {

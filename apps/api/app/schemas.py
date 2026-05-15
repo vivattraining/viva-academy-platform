@@ -1,6 +1,6 @@
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
 class TenantBranding(BaseModel):
@@ -20,7 +20,7 @@ class TenantBranding(BaseModel):
 class ApplicationCreate(BaseModel):
     tenant_name: str
     student_name: str
-    student_email: str
+    student_email: EmailStr
     student_phone: str = ""
     # Either course_code (preferred) or course_name. Server resolves to the
     # canonical Course in apps/api/app/course_catalog.py and stamps the

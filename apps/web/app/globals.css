@@ -184,6 +184,11 @@ main {
 .button-secondary {
   background: rgba(244, 180, 0, 0.12);
   color: var(--ink);
+  border-color: rgba(244, 180, 0, 0.40);
+}
+.button-secondary:hover {
+  background: rgba(244, 180, 0, 0.20);
+  border-color: rgba(244, 180, 0, 0.60);
 }
 
 .button-ghost {
@@ -395,13 +400,14 @@ main {
 .editorial-workbench-contrast .button-secondary,
 .editorial-workbench-contrast .button-toggle {
   color: #f5efe4;
-  border-color: rgba(245, 239, 228, 0.28);
+  border-color: rgba(245, 239, 228, 0.55);
 }
 .editorial-workbench-contrast .button-secondary {
-  background: rgba(245, 239, 228, 0.08);
+  background: rgba(245, 239, 228, 0.14);
 }
 .editorial-workbench-contrast .button-secondary:hover {
-  background: rgba(245, 239, 228, 0.14);
+  background: rgba(245, 239, 228, 0.24);
+  border-color: rgba(245, 239, 228, 0.75);
 }
 .editorial-workbench-contrast .button-toggle {
   background: rgba(245, 239, 228, 0.06);
@@ -1855,5 +1861,67 @@ main {
   .editorial-display,
   .apply-title {
     font-size: 2.7rem;
+  }
+}
+
+/* — Contact / generic page spacing — */
+
+/* Give the compact hero section top breathing room. */
+.editorial-page-hero.compact {
+  padding-top: 40px;
+}
+
+/* Vertical rhythm between content grid sections. */
+.editorial-grid {
+  margin-bottom: 40px;
+}
+
+/* — Mobile responsiveness (issue #10) — */
+
+@media (max-width: 640px) {
+  /* Cards don't need a hard min-height on mobile — let content drive height. */
+  .editorial-card {
+    min-height: 0;
+  }
+
+  /* Editorial grid collapses earlier on narrow phones. */
+  .editorial-grid-2,
+  .editorial-grid-3,
+  .editorial-grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  /* CTA band stacks on mobile. */
+  .editorial-cta-band {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 28px 24px;
+  }
+
+  /* Workbench grids to single column on phones. */
+  .editorial-workbench-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .split {
+    grid-template-columns: 1fr;
+  }
+
+  /* Process steps: narrower num badge. */
+  .editorial-process-step {
+    grid-template-columns: 44px 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  /* Section padding on global shell. */
+  .editorial-main {
+    padding-top: 8px;
+    padding-bottom: 40px;
+  }
+
+  /* Footer columns to single column. */
+  .editorial-footer-inner {
+    grid-template-columns: 1fr;
   }
 }
