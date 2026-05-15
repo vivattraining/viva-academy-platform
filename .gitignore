@@ -45,3 +45,33 @@ tests/qa-audit/playwright-report/
 # The QA suite was originally a standalone project; ignore the leftover
 # nested .github folder — the active workflow is at the repo root.
 tests/qa-audit/.github/
+
+# Credentials and team rosters — must never land in git.
+# During the May 2026 DigiBull QA sprint, three artefacts ended up in
+# the working tree as untracked files:
+#   - team-credentials/trainer-qa_at_vivacareeracademy_com.txt
+#   - scripts/team.csv (admin emails for Geeta, Suhani, Geetika, Sriniketh)
+#   - apps/api/viva-academy-platform/ (a complete second clone of the repo
+#     nested inside itself — a stray git clone destination)
+# These have all been moved out of the working tree. The patterns below
+# stop them — or anything shaped like them — from being staged in future.
+team-credentials/
+**/team-credentials/
+*credentials*.txt
+*credentials*.csv
+scripts/team.csv
+# Nested repo checkouts inside the repo (any path containing the project's
+# own folder name)
+apps/*/viva-academy-platform/
+**/viva-academy-platform/viva-academy-platform/
+
+# DigiBull QA tooling that briefly landed at the repo root in PR #3 —
+# removed and preserved under ~/Desktop/KEEP - LIVE PROJECTS/digibull-handover-artifacts/
+# These patterns prevent re-introduction if someone replays the same tooling.
+/capture-qa.mjs
+/create-qa-doc.mjs
+/record-qa.mjs
+/record-video.mjs
+/test-logins.mjs
+/docs/QA-FIXES-REPORT.docx
+/docs/QA-FIXES-REPORT.md
