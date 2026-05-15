@@ -3,6 +3,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Great_Vibes } from "next/font/google";
 
+import { jsonLdString } from "../lib/json-ld";
+
 // Cursive font for the certificate signatures + cert holder name.
 // Snell Roundhand / Apple Chancery are macOS-only — Great Vibes is a
 // Google webfont that renders the same on every OS. The font-family
@@ -91,7 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             and improves brand SERP grouping. SEO audit item #6. */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdString(ORGANIZATION_JSON_LD) }}
         />
       </body>
     </html>

@@ -262,18 +262,24 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
         <label className="editorial-field">
           <span>Full Name</span>
           <input
+            name="full_name"
+            type="text"
             placeholder="As per official documents"
             value={studentName}
             onChange={(event) => { if (step1Submitted) resetFlow(); setStudentName(event.target.value); if (nameError) validateName(event.target.value); }}
             onBlur={(event) => validateName(event.target.value)}
             maxLength={100}
+            minLength={3}
             autoComplete="name"
+            required
+            aria-invalid={Boolean(nameError) || undefined}
           />
           {nameError ? <span style={{ color: "#a23a3a", fontSize: 12, marginTop: 4, display: "block" }}>{nameError}</span> : null}
         </label>
         <label className="editorial-field">
           <span>Email Address</span>
           <input
+            name="email"
             type="email"
             placeholder="email@example.com"
             value={studentEmail}
@@ -281,19 +287,27 @@ export function PublicAdmissionsFlow({ programs }: { programs: Course[] }) {
             onBlur={(event) => validateEmail(event.target.value)}
             maxLength={254}
             autoComplete="email"
+            required
+            aria-invalid={Boolean(emailError) || undefined}
           />
           {emailError ? <span style={{ color: "#a23a3a", fontSize: 12, marginTop: 4, display: "block" }}>{emailError}</span> : null}
         </label>
         <label className="editorial-field">
           <span>Phone Number</span>
           <input
+            name="phone"
             type="tel"
             placeholder="+91 98765 43210"
             value={studentPhone}
             onChange={(event) => { if (step1Submitted) resetFlow(); setStudentPhone(event.target.value); if (phoneError) validatePhone(event.target.value); }}
             onBlur={(event) => validatePhone(event.target.value)}
             maxLength={15}
+            minLength={7}
+            pattern="[0-9+\-\s]{7,15}"
+            inputMode="tel"
             autoComplete="tel"
+            required
+            aria-invalid={Boolean(phoneError) || undefined}
           />
           {phoneError ? <span style={{ color: "#a23a3a", fontSize: 12, marginTop: 4, display: "block" }}>{phoneError}</span> : null}
         </label>

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { MarketingShell } from "../../../components/marketing-shell";
 import styles from "../../../components/claude-home.module.css";
 import { getCourses } from "../../../lib/courses-data";
+import { jsonLdString } from "../../../lib/json-ld";
 import { findCourseByCodeOrSlug, slugForCourse } from "../../../lib/courses-slug";
 
 const SITE = "https://www.vivacareeracademy.com";
@@ -162,7 +163,7 @@ export default async function CourseDetailPage({
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLd) }}
       />
 
       {/* Hero */}
