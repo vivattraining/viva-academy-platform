@@ -62,6 +62,11 @@ class Settings:
     # endpoints refuse all requests (the framework needs time-based jobs to
     # be locked down — no public unlock-trigger surface).
     cron_secret: str = os.getenv("CRON_SECRET", "")
+    # Shared secret presented via X-Readiness-Token on GET /api/v1/readiness
+    # to unlock the detailed integration breakdown. Without it the endpoint
+    # returns only mode/status/blocker_count — no per-integration topology
+    # leak to anonymous callers. See routers/health.py:_readiness_token_ok.
+    readiness_token: str = os.getenv("READINESS_TOKEN", "")
 
 
 settings = Settings()

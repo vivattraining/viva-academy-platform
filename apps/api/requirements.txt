@@ -1,9 +1,14 @@
+# H-I2 (16 May 2026): kept in sync with apps/api/pyproject.toml so
+# Railway/nixpacks (which reads this file) installs the same dep set as
+# Vercel's @vercel/python builder (which reads pyproject.toml). Drift
+# between the two files caused the 15 May production outage when
+# `email-validator` only landed in one place.
+#
+# If you add a runtime dependency here, add it to pyproject.toml too.
 fastapi>=0.115.0
 uvicorn[standard]>=0.32.0
 sqlalchemy>=2.0.36
 pydantic>=2.9.2
 email-validator>=2.2.0
 python-dotenv>=1.0.1
-psycopg[binary]>=3.1.0
-razorpay>=1.4.1
-httpx>=0.27.0
+psycopg[binary]>=3.2.3
