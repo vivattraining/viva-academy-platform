@@ -24,7 +24,8 @@ from playwright.sync_api import sync_playwright
 
 BASE_FRONT = "http://localhost:3000"
 BASE_API   = "http://localhost:8000"
-TENANT     = "vivacareeracademy"
+TENANT     = "Viva Career Academy"
+TENANT_URL = urllib.parse.quote(TENANT)  # URL-encoded form for query strings
 
 PASS_ICON = "[PASS]"
 FAIL_ICON = "[FAIL]"
@@ -148,8 +149,8 @@ record("Auth", "Empty password -> 4xx", 400 <= status < 500, f"HTTP {status}")
 section("4. API Access Control -- Unauthenticated")
 
 PROTECTED_ENDPOINTS = [
-    f"/api/v1/academy/applications/secure?tenant_name={TENANT}",
-    f"/api/v1/academy/auth/me?tenant_name={TENANT}",
+    f"/api/v1/academy/applications/secure?tenant_name={TENANT_URL}",
+    f"/api/v1/academy/auth/me?tenant_name={TENANT_URL}",
 ]
 
 for ep in PROTECTED_ENDPOINTS:
@@ -197,7 +198,7 @@ XSS_PAYLOADS = [
 ]
 
 for payload in XSS_PAYLOADS:
-    status, body = api_post(f"/api/v1/academy/applications?tenant_name={TENANT}", {
+    status, body = api_post(f"/api/v1/academy/applications?tenant_name={TENANT_URL}", {
         "tenant_name": TENANT,
         "student_name": payload,
         "student_email": f"qa+{int(time.time())}@example.com",
@@ -345,7 +346,7 @@ section("12. IDOR -- Unauthenticated Object Access")
 
 fake_id = str(_uuid.uuid4())
 for ep_tpl in [
-    f"/api/v1/academy/applications/{fake_id}?tenant_name={TENANT}",
+    f"/api/v1/academy/applications/{fake_id}?tenant_name={TENANT_URL}",
     f"/api/v1/academy/applications/{fake_id}/status/secure",
 ]:
     url = f"{BASE_API}{ep_tpl}"
@@ -370,7 +371,7 @@ FAKE_JWT = ("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
             ".eyJzdWIiOiJmYWtlLWlkIiwicm9sZSI6ImFkbWluIiwiZXhwIjo5OTk5OTk5OTk5fQ"
             ".AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
-url = f"{BASE_API}/api/v1/academy/applications/secure?tenant_name={TENANT}"
+url = f"{BASE_API}/api/v1/academy/applications/secure?tenant_name={TENANT_URL}"
 req = urllib.request.Request(url)
 req.add_header("Authorization", f"Bearer {FAKE_JWT}")
 req.add_header("X-Session-Token", FAKE_JWT)
