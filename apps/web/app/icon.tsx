@@ -43,6 +43,6 @@ export default function Icon() {
         />
       </div>
     ),
-    { ...size, fonts: [] },
+    { ...size },
   );
 }
