@@ -157,6 +157,7 @@
   flex-wrap: wrap;
 }
 
+/* Fix #1: prevent nav links from wrapping onto a second row at 14" laptop viewport widths */
 .navLinks {
   justify-self: center;
   gap: 24px;
@@ -168,7 +169,7 @@
   font-weight: 500;
   color: var(--navy);
   padding: 6px 0;
-  white-space: nowrap;
+  white-space: nowrap; /* Fix #1: keep each link label on one line */
 }
 
 .navLinks a:hover,
@@ -710,6 +711,7 @@
   flex-shrink: 0;
 }
 
+/* Fix #2: program card metadata (duration · format · cohort) rendered on one inline row */
 .metaInline {
   display: flex;
   align-items: center;
@@ -721,6 +723,7 @@
   margin-bottom: 4px;
 }
 
+/* Fix #2: faint dot separator between metadata items */
 .metaSep {
   color: var(--accent);
   opacity: 0.5;
@@ -1406,6 +1409,10 @@
   }
 }
 
+/* Mobile fix: pin the announcement banner and nav bar to the top of the
+   viewport so they stay visible when the user scrolls down the page.
+   The page itself gets matching padding-top so content isn't hidden under
+   the two fixed layers (banner ~54px + nav ~56px = 110px). */
 @media (max-width: 720px) {
   .topBanner {
     position: fixed;
@@ -1418,14 +1425,14 @@
 
   .nav {
     position: fixed;
-    top: 54px;
+    top: 54px; /* sits directly below the fixed banner */
     left: 0;
     right: 0;
     width: 100%;
   }
 
   .page {
-    padding-top: 110px;
+    padding-top: 110px; /* clears banner (54px) + nav (56px) */
   }
 
   .navInner {
