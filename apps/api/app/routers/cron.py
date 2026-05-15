@@ -28,6 +28,14 @@ import hmac
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+from zoneinfo import ZoneInfo
+
+# Platform-side timezone for trainer-typed session_date / start_time /
+# end_time values. Sessions are scheduled and described in IST; the cron
+# converts to UTC before comparing against datetime.now(timezone.utc).
+# H-Q5 (16 May 2026) — previously these local times were parsed as if
+# they were UTC, a 5.5-hour misalignment masked by the +15 min grace.
+_PLATFORM_TZ = ZoneInfo("Asia/Kolkata")
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
@@ -223,10 +231,18 @@ def cron_unlock_modules(
 
 def _parse_session_window(session_row: dict) -> tuple[Optional[datetime], Optional[datetime]]:
     """Combine `session_date` (YYYY-MM-DD) with `start_time` / `end_time`
-    (HH:MM) and return UTC-aware datetimes. We treat the stored time as
-    UTC for cron arithmetic — the platform runs IST sessions but the row
-    times are inserted as the trainer typed them. Close enough for a
-    'has-the-window-ended' check; the +15 min grace absorbs slop."""
+    (HH:MM) and return UTC-aware datetimes.
+
+    H-Q5 (16 May 2026): the previous version treated trainer-typed local
+    times as UTC. The platform runs IST cohorts so a "9:00 PM" session
+    was being parsed as 21:00 UTC (= 02:30 IST next day) — a 5.5-hour
+    misalignment masked by the +15 min grace window. Now we parse in
+    IST (Asia/Kolkata) and convert to UTC for arithmetic.
+
+    Trainer-typed times keep their natural local meaning. UTC-only is
+    the right internal representation for "has the window ended?"
+    comparisons against datetime.now(timezone.utc).
+    """
     session_date = (session_row.get("session_date") or "").strip()
     start_time = (session_row.get("start_time") or "").strip()
     end_time = (session_row.get("end_time") or "").strip()
@@ -236,12 +252,20 @@ def _parse_session_window(session_row: dict) -> tuple[Optional[datetime], Option
     end_dt: Optional[datetime] = None
     try:
         if start_time:
-            start_dt = datetime.fromisoformat(f"{session_date}T{start_time}").replace(tzinfo=timezone.utc)
+            start_dt = (
+                datetime.fromisoformat(f"{session_date}T{start_time}")
+                .replace(tzinfo=_PLATFORM_TZ)
+                .astimezone(timezone.utc)
+            )
     except ValueError:
         start_dt = None
     try:
         if end_time:
-            end_dt = datetime.fromisoformat(f"{session_date}T{end_time}").replace(tzinfo=timezone.utc)
+            end_dt = (
+                datetime.fromisoformat(f"{session_date}T{end_time}")
+                .replace(tzinfo=_PLATFORM_TZ)
+                .astimezone(timezone.utc)
+            )
     except ValueError:
         end_dt = None
     return start_dt, end_dt

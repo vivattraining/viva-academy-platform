@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from base64 import b64encode
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 from typing import TYPE_CHECKING, Dict, Optional
 from urllib.error import HTTPError, URLError
@@ -74,7 +74,7 @@ def provision_zoom_meeting(*, tenant_name: str, session_id: str, session_title: 
             "topic": session_title,
             "scheduled_for": f"{session_date}T{start_time}",
             "duration_hint": f"{start_time}-{end_time}",
-            "created_at": datetime.utcnow().isoformat() + "Z",
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
 
     token = _zoom_access_token()
@@ -118,7 +118,7 @@ def provision_zoom_meeting(*, tenant_name: str, session_id: str, session_title: 
         "topic": session_title,
         "scheduled_for": start_at,
         "duration_hint": f"{start_time}-{end_time}",
-        "created_at": datetime.utcnow().isoformat() + "Z",
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
 
 
