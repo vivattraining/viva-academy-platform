@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import logging
+import socket
+import time
 from base64 import b64encode
 from datetime import datetime, timezone
 import json
@@ -15,12 +18,83 @@ if TYPE_CHECKING:
     from sqlalchemy.orm import Session  # noqa: F401
 
 
+logger = logging.getLogger(__name__)
+
+
+# ─── Retry policy (Q-REF-3, 16 May 2026 internal audit) ─────────────────
+#
+# Razorpay / Zoom / Resend calls all flow through `_json_request`. Before
+# this change, every call had zero retries — a single transient 5xx from
+# the provider failed the entire user-facing flow (failed payment-link
+# create, failed Zoom provisioning, failed enrollment email).
+#
+# Now: up to 3 attempts total, with 1s and 3s sleeps between, retrying on:
+#   - URLError      (network / DNS / connection refused / read timeout)
+#   - socket.timeout
+#   - HTTPError with status 502 / 503 / 504 / 408 / 429
+#
+# We do NOT retry on:
+#   - HTTPError with 4xx other than 408/429 (caller errors — retrying
+#     won't help, and an idempotent-by-accident POST could double-charge).
+#   - Any non-network exception (programmer error, schema bug, etc.).
+#
+# Caller contract unchanged: after retries exhaust, the LAST exception is
+# re-raised so existing `_raise_provider_error` paths still convert it to
+# a RuntimeError with the provider's error body.
+#
+# Timeout reduced from 20s -> 15s per attempt. Worst-case total wall time
+# with all retries:  15 + 1 + 15 + 3 + 15 = 49s. Acceptable.
+
+_MAX_ATTEMPTS = 3
+_RETRYABLE_STATUS = {408, 429, 500, 502, 503, 504}
+_BACKOFF_SECONDS = (1.0, 3.0)  # waits before attempts 2 and 3
+_REQUEST_TIMEOUT_SECONDS = 15
+
+
+def _should_retry(error: BaseException) -> bool:
+    if isinstance(error, HTTPError):
+        return error.code in _RETRYABLE_STATUS
+    if isinstance(error, (URLError, socket.timeout, TimeoutError)):
+        return True
+    return False
+
+
 def _json_request(url: str, *, method: str = "GET", headers: Optional[Dict[str, str]] = None, body: Optional[dict] = None) -> dict:
+    """JSON request with retry + backoff. See module-level docstring above."""
     payload = json.dumps(body).encode("utf-8") if body is not None else None
-    request = Request(url, data=payload, method=method, headers=headers or {})
-    with urlopen(request, timeout=20) as response:
-        raw = response.read().decode("utf-8")
-        return json.loads(raw or "{}")
+    last_error: Optional[BaseException] = None
+
+    for attempt in range(1, _MAX_ATTEMPTS + 1):
+        request = Request(url, data=payload, method=method, headers=headers or {})
+        try:
+            with urlopen(request, timeout=_REQUEST_TIMEOUT_SECONDS) as response:
+                raw = response.read().decode("utf-8")
+                if attempt > 1:
+                    logger.info(
+                        "integration call succeeded on retry attempt=%s url=%s method=%s",
+                        attempt, url, method,
+                    )
+                return json.loads(raw or "{}")
+        except BaseException as exc:  # noqa: BLE001
+            last_error = exc
+            if attempt >= _MAX_ATTEMPTS or not _should_retry(exc):
+                raise
+            # Sleep before retry. Index is attempt-1 because attempt is 1-based.
+            backoff = _BACKOFF_SECONDS[min(attempt - 1, len(_BACKOFF_SECONDS) - 1)]
+            status = getattr(exc, "code", None)
+            logger.warning(
+                "integration call failed, retrying attempt=%s/%s in %ss url=%s method=%s "
+                "error_type=%s status=%s",
+                attempt, _MAX_ATTEMPTS, backoff, url, method,
+                type(exc).__name__, status,
+            )
+            time.sleep(backoff)
+
+    # Unreachable — the loop either returns on success or re-raises after the
+    # max attempt. Kept as a defensive fallthrough for type-checkers.
+    if last_error is not None:
+        raise last_error
+    raise RuntimeError("integration call exhausted retries without an error")
 
 
 def _raise_provider_error(error: Exception, default_message: str) -> None:
