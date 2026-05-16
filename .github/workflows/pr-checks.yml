@@ -70,13 +70,14 @@ jobs:
           cache: "pip"
           cache-dependency-path: apps/api/requirements.txt
 
-      - name: Install dependencies (production set — same as Vercel)
+      - name: Install dependencies (production + test extras)
         # pyproject.toml is what Vercel @vercel/python installs, so we use
         # it here. requirements.txt is for Railway/nixpacks — we sync-check
-        # it in a separate step below.
+        # it in a separate step below. The `[test]` extras install pytest
+        # (out of the production dep tree, kept slim for Vercel).
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
+          pip install -e ".[test]"
 
       - name: ast.parse — every Python file
         run: |
@@ -97,6 +98,12 @@ jobs:
         # This is the gate that would have caught the 15 May email-validator
         # outage. AST parse doesn't trigger module-level imports; this does.
         run: python -c "from app.main import app; print(f'app imported, {len(list(app.routes))} routes')"
+
+      - name: pytest — backend unit tests
+        # Closes Q-REF-2 (16 May internal audit): the backend had zero unit
+        # tests. This step runs the suite under apps/api/tests/. Pure-logic
+        # helpers only — DB-backed endpoint tests are a separate effort.
+        run: pytest
 
       - name: requirements.txt ↔ pyproject.toml drift check
         run: |
