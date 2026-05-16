@@ -27,10 +27,12 @@ export const INTERNAL_NAV = [
   { label: "Roster", href: "/roster" },
   { label: "Messages", href: "/messages" },
   { label: "Trainer", href: "/trainer" },
+  { label: "Help", href: "/help" },
 ] as const;
 
 export const STUDENT_NAV = [
   { label: "My workspace", href: "/student" },
+  { label: "Help", href: "/help/student" },
 ] as const;
 
 /**

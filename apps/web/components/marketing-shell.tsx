@@ -148,6 +148,13 @@ export function MarketingShell({
             </div>
 
             <div className={styles.footerColumn}>
+              <h6 className={styles.footerHeading}>Support</h6>
+              <Link href="/help">Help Center</Link>
+              <Link href="/help/student">Student Manual</Link>
+              <Link href="/contact">Contact</Link>
+            </div>
+
+            <div className={styles.footerColumn}>
               <h6 className={styles.footerHeading}>Contact</h6>
               <a href={`mailto:${PUBLIC_CONTACT.email}`}>{PUBLIC_CONTACT.email}</a>
               <a href={`tel:${PUBLIC_CONTACT.phone.replace(/\s+/g, "")}`}>{PUBLIC_CONTACT.phone}</a>
