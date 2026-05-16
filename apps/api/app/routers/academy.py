@@ -316,15 +316,26 @@ def _reconcile_application_payment(db: Session, application: dict, *, reported_o
 
 
 def _resolve_razorpay_application(db: Session, event: dict, reference: Optional[str] = None) -> Optional[dict]:
+    """Resolve the application a Razorpay webhook event belongs to.
+
+    H-B3 (16 May 2026): every lookup now scopes to `settings.tenant_name`.
+    For the single-tenant deploy this is identical behaviour to the old
+    cross-tenant scan; for future multi-tenant, the webhook will need to
+    derive tenant from `event["payload"]["payment"]["entity"]["notes"]`
+    (set during order create) and pass that here. The function signature
+    is ready; only the caller changes.
+    """
+    expected_tenant = settings.tenant_name
+
     if reference:
-        application = find_application_by_reference(db, reference)
+        application = find_application_by_reference(db, reference, tenant_name=expected_tenant)
         if application is not None:
             return application
 
     payment_entity = (((event.get("payload") or {}).get("payment") or {}).get("entity") or {})
     order_id = payment_entity.get("order_id")
     if isinstance(order_id, str) and order_id:
-        application = find_application_by_order_id(db, order_id)
+        application = find_application_by_order_id(db, order_id, tenant_name=expected_tenant)
         if application is not None:
             return application
 
@@ -332,7 +343,7 @@ def _resolve_razorpay_application(db: Session, event: dict, reference: Optional[
     if isinstance(notes, dict):
         application_id = notes.get("application_id")
         if isinstance(application_id, str) and application_id:
-            application = find_application_by_reference(db, application_id)
+            application = find_application_by_reference(db, application_id, tenant_name=expected_tenant)
             if application is not None:
                 return application
 
@@ -1646,11 +1657,32 @@ def update_application_status_secure(
     authorization: Optional[str] = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    auth_dependency(db, payload.tenant_name, x_academy_session, authorization, WRITE_ROLES)
+    session = auth_dependency(db, payload.tenant_name, x_academy_session, authorization, WRITE_ROLES)
     patch = payload.model_dump(exclude_none=True)
     patch.pop("tenant_name", None)
     # Certificate URL must come from the cert record (verification_token), not the client.
     patch.pop("certificate_url", None)
+    # H-B4 (16 May 2026): payment_stage cannot be flipped via this PATCH.
+    # `paid` is the platform's revenue boundary and must come from a verified
+    # Razorpay webhook capture (see `_apply_payment_state_transition` in the
+    # webhook flow). An operations-role session token leak previously enabled
+    # silent payment bypass via this endpoint. If a legitimate manual override
+    # is needed (cash payments, refund reconciliation), build a dedicated
+    # /applications/{id}/payment-override/secure endpoint that:
+    #   - requires admin role (not operations)
+    #   - requires `payment_override_reason` in the body
+    #   - records an audit event with actor + reason
+    # Until that exists, the only path to payment_stage=paid is the webhook.
+    requested_payment_stage = patch.pop("payment_stage", None)
+    if requested_payment_stage is not None:
+        logger.warning(
+            "rejected payment_stage patch via /applications/%s/status/secure "
+            "by %s role=%s requested=%s",
+            application_id,
+            session.get("email"),
+            session.get("role"),
+            requested_payment_stage,
+        )
     item = _save_payment_transition(db, payload.tenant_name, application_id, patch)
     if item is None:
         raise HTTPException(status_code=404, detail="Application not found")
@@ -3235,7 +3267,11 @@ def dispatch_message_secure(
     tenant_name = str(payload.get("tenant_name", "")).strip()
     if not tenant_name:
         raise HTTPException(status_code=400, detail="tenant_name is required")
-    session = auth_dependency(db, tenant_name, x_academy_session, authorization, READ_ROLES)
+    # H-B1 (16 May 2026): trainers shouldn't be able to fire arbitrary
+    # outbound message_event rows attributed to themselves. Restricting
+    # this dispatch to admin/operations matches the surface in the admin
+    # messaging center where it's actually used.
+    session = auth_dependency(db, tenant_name, x_academy_session, authorization, WRITE_ROLES)
     item = create_message_event(
         db,
         tenant_name,

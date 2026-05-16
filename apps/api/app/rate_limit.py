@@ -34,10 +34,26 @@ _buckets: dict[tuple[str, str], Deque[float]] = defaultdict(deque)
 
 
 def _client_ip(request: Request) -> str:
-    """Best-effort client IP. Honours X-Forwarded-For when behind Vercel."""
-    fwd = request.headers.get("x-forwarded-for", "")
-    if fwd:
-        return fwd.split(",")[0].strip()
+    """Best-effort client IP — Vercel-aware, spoof-resistant.
+
+    The naive `x-forwarded-for[0]` approach is trivially defeatable: any
+    caller can prepend their own value to XFF and mint a fresh rate-limit
+    bucket per request. Audit row H-B2 (16 May 2026).
+
+    Vercel injects its OWN single-value `x-vercel-forwarded-for` header
+    after edge termination — it carries the real client IP, with no
+    comma-list form to slice and no path for an external caller to forge
+    (the edge strips client-supplied versions). When that header is
+    present, trust it. Otherwise fall back to `request.client.host` so
+    attackers can't rotate `x-forwarded-for` to bypass the cap.
+
+    See also backlog #48 (move rate-limit state from in-memory dict to
+    Redis) — until then this is the strongest defence the per-process
+    bucket can carry.
+    """
+    vercel_real_ip = request.headers.get("x-vercel-forwarded-for", "").strip()
+    if vercel_real_ip:
+        return vercel_real_ip
     if request.client:
         return request.client.host
     return "unknown"
