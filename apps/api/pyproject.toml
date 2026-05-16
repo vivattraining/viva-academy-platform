@@ -17,5 +17,23 @@ dependencies = [
   "python-dotenv>=1.0.1"
 ]
 
+[project.optional-dependencies]
+# Install via `pip install -e .[test]` for local pytest runs and in CI.
+# Kept out of `dependencies` so Vercel's production function image stays
+# slim (no pytest at runtime).
+test = [
+  "pytest>=8.0",
+]
+
 [tool.setuptools]
 packages = ["app"]
+
+[tool.pytest.ini_options]
+# All test files live in apps/api/tests/ and import `from app.X import Y`.
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra -q --strict-markers --strict-config"
+filterwarnings = [
+  "ignore::DeprecationWarning:passlib.*",
+  "ignore::DeprecationWarning:sqlalchemy.*",
+]
