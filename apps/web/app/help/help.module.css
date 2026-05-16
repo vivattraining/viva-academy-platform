@@ -1,0 +1,494 @@
+/* ─── Help center shared styles ───────────────────────────────────────
+ * Used by:
+ *   /help                — landing hub
+ *   /help/student        — student manual
+ *   /help/admin          — admin manual
+ *   /help/operations     — operations manual
+ *   /help/trainer        — trainer manual
+ *
+ * Designed to be:
+ *   - readable at any width down to 320px
+ *   - print-friendly (manual can be exported to PDF via the browser)
+ *   - aesthetically consistent with the rest of the editorial brand
+ * ──────────────────────────────────────────────────────────────────── */
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+  font-family: var(--font-serif, "Libre Caslon Display", Georgia, serif);
+  color: #0B1F3A;
+}
+
+.eyebrow {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin: 0 0 16px;
+  color: #0B1F3A;
+}
+
+.subtitle {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: #334155;
+  margin-bottom: 32px;
+  max-width: 720px;
+}
+
+.breadcrumb {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 13px;
+  margin-bottom: 24px;
+  color: #6b7280;
+}
+
+.breadcrumb a {
+  color: #0B1F3A;
+  text-decoration: none;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.breadcrumb a:hover {
+  border-bottom-color: #0B1F3A;
+}
+
+/* ─── Role-card grid (used on /help index) ─── */
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  margin: 32px 0;
+}
+
+.card {
+  display: block;
+  background: #f5efe4;
+  border: 1px solid #e5d9c2;
+  border-radius: 8px;
+  padding: 24px 24px 28px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: #b8860b;
+  background: #efe7d3;
+}
+
+.cardLabel {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  font-weight: 600;
+  color: #b8860b;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.cardTitle {
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin: 0 0 8px;
+  color: #0B1F3A;
+}
+
+.cardCopy {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #334155;
+  margin: 0;
+}
+
+/* ─── Table-of-contents at the top of each manual ─── */
+
+.toc {
+  background: #fafaf6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 40px;
+  font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+.tocTitle {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+}
+
+.tocList {
+  list-style: decimal;
+  padding-left: 22px;
+  margin: 0;
+  columns: 2;
+  column-gap: 32px;
+}
+
+.tocList li {
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  break-inside: avoid;
+}
+
+.tocList a {
+  color: #0B1F3A;
+  text-decoration: none;
+}
+
+.tocList a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .tocList {
+    columns: 1;
+  }
+}
+
+/* ─── Section ─── */
+
+.section {
+  margin: 48px 0;
+  scroll-margin-top: 80px;
+}
+
+.sectionNumber {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: #b8860b;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.sectionTitle {
+  font-size: 1.8rem;
+  font-weight: 400;
+  margin: 0 0 16px;
+  letter-spacing: -0.01em;
+  color: #0B1F3A;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 12px;
+}
+
+.sectionTitle a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.section p {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #1f2937;
+  margin: 0 0 14px;
+  max-width: 720px;
+}
+
+.section h3 {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 28px 0 12px;
+  color: #0B1F3A;
+}
+
+.section ul,
+.section ol {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #1f2937;
+  margin: 0 0 14px;
+  padding-left: 24px;
+  max-width: 720px;
+}
+
+.section li {
+  margin-bottom: 6px;
+}
+
+.section li > strong {
+  color: #0B1F3A;
+  font-weight: 600;
+}
+
+.section a {
+  color: #0B1F3A;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.section a:hover {
+  color: #b8860b;
+}
+
+.section code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.9em;
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #0B1F3A;
+}
+
+/* ─── Step-by-step lists ─── */
+
+.steps {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  list-style: none;
+  counter-reset: step;
+  padding: 0;
+  margin: 16px 0;
+}
+
+.steps > li {
+  counter-increment: step;
+  position: relative;
+  padding: 16px 16px 16px 56px;
+  margin-bottom: 8px;
+  background: #fafaf6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+.steps > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #0B1F3A;
+  color: #fff;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Callouts ─── */
+
+.callout {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  border-left: 3px solid #b8860b;
+  padding: 14px 18px;
+  margin: 20px 0;
+  background: #fcf9ef;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.96rem;
+  line-height: 1.6;
+}
+
+.callout strong {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #b8860b;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.calloutWarning {
+  border-left-color: #a23a3a;
+  background: #fef3f3;
+}
+
+.calloutWarning strong {
+  color: #a23a3a;
+}
+
+.calloutTip {
+  border-left-color: #0B1F3A;
+  background: #f1f4f9;
+}
+
+.calloutTip strong {
+  color: #0B1F3A;
+}
+
+/* ─── FAQ accordion (no JS — uses <details>) ─── */
+
+.faq {
+  margin: 24px 0;
+}
+
+.faqItem {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: #fff;
+}
+
+.faqItem summary {
+  cursor: pointer;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 14px 18px;
+  list-style: none;
+  position: relative;
+}
+
+.faqItem summary::-webkit-details-marker {
+  display: none;
+}
+
+.faqItem summary::after {
+  content: "+";
+  position: absolute;
+  right: 18px;
+  top: 13px;
+  font-size: 1.4rem;
+  color: #b8860b;
+  font-weight: 400;
+  transition: transform 200ms ease;
+}
+
+.faqItem[open] summary::after {
+  content: "−";
+}
+
+.faqItem p {
+  padding: 0 18px 16px;
+  margin: 0;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #374151;
+}
+
+/* ─── Quick-action chips ─── */
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.chip {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 13px;
+  padding: 6px 12px;
+  background: #f5efe4;
+  border: 1px solid #e5d9c2;
+  border-radius: 999px;
+  color: #0B1F3A;
+  text-decoration: none;
+  transition: background 120ms ease;
+}
+
+.chip:hover {
+  background: #efe7d3;
+}
+
+/* ─── Side-by-side comparison table ─── */
+
+.compareTable {
+  width: 100%;
+  margin: 20px 0;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.94rem;
+  border-collapse: collapse;
+}
+
+.compareTable th,
+.compareTable td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: top;
+}
+
+.compareTable th {
+  background: #fafaf6;
+  font-weight: 600;
+  color: #0B1F3A;
+}
+
+.compareTable tbody tr:hover {
+  background: #fcfaf3;
+}
+
+/* ─── Footer in-page nav ─── */
+
+.pageNav {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.95rem;
+}
+
+.pageNav a {
+  color: #0B1F3A;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pageNav a span {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.pageNav a strong {
+  font-weight: 500;
+  font-size: 1.05rem;
+}
+
+/* ─── Print friendliness ─── */
+
+@media print {
+  .breadcrumb,
+  .pageNav,
+  .toc {
+    display: none;
+  }
+  .page {
+    max-width: none;
+    padding: 0;
+  }
+  .section {
+    page-break-inside: avoid;
+  }
+  .sectionTitle {
+    page-break-after: avoid;
+  }
+}
