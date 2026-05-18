@@ -11,10 +11,21 @@ from app.routers import academy, cron, health
 
 Base.metadata.create_all(bind=engine)
 
+# Disable interactive docs in production (18 May audit, H-NEW-2).
+# Before this change, /docs (Swagger UI), /redoc, and /openapi.json
+# publicly served the full schema for every endpoint — including the
+# /secure admin paths — to anonymous callers. Each /secure route returns
+# 401 thanks to PR #11's auth-before-body fix, but enumerating the
+# surface still lowers the cost of probing. We keep the docs ON in
+# non-production environments so local dev and CI keep their introspection.
+_DOCS_ENABLED = settings.app_env != "production"
 app = FastAPI(
     title="Academy OS API",
     version="0.1.0",
-    description="Standalone backend for VIVA and future white-label academy tenants."
+    description="Standalone backend for VIVA and future white-label academy tenants.",
+    docs_url="/docs" if _DOCS_ENABLED else None,
+    redoc_url="/redoc" if _DOCS_ENABLED else None,
+    openapi_url="/openapi.json" if _DOCS_ENABLED else None,
 )
 
 
