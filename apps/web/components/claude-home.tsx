@@ -101,7 +101,7 @@ const faculty: FacultyMember[] = [
   {
     code: "F · 01",
     name: "Vikas Khanduri",
-    image: "/faculty/narayan-home.jpeg",
+    image: "/faculty/vikas-khanduri-updated.png",
     imageAlt: "Vikas Khanduri",
     label: "Faculty Head, Co-Founder",
     role: "Travel Entrepreneur · Hospitality Studies",
@@ -141,6 +141,28 @@ const faculty: FacultyMember[] = [
     description:
       "Consulting Editor of TTJ – Travel Trade Journal and one of India's most respected voices in travel, tourism, and luxury cruising. 35+ years across airlines, cruise lines, car rentals, hospitality, luxury and experiential travel, and online travel — in sales, marketing, and leadership roles. An early visionary who helped position the Indian market within global luxury cruising.",
     creds: ["Cruise", "Luxury Travel", "Editorial", "Strategy"],
+  },
+  {
+    code: "F · 05",
+    name: "Dinesh Kumar",
+    image: "/faculty/dinesh-kumar.jpeg",
+    imageAlt: "Dinesh Kumar",
+    label: "Guest Faculty",
+    role: "Travel & Aviation Professional · Air Ticketing Industry",
+    description:
+      "A passionate travel and aviation professional with strong experience in the air ticketing and travel industry. Known for leadership, networking skills, and commitment to building meaningful business relationships. Actively associated with travel trade platforms and industry events. His vision is to strengthen the travel ecosystem through trust, technology, and reliable service.",
+    creds: ["Air Ticketing", "Travel Trade", "Aviation"],
+  },
+  {
+    code: "F · 06",
+    name: "Rajan Sehgal",
+    image: "/faculty/rajan-sehgal.jpeg",
+    imageAlt: "Rajan Sehgal",
+    label: "Guest Faculty",
+    role: "Travel Industry Veteran · Co-Founder, Teleporters Travel Solutions",
+    description:
+      "Graduate in Tourism from College of Vocational Studies, University of Delhi. A decade each with Lufthansa GSA (including advanced training in Seeheim, Germany) and ITC International Travel House. Founder of Arrivals Air Services; Co-Founder & Advisor at Teleporters Travel Solutions LLP, Plan Your Holiday, and Premier Life Style Management. Office bearer of Travel Agents Association of India (TAAI), one of the largest and oldest associations in the trade.",
+    creds: ["Lufthansa", "ITC International", "TAAI", "Air Services"],
   },
 ];
 
@@ -269,6 +291,9 @@ const placementPartners: PlacementPartner[] = [
   { id: "p07", name: "Solis Travel",   font: "sans",  weight: 500, letterSpacing: "0.02em",  placeholder: true },
   { id: "p08", name: "ALTA TOURS",     font: "sans",  weight: 700, letterSpacing: "0.18em",  placeholder: true },
   { id: "p09", name: "Crescent Trips", font: "serif", weight: 400, letterSpacing: "0.02em",  placeholder: true },
+  // Real confirmed partners (no logo yet — renders as styled wordmark)
+  { id: "inter-airwings", name: "Inter Airwings", font: "sans", weight: 600, letterSpacing: "0.04em" },
+  { id: "paryatan",       name: "Paryatan",       font: "sans", weight: 600, letterSpacing: "0.06em" },
 ];
 
 export function ClaudeHome({ programs }: { programs: Course[] }) {
@@ -788,6 +813,52 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
             brands shaping modern Indian travel — across luxury, business, online,
             and operations.
           </p>
+
+          {/* NIMA endorsement */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 16,
+              background: "rgba(11, 31, 58, 0.04)",
+              border: "1px solid rgba(11, 31, 58, 0.12)",
+              borderRadius: 6,
+              padding: "16px 22px",
+              marginBottom: 24,
+              maxWidth: 680,
+            }}
+          >
+            <div
+              style={{
+                flexShrink: 0,
+                width: 44,
+                height: 44,
+                borderRadius: "50%",
+                background: "#0B1F3A",
+                color: "#fffaf2",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontFamily: "'Inter', system-ui, sans-serif",
+                fontWeight: 700,
+                fontSize: 13,
+                letterSpacing: "0.04em",
+              }}
+            >
+              NIMA
+            </div>
+            <p
+              style={{
+                margin: 0,
+                fontSize: 14,
+                color: "#0B1F3A",
+                fontFamily: "'Inter', system-ui, sans-serif",
+                lineHeight: 1.55,
+              }}
+            >
+              <strong>NIMA is pleased to endorse Viva Career Academy</strong> and this industry body is happy to associate with VCA&rsquo;s endeavour.
+            </p>
+          </div>
           <div
             style={{
               display: "grid",

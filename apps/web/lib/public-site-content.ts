@@ -175,6 +175,16 @@ export const LIVE_SITE_FACULTY = [
     role: "Guest Faculty · Travel Industry Consultant",
     bio: "Consulting Editor of TTJ – Travel Trade Journal. 35+ years across airlines, cruise lines, car rentals, hospitality, luxury and experiential travel, and online travel — in sales, marketing, and leadership roles. An early voice in positioning the Indian market within global luxury cruising. Frequently invited as a speaker at industry forums and leadership summits.",
   },
+  {
+    name: "Dinesh Kumar",
+    role: "Guest Faculty",
+    bio: "A passionate travel and aviation professional with strong experience in the air ticketing and travel industry. Known for leadership, networking skills, and commitment to building meaningful business relationships. Actively associated with travel trade platforms and industry events.",
+  },
+  {
+    name: "Rajan Sehgal",
+    role: "Guest Faculty",
+    bio: "Graduate in Tourism from College of Vocational Studies, University of Delhi. A decade each with Lufthansa GSA (including advanced training in Seeheim, Germany) and ITC International Travel House. Founder of Arrivals Air Services. Co-Founder & Advisor at Teleporters Travel Solutions LLP, Plan Your Holiday, and Premier Life Style Management. Office bearer of Travel Agents Association of India (TAAI).",
+  },
 ];
 
 export const AI_PLATFORM_PILLARS = [
