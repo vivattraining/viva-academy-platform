@@ -85,7 +85,7 @@ const STATIC_FACULTY: PublicTrainer[] = [
   {
     id: "static-dinesh-kumar",
     full_name: "Dinesh Kumar",
-    photo_url: null,
+    photo_url: "/faculty/dinesh-kumar.jpeg",
     bio:
       "Guest Faculty. A passionate travel and aviation professional with strong experience in the air ticketing and travel industry. Known for leadership, networking skills, and commitment to building meaningful business relationships. Actively associated with travel trade platforms and industry events. His vision is to strengthen the travel ecosystem through trust, technology, and reliable service while inspiring people around him with positive energy, dedication, and a progressive mindset.",
     expertise: ["Air Ticketing", "Travel Trade", "Aviation"],
@@ -95,7 +95,7 @@ const STATIC_FACULTY: PublicTrainer[] = [
   {
     id: "static-rajan-sehgal",
     full_name: "Rajan Sehgal",
-    photo_url: null,
+    photo_url: "/faculty/rajan-sehgal.jpeg",
     bio:
       "Guest Faculty. Graduate in Tourism from College of Vocational Studies, University of Delhi. Worked with Lufthansa GSA for 10 years, including advanced training in Seeheim, Germany. Worked with ITC International Travel House for 9 years. Founded Arrivals Air Services. Co-Founder & Advisor at Teleporters Travel Solutions LLP, Plan Your Holiday, and Premier Life Style Management. Office bearer of Travel Agents Association of India (TAAI) — one of the largest and oldest associations in the travel trade.",
     expertise: ["Airlines", "Travel Operations", "Trade Associations"],

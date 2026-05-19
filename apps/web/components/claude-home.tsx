@@ -145,6 +145,8 @@ const faculty: FacultyMember[] = [
   {
     code: "F · 05",
     name: "Dinesh Kumar",
+    image: "/faculty/dinesh-kumar.jpeg",
+    imageAlt: "Dinesh Kumar",
     label: "Guest Faculty",
     role: "Travel & Aviation Professional · Air Ticketing Industry",
     description:
@@ -154,6 +156,8 @@ const faculty: FacultyMember[] = [
   {
     code: "F · 06",
     name: "Rajan Sehgal",
+    image: "/faculty/rajan-sehgal.jpeg",
+    imageAlt: "Rajan Sehgal",
     label: "Guest Faculty",
     role: "Travel Industry Veteran · Co-Founder, Teleporters Travel Solutions",
     description:
