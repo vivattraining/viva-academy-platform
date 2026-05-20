@@ -291,9 +291,9 @@ const placementPartners: PlacementPartner[] = [
   { id: "p07", name: "Solis Travel",   font: "sans",  weight: 500, letterSpacing: "0.02em",  placeholder: true },
   { id: "p08", name: "ALTA TOURS",     font: "sans",  weight: 700, letterSpacing: "0.18em",  placeholder: true },
   { id: "p09", name: "Crescent Trips", font: "serif", weight: 400, letterSpacing: "0.02em",  placeholder: true },
-  // Real confirmed partners (no logo yet — renders as styled wordmark)
-  { id: "inter-airwings", name: "Inter Airwings", font: "sans", weight: 600, letterSpacing: "0.04em" },
-  { id: "paryatan",       name: "Paryatan",       font: "sans", weight: 600, letterSpacing: "0.06em" },
+  // Real confirmed partners — logo images
+  { id: "inter-airwings", name: "Inter Airwings", image: "/partners/interairwings.png" },
+  { id: "paryatan",       name: "Paryatan",       image: "/partners/paryatan.jpeg", bleach: true },
 ];
 
 export function ClaudeHome({ programs }: { programs: Course[] }) {
@@ -828,25 +828,12 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
               maxWidth: 680,
             }}
           >
-            <div
-              style={{
-                flexShrink: 0,
-                width: 44,
-                height: 44,
-                borderRadius: "50%",
-                background: "#0B1F3A",
-                color: "#fffaf2",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontFamily: "'Inter', system-ui, sans-serif",
-                fontWeight: 700,
-                fontSize: 13,
-                letterSpacing: "0.04em",
-              }}
-            >
-              NIMA
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/partners/nima.png"
+              alt="NIMA — Network of Indian MICE Agents"
+              style={{ flexShrink: 0, height: 48, width: "auto", objectFit: "contain" }}
+            />
             <p
               style={{
                 margin: 0,
