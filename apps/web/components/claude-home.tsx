@@ -101,7 +101,7 @@ const faculty: FacultyMember[] = [
   {
     code: "F · 01",
     name: "Vikas Khanduri",
-    image: "/faculty/vikas-khanduri-updated.png",
+    image: "/faculty/vikas-khanduri.jpeg",
     imageAlt: "Vikas Khanduri",
     label: "Faculty Head, Co-Founder",
     role: "Travel Entrepreneur · Hospitality Studies",

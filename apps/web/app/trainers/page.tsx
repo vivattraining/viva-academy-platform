@@ -45,7 +45,7 @@ const STATIC_FACULTY: PublicTrainer[] = [
   {
     id: "static-vikas-khanduri",
     full_name: "Vikas Khanduri",
-    photo_url: "/faculty/vikas-khanduri-updated.png",
+    photo_url: "/faculty/vikas-khanduri.jpeg",
     bio:
       "Faculty Head and Co-Founder. Thirty years with large travel companies — including Cox & Kings, Kuoni and SOTC. Leads VIVA Career Academy's flagship Travel Management programme.",
     expertise: ["Travel", "Tourism", "Operations"],
