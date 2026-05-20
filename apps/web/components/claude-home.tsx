@@ -819,6 +819,8 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
               display: "flex",
               alignItems: "center",
               gap: 20,
+              width: "100%",
+              boxSizing: "border-box",
               background: "rgba(11, 31, 58, 0.04)",
               border: "1px solid rgba(11, 31, 58, 0.12)",
               borderRadius: 4,
