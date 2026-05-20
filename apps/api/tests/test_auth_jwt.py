@@ -95,9 +95,15 @@ def test_jwt_tampered_payload_rejected(auth_mod, models_mod):
         expires_at=expires,
     )
 
-    # Mutate one character in the signature segment
+    # Mutate the FIRST character of the signature (guaranteed 6 data bits,
+    # no base64 padding bits). Mutating the last character is flaky: for a
+    # 43-char base64url HMAC-SHA256 the last char has only 4 data bits +
+    # 2 padding bits that Python's b64decode silently ignores, so chars
+    # 'A'-'D' all decode identically and the mangle becomes a no-op.
     header, payload, signature = token.split(".")
-    mangled = ".".join([header, payload, signature[:-1] + ("A" if signature[-1] != "A" else "B")])
+    first = signature[0]
+    replacement = "B" if first != "B" else "C"
+    mangled = ".".join([header, payload, replacement + signature[1:]])
 
     with pytest.raises(Exception):
         auth_mod.decode_access_token(mangled)
