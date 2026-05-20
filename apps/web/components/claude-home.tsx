@@ -279,9 +279,11 @@ type PlacementPartner = {
 
 const placementPartners: PlacementPartner[] = [
   // Confirmed partners — real logo images.
-  { id: "caair",    name: "CAAIR Travels", image: "/partners/caair.png" },
-  { id: "letsgo",   name: "LetsGoTrvl",    image: "/partners/letsgo.png" },
-  { id: "pristine", name: "Pristine",      image: "/partners/pristine.jpeg", bleach: true },
+  { id: "caair",          name: "CAAIR Travels",  image: "/partners/caair.png" },
+  { id: "letsgo",         name: "LetsGoTrvl",     image: "/partners/letsgo.png" },
+  { id: "pristine",       name: "Pristine",       image: "/partners/pristine.jpeg", bleach: true },
+  { id: "inter-airwings", name: "Inter Airwings", image: "/partners/interairwings.png" },
+  { id: "paryatan",       name: "Paryatan",       image: "/partners/paryatan.jpeg", bleach: true },
   // Placeholder slots — fictional dummy brand wordmarks, NOT real partners.
   // Replace each entry with a real partner's name + image as relationships
   // are formalised. Set `placeholder: false` and add `image: "/partners/<id>.png"`.
@@ -291,9 +293,6 @@ const placementPartners: PlacementPartner[] = [
   { id: "p07", name: "Solis Travel",   font: "sans",  weight: 500, letterSpacing: "0.02em",  placeholder: true },
   { id: "p08", name: "ALTA TOURS",     font: "sans",  weight: 700, letterSpacing: "0.18em",  placeholder: true },
   { id: "p09", name: "Crescent Trips", font: "serif", weight: 400, letterSpacing: "0.02em",  placeholder: true },
-  // Real confirmed partners — logo images
-  { id: "inter-airwings", name: "Inter Airwings", image: "/partners/interairwings.png" },
-  { id: "paryatan",       name: "Paryatan",       image: "/partners/paryatan.jpeg", bleach: true },
 ];
 
 export function ClaudeHome({ programs }: { programs: Course[] }) {
@@ -814,25 +813,24 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
             and operations.
           </p>
 
-          {/* NIMA endorsement */}
+          {/* NIMA endorsement — full-width, matches the partner grid below */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 16,
+              gap: 20,
               background: "rgba(11, 31, 58, 0.04)",
               border: "1px solid rgba(11, 31, 58, 0.12)",
-              borderRadius: 6,
-              padding: "16px 22px",
-              marginBottom: 24,
-              maxWidth: 680,
+              borderRadius: 4,
+              padding: "18px 28px",
+              marginBottom: 1,
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/partners/nima.png"
               alt="NIMA — Network of Indian MICE Agents"
-              style={{ flexShrink: 0, height: 48, width: "auto", objectFit: "contain" }}
+              style={{ flexShrink: 0, height: 52, width: "auto", objectFit: "contain" }}
             />
             <p
               style={{
@@ -843,7 +841,7 @@ export function ClaudeHome({ programs }: { programs: Course[] }) {
                 lineHeight: 1.55,
               }}
             >
-              <strong>NIMA is pleased to endorse Viva Career Academy</strong> and this industry body is happy to associate with VCA&rsquo;s endeavour.
+              <strong>NIMA is pleased to endorse Viva Career Academy</strong> — Network of Indian MICE Agents is happy to associate with VCA&rsquo;s endeavour.
             </p>
           </div>
           <div
